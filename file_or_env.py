@@ -33,19 +33,24 @@ def _walk_to_root(path):
 
 
 # borrowed from https://github.com/theskumar/python-dotenv
-def find_file(filename, usecwd=False):
+def find_file(filename, usecwd=False, starting_stack_depth=None):
     """
     Search in increasingly higher folders for the given file
     Returns path to the file if found, or an empty string otherwise
     """
-    if usecwd or '__file__' not in globals():
+    if usecwd:
         # should work without __file__, e.g. in REPL or IPython notebook
         path = os.getcwd()
     else:
-        # will work for .py files
-        frame_filename = sys._getframe().f_back.f_code.co_filename
-        path = os.path.dirname(os.path.abspath(frame_filename))
+        # try to get filename of where it was called
+        try:
+            frame_filename = sys._getframe(
+                starting_stack_depth).f_back.f_code.co_filename
+            path = os.path.dirname(os.path.abspath(frame_filename))
+        except AttributeError:
+            path = os.getcwd()
 
+    log.debug("Searching for %s starting at %s", filename, path)
     for dirname in _walk_to_root(path):
         check_path = os.path.join(dirname, filename)
         if os.path.exists(check_path):
@@ -96,7 +101,7 @@ class FileOrEnv:
             if os.path.isabs(file):
                 self.config_file = file
             else:
-                self.config_file = find_file(file)
+                self.config_file = find_file(file, starting_stack_depth=1)
         if self.config_file:
             self.config = _load_config(self.config_file)
         else:
