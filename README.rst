@@ -29,7 +29,7 @@ matches, loading the first one that is found.
 
 JSON is assumed as the default format for the file, but files with a ``.yml`` or
 ``.yaml`` extension will be parsed as YAML (requires installing the ``[yaml]``
-variant of the package``.
+variant of the package).
 
 Environment variables can be cast to common types using the optional ``cast``
 keyword argument to ``.get``. Default is a string.
@@ -42,7 +42,7 @@ security issues:
 
 1. Accidental leaks via logging or error reporting services.
 2. Child process inheritance (see `ImageTragick <https://imagetragick.com/>`__
-   for an idea why this could be bad.
+   for an idea why this could be bad).
 
 Second, in practice on deployment environments, environment variables end up
 getting written to a number of files (cron, bash profile, service definitions,
