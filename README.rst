@@ -1,41 +1,107 @@
-File or Env
-===========
+Goodconf
+========
 
-Transparently load variables from environment or JSON/YAML file.
+Define configuration variables and load them from environment or JSON/YAML file.
+Also generates configuration files and documentation for
 
 Installation
 ------------
 
-``pip install file-or-env`` or ``pip install file-or-env[yaml]`` if parsing
+``pip install goodconf`` or ``pip install goodconf[yaml]`` if parsing/generating
 YAML files is required.
 
 Usage
 -----
 
-Examples::
+Examples:
 
-    from file_or_env import FileOrEnv
-    config = FileOrEnv('config.json')
-    config['SOME_VAL']
-    config.get('ANOTHER_VAL', 'default value')
-    config.get('BOOLEAN_VAL', 'false', cast=bool)
+  .. code:: python
 
-``FileOrEnv`` is a dict-like object which abstracts retrieval of values from a
-file or ``os.environ``. Environment variables take precedence over the file.
+    # define a configuration
+    import base64
+    import os
 
-The file can be provided as an absolute path or a filename. If a filename
-is provided, it will walk up the filesystem looking for a filename that
-matches, loading the first one that is found.
+    from goodconf import GoodConf, Value
 
-JSON is assumed as the default format for the file, but files with a ``.yml`` or
-``.yaml`` extension will be parsed as YAML (requires installing the ``[yaml]``
-variant of the package).
+    config = GoodConf(description="Configuration for My App")
+    config.define_values([
+        Value('DEBUG', default=False, help="Toggle debugging."),
+        Value('DATABASE_URL', default='postgres://localhost:5432/mydb',
+              help="Database connection."),
+        Value('SECRET_KEY',
+              initial=lambda: base64.b64encode(os.urandom(60)).decode(),
+              help="Used for cryptographic signing. "
+                   "https://docs.djangoproject.com/en/2.0/ref/settings/#secret-key")
+    ])
 
-Environment variables can be cast to common types using the optional ``cast``
-keyword argument to ``.get``. Default is a string.
+    # load a configuration
+    config.load('myapp.conf')
+
+    # access values as attributes on the GoodConf instance
+    config.DATABASE_URL
+
+    # generate an initial config file from the definition
+    print(config.generate_yaml())
+
+    # generate documentation for a configuration
+    print(config.generate_markdown())
+
+``GoodConf``
+^^^^^^^^^^^^
+
+The ``GoodConf`` object can be initialized with the following keyword args:
+
+* ``description`` A plain-text description used as a header when generating
+  a configuration file.
+* ``file_env_var`` The name of an environment variable which can be used for
+  the name of the configuration file to load.
+* ``default_files`` If no file is passed to the ``load`` method, try to load a
+  configuration from these files in order.
+
+``Value``
+^^^^^^^^^
+
+The ``define_values`` method of ``GoodConf`` takes a list of ``Value``
+instances. They can be initialized with the following keyword args:
+
+* ``key`` Name of the value used in file or environment variable.
+* ``default`` Default value if none is provided.
+* ``required`` Loading a config will fail if a value is not provided.
+  Defaults to True if no default is provided otherwise False.
+* ``initial`` Initial value to use when generating a config
+* ``cast_as``  Python type to cast variable as. Defaults to type of default
+  (if provided) or str.
+* ``help`` Plain-text description of the value.
+
+Django Usage
+------------
+
+A helper is provided which monkey-patches Django's management commands to accept
+a ``--config`` argument. Replace your ``manage.py`` with the following:
+
+  .. code:: python
+
+    from goodconf.contrib.django import execute_from_command_line_with_config
+    # Define your GoodConf in `myproject/__init__.py`
+    from myproject import config
+
+    if __name__ == '__main__':
+        execute_from_command_line_with_config(config)
+
+
+
 
 Why?
 ----
+
+I took inspiration from `logan <https://github.com/dcramer/logan>`__ (used by
+Sentry) and `derpconf <https://github.com/globocom/derpconf>`__ (used by
+Thumbor). Both, however used Python files for configuration. I wanted a safer
+format and one that was easier to serialize data into from a configuration
+management system.
+
+Environment Variables
+^^^^^^^^^^^^^^^^^^^^^
 
 I don't like working with environment variables. First, there are potential
 security issues:
