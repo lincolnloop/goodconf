@@ -2,7 +2,8 @@ Goodconf
 ========
 
 Define configuration variables and load them from environment or JSON/YAML file.
-Also generates configuration files and documentation for
+Also generates initial configuration files and documentation for your defined
+configuration.
 
 Installation
 ------------

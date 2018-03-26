@@ -89,7 +89,7 @@ class Value:
     def set_value(self, defined: CastTypes = None):
         if self.key in os.environ:
             self.value = self.cast(os.environ[self.key])
-        elif defined:
+        elif defined is not None:
             assert(type(defined) == self.cast_as)
             self.value = defined
         elif self.required:
