@@ -68,7 +68,9 @@ class Value:
         self.default = default
         if default is not None:
             self.value = default
-        self.required = required or default is None
+        self.required = bool(default is None or required)
+        if initial and not callable(initial):
+            raise ValueError("Initial value must be a callable.")
         self._initial = initial
         self.help = help
         if cast_as:
@@ -168,9 +170,9 @@ class GoodConf:
                 if default_file:
                     return default_file
 
-    def define_values(self, values: List[Value]):
+    def define_values(self, *args: Value):
         """Sets up internal dict used to track values"""
-        for val in values:
+        for val in args:
             self._values[val.key] = val
 
     def set_values(self, config: dict):

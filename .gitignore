@@ -1,2 +1,6 @@
 /dist
 /build
+.coverage
+htmlcov
+.pytest_cache
+*.egg-info

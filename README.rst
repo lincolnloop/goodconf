@@ -25,7 +25,7 @@ Examples:
     from goodconf import GoodConf, Value
 
     config = GoodConf(description="Configuration for My App")
-    config.define_values([
+    config.define_values(
         Value('DEBUG', default=False, help="Toggle debugging."),
         Value('DATABASE_URL', default='postgres://localhost:5432/mydb',
               help="Database connection."),
@@ -33,7 +33,7 @@ Examples:
               initial=lambda: base64.b64encode(os.urandom(60)).decode(),
               help="Used for cryptographic signing. "
                    "https://docs.djangoproject.com/en/2.0/ref/settings/#secret-key")
-    ])
+    )
 
     # load a configuration
     config.load('myapp.conf')
