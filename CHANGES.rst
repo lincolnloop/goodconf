@@ -2,6 +2,13 @@
 Change Log
 ==========
 
+0.9.0 (unreleased)
+==================
+
+- Use a declarative class to define GoodConf's values.
+
+- Change description to a docstring of the class.
+
 0.8.2 (28 Mar 2018)
 ===================
 
