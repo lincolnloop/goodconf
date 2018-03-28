@@ -245,7 +245,7 @@ class TestDjango(TestCase):
         c = GoodConf()
         path = '/etc/config.yml'
         dj_args = ['manage.py', 'diffsettings', '-v', '2']
-        execute_from_command_line_with_config(c, dj_args + ['-c', path])
+        execute_from_command_line_with_config(c, dj_args + ['-C', path])
         mocked_load_config.assert_called_once_with('/etc/config.yml')
         mocked_dj_execute.assert_called_once_with(dj_args)
 
@@ -258,11 +258,11 @@ class TestDjango(TestCase):
         c = GoodConf(file_env_var='MYAPP_CONF',
                      default_files=['/etc/myapp.json'])
         execute_from_command_line_with_config(c, [
-            'manage.py', 'diffsettings', '-c', path,
+            'manage.py', 'diffsettings', '-C', path,
             '--settings', 'tests.test_goodconf', '-h'])
         mocked_load_config.assert_called_once_with('/etc/config.yml')
         output = mocked_stdout.getvalue()
-        self.assertIn('-c FILE, --config FILE', output)
+        self.assertIn('-C FILE, --config FILE', output)
         self.assertIn('MYAPP_CONF', output)
         self.assertIn('/etc/myapp.json', output)
 

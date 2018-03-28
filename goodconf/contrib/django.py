@@ -6,7 +6,7 @@ from .argparse import argparser_add_argument
 
 
 def _monkeypatch_commandparser(config: GoodConf):
-    """Adds -c, --config to Django BaseCommand"""
+    """Adds -C, --config to Django BaseCommand"""
     from django.core.management.base import BaseCommand
     default_parser = BaseCommand.create_parser
 

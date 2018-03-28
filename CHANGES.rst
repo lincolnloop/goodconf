@@ -2,6 +2,11 @@
 Change Log
 ==========
 
+0.8.2 (28 Mar 2018)
+===================
+
+- ``-c`` is used by Django's ``collectstatic``. Using ``-C`` instead.
+
 0.8.1 (28 Mar 2018)
 ===================
 
