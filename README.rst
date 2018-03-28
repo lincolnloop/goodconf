@@ -1,6 +1,18 @@
 Goodconf
 ========
 
+.. image:: https://img.shields.io/travis/lincolnloop/goodconf.svg
+    :target: https://travis-ci.org/lincolnloop/goodconf
+
+.. image:: https://img.shields.io/codecov/c/github/lincolnloop/goodconf.svg
+    :target: https://codecov.io/gh/lincolnloop/goodconf
+
+.. image:: https://img.shields.io/pypi/v/goodconf.svg
+    :target: https://pypi.python.org/pypi/goodconf
+
+.. image:: https://img.shields.io/pypi/pyversions/goodconf.svg
+    :target: https://pypi.python.org/pypi/goodconf
+
 Define configuration variables and load them from environment or JSON/YAML file.
 Also generates initial configuration files and documentation for your defined
 configuration.
