@@ -4,5 +4,8 @@ python:
   - "3.6"
 install:
   - pip install -e .[tests,yaml]
+  - pip install codecov
 script:
   - pytest --cov=goodconf --cov-report=term
+after_success:
+  - codecov

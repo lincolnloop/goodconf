@@ -1,13 +1,15 @@
 import functools
-from contextlib import contextmanager
 import os
+from contextlib import contextmanager
+from io import StringIO
+from pathlib import Path
 from tempfile import TemporaryDirectory
-import unittest
-from unittest import mock
 from textwrap import dedent
+from unittest import mock, TestCase, skip
 
-from goodconf import Value, GoodConf, RequiredValueMissing, _load_config, \
-    _find_file
+from goodconf import (Value, GoodConf, RequiredValueMissing,
+                      _load_config, _find_file)
+from goodconf.contrib.django import execute_from_command_line_with_config
 
 KEY = 'GOODCONF_TEST'
 
@@ -19,7 +21,7 @@ def env_var(key, value):
     del(os.environ[key])
 
 
-class ValueTests(unittest.TestCase):
+class ValueTests(TestCase):
     def test_default_not_required(self):
         """Values with a default are not required"""
         v = Value(KEY, default='s')
@@ -97,11 +99,11 @@ def skip_if_no_yaml(f):
             import ruamel.yaml
             return f(*args, **kwargs)
         except ImportError:
-            return unittest.skip("[yaml] extras is not installed")
+            return skip("[yaml] extras is not installed")
     return wrapper
 
 
-class TestFileHelpers(unittest.TestCase):
+class TestFileHelpers(TestCase):
     def setUp(self):
         self.tmpdir = TemporaryDirectory()
 
@@ -125,19 +127,19 @@ class TestFileHelpers(unittest.TestCase):
         cwd = os.getcwd()
         file = 'test.yml'
         self.assertEqual(os.path.join(cwd, file),
-                         _find_file(file, verify=False))
+                         _find_file(file, verify_later=True))
 
     def test_abspath(self):
         path = '/etc/config.yml'
         self.assertEqual(path,
-                         _find_file(path, verify=False))
+                         _find_file(path, verify_later=True))
 
     def test_verify(self):
         path = os.path.join(self.tmpdir.name, 'does-not-exist.yml')
         self.assertIsNone(_find_file(path))
 
 
-class TestGoodConf(unittest.TestCase):
+class TestGoodConf(TestCase):
     def test_set_values(self):
         c = GoodConf()
         c.define_values(Value('a'), Value('c', default=4))
@@ -167,15 +169,33 @@ class TestGoodConf(unittest.TestCase):
             a: ''
             """).lstrip())
 
-    @mock.patch('goodconf._find_file')
+    def test_generate_markdown(self):
+        description = "Configuration for My App"
+        help_ = "this is a"
+        c = GoodConf(description=description)
+        c.define_values(Value('a', help=help_, default=5),
+                        Value('b', required=True))
+        mkdn = c.generate_markdown()
+        # Not sure on final format, just do some basic smoke tests
+        self.assertIn(description, mkdn)
+        self.assertIn(help_, mkdn)
+
+
+class TestGoodConfFiles(TestCase):
+    def setUp(self):
+        self.tmpdir = TemporaryDirectory()
+
+    def tearDown(self):
+        self.tmpdir.cleanup()
+
     @mock.patch('goodconf._load_config')
-    def test_conf_env_var(self, mocked_load_config, mocked_find_file):
-        path = '/etc/myapp.json'
-        mocked_find_file.return_value = path
+    def test_conf_env_var(self, mocked_load_config):
+        path = Path(self.tmpdir.name) / 'myapp.json'
+        path.touch()
+        path = str(path)
         c = GoodConf(file_env_var='CONF')
         with env_var('CONF', path):
             c.load()
-        mocked_find_file.assert_called_once_with(path, verify=False)
         mocked_load_config.assert_called_once_with(path)
 
     @mock.patch('goodconf.GoodConf.set_values')
@@ -183,3 +203,66 @@ class TestGoodConf(unittest.TestCase):
         c = GoodConf()
         c.load()
         mocked_set_values.assert_called_once_with({})
+
+    @mock.patch('goodconf._load_config')
+    def test_provided_file(self, mocked_load_config):
+        path = Path(self.tmpdir.name) / 'myapp.json'
+        path.touch()
+        path = str(path)
+        c = GoodConf()
+        c.load(path)
+        mocked_load_config.assert_called_once_with(path)
+
+    @mock.patch('goodconf._load_config')
+    def test_default_files(self, mocked_load_config):
+        path = Path(self.tmpdir.name) / 'myapp.json'
+        path.touch()
+        path = str(path)
+        bad_path = str(Path(self.tmpdir.name) / 'does-not-exist.json')
+        c = GoodConf(default_files=[bad_path, path])
+        c.load()
+        mocked_load_config.assert_called_once_with(path)
+
+
+def skip_if_no_django(f):
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        try:
+            import django
+            return f(*args, **kwargs)
+        except ImportError:
+            return skip("Django is not installed")
+    return wrapper
+
+
+@skip_if_no_django
+class TestDjango(TestCase):
+    @mock.patch('django.core.management.execute_from_command_line')
+    @mock.patch('goodconf._load_config')
+    def test_mgmt_command(self, mocked_load_config, mocked_dj_execute):
+        c = GoodConf()
+        path = '/etc/config.yml'
+        dj_args = ['manage.py', 'diffsettings', '-v', '2']
+        execute_from_command_line_with_config(c, dj_args + ['-c', path])
+        mocked_load_config.assert_called_once_with('/etc/config.yml')
+        mocked_dj_execute.assert_called_once_with(dj_args)
+
+    @mock.patch('goodconf._load_config')
+    @mock.patch('sys.stdout', new_callable=StringIO)
+    @mock.patch('sys.exit')
+    def test_help(self, mocked_sysexit, mocked_stdout, mocked_load_config):
+        path = '/etc/config.yml'
+        c = GoodConf(file_env_var='MYAPP_CONF',
+                     default_files=['/etc/myapp.json'])
+        execute_from_command_line_with_config(c, [
+            'manage.py', 'diffsettings', '-c', path,
+            '--settings', 'tests.test_goodconf', '-h'])
+        mocked_load_config.assert_called_once_with('/etc/config.yml')
+        output = mocked_stdout.getvalue()
+        self.assertIn('-c FILE, --config FILE', output)
+        self.assertIn('MYAPP_CONF', output)
+        self.assertIn('/etc/myapp.json', output)
+
+
+# This doubles as a Django settings file for the tests
+SECRET_KEY = 'abc'

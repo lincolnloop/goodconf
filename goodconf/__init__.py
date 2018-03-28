@@ -38,12 +38,12 @@ def _load_config(path: str) -> dict:
     return config
 
 
-def _find_file(file: str, verify: bool = True) -> str:
+def _find_file(file: str, verify_later: bool = False) -> str:
     if os.path.isabs(file):
         config_file = file
     else:
         config_file = os.path.join(os.getcwd(), file)
-    if verify and not os.path.exists(config_file):
+    if not verify_later and not os.path.exists(config_file):
         return None
     return config_file
 
@@ -54,7 +54,7 @@ class Value:
                  cast_as: CastTypes = None, help: str = ""):
         """
 
-        :param key:      Name of the value used in file or environment variable.
+        :param key:      Name of the value used in file or environment variable
         :param default:  Default value if none is provided.
         :param required: Loading a config will fail if a value is not provided.
                          Defaults to True if no default is provided otherwise
@@ -161,9 +161,9 @@ class GoodConf:
         """
         if self.file_env_var and self.file_env_var in os.environ:
             return _find_file(os.environ[self.file_env_var],
-                              verify=False)
+                              verify_later=True)
         if file:
-            return _find_file(file, verify=False)
+            return _find_file(file, verify_later=True)
         if self.default_files:
             for f in self.default_files:
                 default_file = _find_file(f)

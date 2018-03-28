@@ -1,4 +1,3 @@
-import sys
 import argparse
 from typing import List
 
@@ -17,7 +16,7 @@ def _monkeypatch_commandparser(*args, **kwargs):
     BaseCommand.create_parser = patched_parser
 
 
-def load_config_from_cli(config: GoodConf) -> List[str]:
+def load_config_from_cli(config: GoodConf, argv: List[str]) -> List[str]:
     """Loads config, checking CLI arguments for a config file"""
     config_argparser_args = ['-c', '--config']
     help = "Config file."
@@ -38,13 +37,13 @@ def load_config_from_cli(config: GoodConf) -> List[str]:
     parser.add_argument(*config_argparser_args,
                         **config_argparser_kwargs)
 
-    config_arg, default_args = parser.parse_known_args(sys.argv)
+    config_arg, default_args = parser.parse_known_args(argv)
     config.load(config_arg.config)
     return default_args
 
 
-def execute_from_command_line_with_config(config: GoodConf):
+def execute_from_command_line_with_config(config: GoodConf, argv: List[str]):
     """Load's config then runs Django's execute_from_command_line"""
-    args = load_config_from_cli(config)
+    args = load_config_from_cli(config, argv)
     from django.core.management import execute_from_command_line
     execute_from_command_line(args)
