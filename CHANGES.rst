@@ -2,6 +2,11 @@
 Change Log
 ==========
 
+0.8.3 (28 Mar 2018)
+===================
+
+- Implicitly load config if not loaded by first access.
+
 0.8.2 (28 Mar 2018)
 ===================
 

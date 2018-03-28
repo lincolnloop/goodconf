@@ -15,4 +15,4 @@ clean:
 
 PHONY: test
 test:
-	pytest --cov=goodconf --cov-report=term
+	pytest -v --cov=goodconf --cov-report=term

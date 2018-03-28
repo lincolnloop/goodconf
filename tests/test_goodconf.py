@@ -144,6 +144,7 @@ class TestGoodConf(TestCase):
         c = GoodConf()
         c.define_values(Value('a'), Value('c', default=4))
         c.set_values({'a': 'b'})
+        c._loaded = True
         self.assertEqual(c.a, 'b')
         self.assertEqual(c.c, 4)
 
@@ -151,6 +152,15 @@ class TestGoodConf(TestCase):
         c = GoodConf()
         c.define_values(Value('a', initial=lambda: True))
         self.assertEqual(c.get_initial(), {'a': True})
+
+    def test_undefined(self):
+        c = GoodConf()
+        self.assertRaises(AttributeError, getattr, c, 'UNDEFINED')
+
+    def test_required_missing(self):
+        c = GoodConf()
+        c.define_values(Value('a', required=True))
+        self.assertRaises(RequiredValueMissing, c.load)
 
     def test_dump_json(self):
         c = GoodConf()

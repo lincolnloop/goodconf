@@ -34,7 +34,6 @@ def _load_config(path: str) -> dict:
         loader = json.load
     with open(path) as f:
         config = loader(f)
-    log.info("Loaded config from %s", path)
     return config
 
 
@@ -137,18 +136,30 @@ class GoodConf:
         self.config_file = None
         self.default_files = default_files
         self._values = {}
+        self._loaded = False
 
     def __getattr__(self, key: str):
-        return self._values[key].value
+        if not self._loaded:
+            self.load()
+        try:
+            return self._values[key].value
+        except KeyError:
+            raise AttributeError(
+                "{} is not defined. "
+                "Defined values are: ".format(", ".join(self._values.keys())))
 
     def load(self, file: str = None):
         """Find config file and set values"""
         self.config_file = self.determine_file(file)
         if self.config_file:
             config = _load_config(self.config_file)
+            log.info("Loading config from %s", self.config_file)
         else:
             config = {}
+            log.info("No config file specified. "
+                     "Loading with environment variables.")
         self.set_values(config)
+        self._loaded = True
 
     def determine_file(self, file: str = None):
         """
