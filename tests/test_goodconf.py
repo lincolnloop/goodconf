@@ -5,7 +5,7 @@ from io import StringIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from textwrap import dedent
-from unittest import mock, TestCase, skip
+from unittest import mock, TestCase, SkipTest
 
 from goodconf import (Value, GoodConf, RequiredValueMissing,
                       _load_config, _find_file)
@@ -99,7 +99,7 @@ def skip_if_no_yaml(f):
             import ruamel.yaml
             return f(*args, **kwargs)
         except ImportError:
-            return skip("[yaml] extras is not installed")
+            raise SkipTest("[yaml] extras is not installed")
     return wrapper
 
 
@@ -231,12 +231,14 @@ def skip_if_no_django(f):
             import django
             return f(*args, **kwargs)
         except ImportError:
-            return skip("Django is not installed")
+            raise SkipTest("Django is not installed")
     return wrapper
 
 
-@skip_if_no_django
+
 class TestDjango(TestCase):
+
+    @skip_if_no_django
     @mock.patch('django.core.management.execute_from_command_line')
     @mock.patch('goodconf._load_config')
     def test_mgmt_command(self, mocked_load_config, mocked_dj_execute):
@@ -247,6 +249,7 @@ class TestDjango(TestCase):
         mocked_load_config.assert_called_once_with('/etc/config.yml')
         mocked_dj_execute.assert_called_once_with(dj_args)
 
+    @skip_if_no_django
     @mock.patch('goodconf._load_config')
     @mock.patch('sys.stdout', new_callable=StringIO)
     @mock.patch('sys.exit')
