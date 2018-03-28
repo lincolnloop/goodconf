@@ -2,6 +2,12 @@
 Change Log
 ==========
 
+0.8.1 (28 Mar 2018)
+===================
+
+- Adds ``goodconf.contrib.argparse`` to add a config argument to an existing
+  parser.
+
 0.8.0 (27 Mar 2018)
 ===================
 
