@@ -2,6 +2,11 @@
 Change Log
 ==========
 
+0.8.0 (27 Mar 2018)
+===================
+
+- Major refactor from ``file-or-env`` to ``goodconf``
+
 0.6.1 (16 Mar 2018)
 ================
 
