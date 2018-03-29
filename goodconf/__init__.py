@@ -4,20 +4,13 @@ Transparently load variables from environment or JSON/YAML file.
 import json
 import logging
 import os
-
-from decimal import Decimal
-from distutils.util import strtobool
+import errno
 from io import StringIO
-from typing import TypeVar, List, Callable
+from typing import List
+
+from goodconf.base import DeclarativeValuesMetaclass
 
 log = logging.getLogger(__name__)
-
-CASTS = [int, str, float, list, bool, Decimal]
-CastTypes = TypeVar('CastTypes', *CASTS)
-
-
-class RequiredValueMissing(Exception):
-    pass
 
 
 def _load_config(path: str) -> dict:
@@ -37,120 +30,47 @@ def _load_config(path: str) -> dict:
     return config
 
 
-def _find_file(file: str, verify_later: bool = False) -> str:
-    if os.path.isabs(file):
-        config_file = file
-    else:
-        config_file = os.path.join(os.getcwd(), file)
-    if not verify_later and not os.path.exists(config_file):
-        return None
-    return config_file
+def _find_file(filename: str, require: bool = True) -> str:
+    if not os.path.exists(filename):
+        if not require:
+            return None
+        raise FileNotFoundError(
+            errno.ENOENT, os.strerror(errno.ENOENT), filename)
+    return os.path.abspath(filename)
 
 
-class Value:
-    def __init__(self, key: str, default=None, required: bool = None,
-                 initial: Callable[[], CastTypes] = None,
-                 cast_as: CastTypes = None, help: str = ""):
-        """
-
-        :param key:      Name of the value used in file or environment variable
-        :param default:  Default value if none is provided.
-        :param required: Loading a config will fail if a value is not provided.
-                         Defaults to True if no default is provided otherwise
-                         False.
-        :param initial:  Initial value to use when generating a config
-        :param cast_as:  Python type to cast variable as. Defaults to type of
-                         default (if provided) or str.
-        :param help:     Plain-text description of the value.
-        """
-        self.key = key
-        self.default = default
-        if default is not None:
-            self.value = default
-        self.required = bool(default is None or required)
-        if initial and not callable(initial):
-            raise ValueError("Initial value must be a callable.")
-        self._initial = initial
-        self.help = help
-        if cast_as:
-            self.cast_as = cast_as
-        elif default is not None:
-            self.cast_as = type(default)
-        else:
-            self.cast_as = str
-
-    @property
-    def initial(self):
-        if callable(self._initial):
-            return self._initial()
-        elif self.default is not None:
-            return self.default
-        return ''
-
-    def set_value(self, defined: CastTypes = None):
-        if self.key in os.environ:
-            self.value = self.cast(os.environ[self.key])
-        elif defined is not None:
-            assert(type(defined) == self.cast_as)
-            self.value = defined
-        elif self.required:
-            raise RequiredValueMissing(self.key)
-
-    def cast(self, val: str):
-        """converts string to type requested by `cast_as`"""
-        try:
-            return getattr(self, 'cast_as_{}'.format(
-                self.cast_as.__name__.lower()))(val)
-        except AttributeError:
-            return self.cast_as(val)
-
-    def cast_as_list(self, val: str) -> list:
-        """Convert a comma-separated string to a list"""
-        return val.split(',')
-
-    def cast_as_bool(self, val: str) -> bool:
-        """
-        True values are y, yes, t, true, on and 1
-        False values are n, no, f, false, off and 0
-        Raises ValueError if val is anything else.
-        """
-        return bool(strtobool(val))
-
-
-class GoodConf:
-    def __init__(self, description: str = '',
+class GoodConf(metaclass=DeclarativeValuesMetaclass):
+    def __init__(self,
                  file_env_var: str = None,
                  default_files: List[str] = None):
         """
-
-        :param description: a plain-text description used as a header when
-                            generating the file
         :param file_env_var: the name of an environment variable which can be
                              used for the name of the configuration file to
                              load
         :param default_files: if no file is given, try to load a configuration
                               from these files in order
+
+        A docstring defined on the class should be a plain-text description
+        used as a header when generating a configuration file.
         """
-        self.description = description
         self.file_env_var = file_env_var
         self.config_file = None
-        self.default_files = default_files
-        self._values = {}
+        self.default_files = default_files or []
         self._loaded = False
 
-    def __getattr__(self, key: str):
-        if not self._loaded:
-            self.load()
-        try:
-            return self._values[key].value
-        except KeyError:
-            raise AttributeError(
-                "{} is not defined. "
-                "Defined values are: ".format(", ".join(self._values.keys())))
-
-    def load(self, file: str = None):
+    def load(self, filename: str = None):
         """Find config file and set values"""
-        self.config_file = self.determine_file(file)
+        self.config_file = None
+        if filename:
+            self.config_file = _find_file(filename)
+        else:
+            if self.file_env_var and self.file_env_var in os.environ:
+                self.config_file = _find_file(os.environ[self.file_env_var])
+            if not self.config_file:
+                for filename in self.default_files:
+                    self.config_file = _find_file(filename, require=False)
+                    if self.config_file:
+                        break
         if self.config_file:
             config = _load_config(self.config_file)
             log.info("Loading config from %s", self.config_file)
@@ -161,74 +81,69 @@ class GoodConf:
         self.set_values(config)
         self._loaded = True
 
-    def determine_file(self, file: str = None):
+    def default_config(self) -> None:
         """
         Return absolute path to the config file or None if it does not exist.
         Relative paths will be resolved relative to the working directory
         Will return the first file of:
         1. os.environ[self.config_file_env_var] (if defined)
-        2. config file passed as arg
-        3. first default file found
+        2. first default file found
         """
         if self.file_env_var and self.file_env_var in os.environ:
-            return _find_file(os.environ[self.file_env_var],
-                              verify_later=True)
-        if file:
-            return _find_file(file, verify_later=True)
+            return _find_file(os.environ[self.file_env_var], verify=True)
         if self.default_files:
             for f in self.default_files:
                 default_file = _find_file(f)
                 if default_file:
                     return default_file
 
-    def define_values(self, *args: Value):
-        """Sets up internal dict used to track values"""
-        for val in args:
-            self._values[val.key] = val
-
     def set_values(self, config: dict):
-        for k, v in self._values.items():
-            v.set_value(config.get(k))
+        for k in self._values:
+            setattr(self, k, config.get(k))
 
-    def get_initial(self):
-        return {k: v.initial for k, v in self._values.items()}
+    @classmethod
+    def get_initial(cls):
+        return {k: getattr(cls, k) for k in cls._values}
 
-    def generate_yaml(self):
+    @classmethod
+    def generate_yaml(cls):
         """
         Dumps initial config in YAML
         """
         import ruamel.yaml
         yaml = ruamel.yaml.YAML()
         yaml_str = StringIO()
-        yaml.dump(self.get_initial(), stream=yaml_str)
+        yaml.dump(cls.get_initial(), stream=yaml_str)
         yaml_str.seek(0)
         dict_from_yaml = yaml.load(yaml_str)
-        if self.description:
+        if cls.__doc__:
             dict_from_yaml.yaml_set_start_comment(
-                '\n' + self.description + '\n\n')
+                '\n' + cls.__doc__ + '\n\n')
         for k in dict_from_yaml.keys():
-            if self._values[k].help:
+            if cls._values[k].help:
                 dict_from_yaml.yaml_set_comment_before_after_key(
-                    k, before='\n' + self._values[k].help)
+                    k, before='\n' + cls._values[k].help)
         yaml_str = StringIO()
         yaml.dump(dict_from_yaml, yaml_str)
         yaml_str.seek(0)
         return yaml_str.read()
 
-    def generate_json(self):
+    @classmethod
+    def generate_json(cls):
         """
         Dumps initial config in JSON
         """
-        return json.dumps(self.get_initial(), indent=2)
+        return json.dumps(cls.get_initial(), indent=2)
 
-    def generate_markdown(self):
+    @classmethod
+    def generate_markdown(cls):
         """
         Documents values in markdown
         """
         lines = []
-        if self.description:
-            lines.extend(['# {}'.format(self.description), ''])
-        for k, v in self._values.items():
+        if cls.__doc__:
+            lines.extend(['# {}'.format(cls.__doc__), ''])
+        for k, v in cls._values.items():
             lines.append('* **{}**  '.format(k))
             if v.required:
                 lines[-1] = lines[-1] + '_REQUIRED_  '

@@ -13,15 +13,17 @@ Goodconf
 .. image:: https://img.shields.io/pypi/pyversions/goodconf.svg
     :target: https://pypi.python.org/pypi/goodconf
 
-Define configuration variables and load them from environment or JSON/YAML file.
-Also generates initial configuration files and documentation for your defined
-configuration.
+Define configuration variables and load them from environment or JSON/YAML
+file. Also generates initial configuration files and documentation for your
+defined configuration.
+
 
 Installation
 ------------
 
-``pip install goodconf`` or ``pip install goodconf[yaml]`` if parsing/generating
-YAML files is required.
+``pip install goodconf`` or ``pip install goodconf[yaml]`` if
+parsing/generating YAML files is required.
+
 
 Usage
 -----
@@ -36,16 +38,18 @@ Examples:
 
     from goodconf import GoodConf, Value
 
-    config = GoodConf(description="Configuration for My App")
-    config.define_values(
-        Value('DEBUG', default=False, help="Toggle debugging."),
-        Value('DATABASE_URL', default='postgres://localhost:5432/mydb',
-              help="Database connection."),
-        Value('SECRET_KEY',
-              initial=lambda: base64.b64encode(os.urandom(60)).decode(),
-              help="Used for cryptographic signing. "
-                   "https://docs.djangoproject.com/en/2.0/ref/settings/#secret-key")
-    )
+    class MyConf(GoodConf):
+        "Configuration for My App"
+        DEBUG = Value(default=False, help="Toggle debugging.")
+        DATABASE_URL = Value(
+            default='postgres://localhost:5432/mydb',
+            help="Database connection.")
+        SECRET_KEY = Value(
+            initial=lambda: base64.b64encode(os.urandom(60)).decode(),
+            help="Used for cryptographic signing. "
+            "https://docs.djangoproject.com/en/2.0/ref/settings/#secret-key")
+
+    config = GoodConf()
 
     # load a configuration
     config.load('myapp.conf')
@@ -64,20 +68,22 @@ Examples:
 
 The ``GoodConf`` object can be initialized with the following keyword args:
 
-* ``description`` A plain-text description used as a header when generating
-  a configuration file.
 * ``file_env_var`` The name of an environment variable which can be used for
   the name of the configuration file to load.
 * ``default_files`` If no file is passed to the ``load`` method, try to load a
   configuration from these files in order.
 
+Use plain-text docstring for use as a header when generating a configuration
+file.
+
+
 ``Value``
 ^^^^^^^^^
 
-The ``define_values`` method of ``GoodConf`` takes a list of ``Value``
-instances. They can be initialized with the following keyword args:
+Declare configuration values by subclassing ``GoodConf`` and defining class
+attributes which are ``Value`` instances. They can be initialized with the
+following keyword args:
 
-* ``key`` Name of the value used in file or environment variable.
 * ``default`` Default value if none is provided.
 * ``required`` Loading a config will fail if a value is not provided.
   Defaults to True if no default is provided otherwise False.
@@ -86,11 +92,12 @@ instances. They can be initialized with the following keyword args:
   (if provided) or str.
 * ``help`` Plain-text description of the value.
 
+
 Django Usage
 ------------
 
-A helper is provided which monkey-patches Django's management commands to accept
-a ``--config`` argument. Replace your ``manage.py`` with the following:
+A helper is provided which monkey-patches Django's management commands to
+accept a ``--config`` argument. Replace your ``manage.py`` with the following:
 
   .. code:: python
 
@@ -101,8 +108,6 @@ a ``--config`` argument. Replace your ``manage.py`` with the following:
 
     if __name__ == '__main__':
         execute_from_command_line_with_config(config, sys.argv)
-
-
 
 
 Why?
