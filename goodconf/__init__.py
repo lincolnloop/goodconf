@@ -42,13 +42,15 @@ def _find_file(filename: str, require: bool = True) -> str:
 class GoodConf(metaclass=DeclarativeValuesMetaclass):
     def __init__(self,
                  file_env_var: str = None,
-                 default_files: List[str] = None):
+                 default_files: List[str] = None,
+                 load: bool = True):
         """
         :param file_env_var: the name of an environment variable which can be
                              used for the name of the configuration file to
                              load
         :param default_files: if no file is given, try to load a configuration
                               from these files in order
+        :param load: load config file on instanciation [default: True].
 
         A docstring defined on the class should be a plain-text description
         used as a header when generating a configuration file.
@@ -56,7 +58,8 @@ class GoodConf(metaclass=DeclarativeValuesMetaclass):
         self.file_env_var = file_env_var
         self.config_file = None
         self.default_files = default_files or []
-        self._loaded = False
+        if load:
+            self.load()
 
     def load(self, filename: str = None):
         """Find config file and set values"""
@@ -79,7 +82,6 @@ class GoodConf(metaclass=DeclarativeValuesMetaclass):
             log.info("No config file specified. "
                      "Loading with environment variables.")
         self.set_values(config)
-        self._loaded = True
 
     def default_config(self) -> None:
         """

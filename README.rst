@@ -58,10 +58,10 @@ Examples:
     config.DATABASE_URL
 
     # generate an initial config file from the definition
-    print(config.generate_yaml())
+    print(MyConf.generate_yaml())
 
     # generate documentation for a configuration
-    print(config.generate_markdown())
+    print(MyConf.generate_markdown())
 
 ``GoodConf``
 ^^^^^^^^^^^^
@@ -73,6 +73,7 @@ keyword args:
   the name of the configuration file to load.
 * ``default_files`` If no file is passed to the ``load`` method, try to load a
   configuration from these files in order.
+* ``load`` Trigger the load method during instanciation. Defaults to True.
 
 Use plain-text docstring for use as a header when generating a configuration
 file.
@@ -85,9 +86,9 @@ Declare configuration values by subclassing ``GoodConf`` and defining class
 attributes which are ``Value`` instances. They can be initialized with the
 following keyword args:
 
-* ``default`` Default value if none is provided.
-* ``required`` Loading a config will fail if a value is not provided.
-  Defaults to True if no default is provided otherwise False.
+* ``default`` Default value if none is provided. If left unset, loading
+              a config that fails to provide this value will raise accept
+              ``RequiredValueMissing`` exception.
 * ``initial`` Initial value to use when generating a config
 * ``cast_as``  Python type to cast variable as. Defaults to type of default
   (if provided) or str.

@@ -9,6 +9,12 @@ Change Log
 
 - Change description to a docstring of the class.
 
+- Remove the redundant ``required`` argument from ``Values``. To make
+  an value optional, give it a default.
+
+- Changed implicit loading to happen during instanciation rather than first
+  access. Instanciate with ``load=False`` to avoid loading config initially.
+
 0.8.3 (28 Mar 2018)
 ===================
 

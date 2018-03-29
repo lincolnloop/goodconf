@@ -34,7 +34,7 @@ def test_defaults():
         a = Value()
         b = Value(default='fish')
 
-    conf = MyConf()
+    conf = MyConf(load=False)
 
     assert conf.a is None
     assert conf.b == 'fish'
@@ -43,7 +43,7 @@ def test_defaults():
 def test_set_values():
 
     class TestConf(GoodConf):
-        a = Value()
+        a = Value(default='')
         c = Value(default=4)
 
     c = TestConf()
@@ -57,7 +57,7 @@ def test_initial():
     class TestConf(GoodConf):
         a = Value(initial=lambda: True)
 
-    c = TestConf()
+    c = TestConf(load=False)
     assert c.get_initial() == {'a': True}
 
 
@@ -94,7 +94,7 @@ def test_generate_markdown():
     class TestConf(GoodConf):
         "Configuration for My App"
         a = Value(help=help_, default=5)
-        b = Value(required=True)
+        b = Value()
 
     mkdn = TestConf.generate_markdown()
     # Not sure on final format, just do some basic smoke tests
@@ -111,9 +111,9 @@ def test_undefined():
 def test_required_missing():
 
     class TestConf(GoodConf):
-        a = Value(required=True)
+        a = Value()
 
-    c = TestConf()
+    c = TestConf(load=False)
 
     with pytest.raises(RequiredValueMissing):
         c.load()

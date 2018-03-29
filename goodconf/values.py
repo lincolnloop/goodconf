@@ -13,16 +13,15 @@ class RequiredValueMissing(Exception):
 
 
 class Value:
-    def __init__(self, key: str=None, default=None, required: bool = None,
+    def __init__(self, key: str=None, default=None,
                  initial: Callable[[], CastTypes] = None,
                  cast_as: CastTypes = None, help: str = ""):
         """
         :param key:      Name of the value used in file or environment
                          variable. Set automatically by the GoodConf metaclass.
-        :param default:  Default value if none is provided.
-        :param required: Loading a config will fail if a value is not provided.
-                         Defaults to True if no default is provided otherwise
-                         False.
+        :param default:  Default value if none is provided. If left unset,
+                         loading a config thait fails to provide this value
+                         will fail.
         :param initial:  Initial value to use when generating a config
         :param cast_as:  Python type to cast variable as. Defaults to type of
                          default (if provided) or str.
@@ -30,7 +29,6 @@ class Value:
         """
         self.key = key
         self.default = default
-        self.required = bool(default is None or required)
         self.initial = initial
         self.help = help
         if cast_as:
@@ -39,6 +37,10 @@ class Value:
             self.cast_as = type(default)
         else:
             self.cast_as = str
+
+    @property
+    def required(self):
+        return self.default is None
 
     @property
     def value(self):
