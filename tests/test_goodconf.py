@@ -52,6 +52,19 @@ def test_set_values():
     assert c.c == 4
 
 
+def test_set_values_again():
+
+    class TestConf(GoodConf):
+        a = Value(default='')
+        c = Value(default=4)
+
+    c = TestConf()
+    c.set_values({'a': 'b'})
+    c.set_values({'c': 1})
+    assert c.a == ''
+    assert c.c == 1
+
+
 def test_initial():
 
     class TestConf(GoodConf):

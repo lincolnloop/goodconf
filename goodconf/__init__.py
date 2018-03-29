@@ -83,22 +83,6 @@ class GoodConf(metaclass=DeclarativeValuesMetaclass):
                      "Loading with environment variables.")
         self.set_values(config)
 
-    def default_config(self) -> None:
-        """
-        Return absolute path to the config file or None if it does not exist.
-        Relative paths will be resolved relative to the working directory
-        Will return the first file of:
-        1. os.environ[self.config_file_env_var] (if defined)
-        2. first default file found
-        """
-        if self.file_env_var and self.file_env_var in os.environ:
-            return _find_file(os.environ[self.file_env_var], verify=True)
-        if self.default_files:
-            for f in self.default_files:
-                default_file = _find_file(f)
-                if default_file:
-                    return default_file
-
     def set_values(self, config: dict):
         for k in self._values:
             setattr(self, k, config.get(k))

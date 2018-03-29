@@ -27,6 +27,11 @@ def test_default_cast():
     assert v.cast_as == str
 
 
+def test_default_callable():
+    v = Value(KEY, default=lambda: 's')
+    assert v.value == 's'
+
+
 def test_explicit_cast():
     v = Value(KEY, cast_as=bool)
     assert v.cast_as == bool
