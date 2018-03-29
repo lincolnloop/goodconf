@@ -49,7 +49,7 @@ Examples:
             help="Used for cryptographic signing. "
             "https://docs.djangoproject.com/en/2.0/ref/settings/#secret-key")
 
-    config = GoodConf()
+    config = MyConf()
 
     # load a configuration
     config.load('myapp.conf')
@@ -66,7 +66,8 @@ Examples:
 ``GoodConf``
 ^^^^^^^^^^^^
 
-The ``GoodConf`` object can be initialized with the following keyword args:
+Your subclassed ``GoodConf`` object can be initialized with the following
+keyword args:
 
 * ``file_env_var`` The name of an environment variable which can be used for
   the name of the configuration file to load.
