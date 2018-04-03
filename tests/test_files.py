@@ -7,13 +7,13 @@ def test_conf_env_var(mocker, tmpdir):
     path = tmpdir.join('myapp.json')
     path.write('')
     with env_var('CONF', str(path)):
-        c = GoodConf(file_env_var='CONF')
+        GoodConf(file_env_var='CONF')
     mocked_load_config.assert_called_once_with(str(path))
 
 
 def test_all_env_vars(mocker):
     mocked_set_values = mocker.patch('goodconf.GoodConf.set_values')
-    c = GoodConf()
+    GoodConf()
     mocked_set_values.assert_called_once_with({})
 
 
