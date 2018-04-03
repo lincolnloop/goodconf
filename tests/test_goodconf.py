@@ -88,6 +88,7 @@ def test_dump_yaml():
     class TestConf(GoodConf):
         "Configuration for My App"
         a = Value(help="this is a")
+        b = Value()
 
     output = TestConf.generate_yaml()
     output = re.sub(r' +\n', '\n', output)
@@ -96,6 +97,21 @@ def test_dump_yaml():
         # Configuration for My App
         #
 
+        # this is a
+        a: ''
+        b: ''
+        """)
+
+
+def test_dump_yaml_no_docstring():
+    pytest.importorskip('ruamel.yaml')
+
+    class TestConf(GoodConf):
+        a = Value(help="this is a")
+
+    output = TestConf.generate_yaml()
+    output = re.sub(r' +\n', '\n', output)
+    assert output == dedent("""
         # this is a
         a: ''
         """)
@@ -115,6 +131,18 @@ def test_generate_markdown():
     assert help_ in mkdn
 
 
+def test_generate_markdown_no_docsttring():
+    help_ = "this is a"
+
+    class TestConf(GoodConf):
+        a = Value(help=help_, default=5)
+        b = Value()
+
+    mkdn = TestConf.generate_markdown()
+    # Not sure on final format, just do some basic smoke tests
+    assert help_ in mkdn
+
+
 def test_undefined():
     c = GoodConf()
     with pytest.raises(AttributeError):
@@ -130,3 +158,14 @@ def test_required_missing():
 
     with pytest.raises(RequiredValueMissing):
         c.load()
+
+
+def test_nested():
+
+    class ParentConf(GoodConf):
+        a = Value()
+
+    class ChildConf(ParentConf):
+        b = Value()
+
+    assert list(ChildConf._values.keys()) == ['b', 'a']
