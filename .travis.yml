@@ -3,9 +3,8 @@ python:
   - "3.5"
   - "3.6"
 install:
-  - pip install -e .[tests,yaml]
-  - pip install codecov
+  - pip install codecov -e .[tests]
 script:
-  - pytest --cov=goodconf --cov-report=term
+  - pytest
 after_success:
   - codecov
