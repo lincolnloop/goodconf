@@ -30,5 +30,5 @@ def test_default_files(mocker, tmpdir):
     path = tmpdir.join('myapp.json')
     path.write('')
     bad_path = tmpdir.join('does-not-exist.json')
-    c = GoodConf(default_files=[bad_path, path])
-    mocked_load_config.assert_called_once_with(path)
+    GoodConf(default_files=[str(bad_path), str(path)])
+    mocked_load_config.assert_called_once_with(str(path))
