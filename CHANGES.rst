@@ -2,8 +2,8 @@
 Change Log
 ==========
 
-0.9.0 (unreleased)
-==================
+0.9.0 (8 April 2018)
+====================
 
 - Use a declarative class to define GoodConf's values.
 
