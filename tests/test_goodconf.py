@@ -92,15 +92,16 @@ def test_dump_yaml():
 
     output = TestConf.generate_yaml()
     output = re.sub(r' +\n', '\n', output)
-    assert output == dedent("""\
+    assert dedent("""\
         #
         # Configuration for My App
         #
-
+        """) in output
+    assert dedent("""\
         # this is a
         a: ''
-        b: ''
-        """)
+        """) in output
+    assert "b: ''" in output
 
 
 def test_dump_yaml_no_docstring():
