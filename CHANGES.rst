@@ -2,6 +2,12 @@
 Change Log
 ==========
 
+0.9.2 (unreleased)
+==================
+
+- Nothing changed yet.
+
+
 0.9.1 (10 April 2018)
 =====================
 
