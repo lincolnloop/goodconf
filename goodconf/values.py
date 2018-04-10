@@ -68,7 +68,11 @@ class Value:
 
     @property
     def initial(self):
-        return self._initial() if self._initial else self.default or ''
+        if self._initial:
+            return self._initial()
+        if self.default is not None:
+            return self.default
+        return ''
 
     @initial.setter
     def initial(self, value):

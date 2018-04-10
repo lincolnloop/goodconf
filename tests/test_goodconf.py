@@ -69,9 +69,12 @@ def test_initial():
 
     class TestConf(GoodConf):
         a = Value(initial=lambda: True)
+        b = Value(default=False)
 
-    c = TestConf()
-    assert c.get_initial() == {'a': True}
+    initial = TestConf.get_initial()
+    assert len(initial) == 2
+    assert initial['a'] is True
+    assert initial['b'] is False
 
 
 def test_dump_json():
