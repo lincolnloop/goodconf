@@ -34,7 +34,7 @@ def test_defaults():
         a = Value()
         b = Value(default='fish')
 
-    conf = MyConf(load=False)
+    conf = MyConf()
 
     assert conf.a is None
     assert conf.b == 'fish'
@@ -70,7 +70,7 @@ def test_initial():
     class TestConf(GoodConf):
         a = Value(initial=lambda: True)
 
-    c = TestConf(load=False)
+    c = TestConf()
     assert c.get_initial() == {'a': True}
 
 
@@ -155,10 +155,13 @@ def test_required_missing():
     class TestConf(GoodConf):
         a = Value()
 
-    c = TestConf(load=False)
+    c = TestConf()
 
     with pytest.raises(RequiredValueMissing):
         c.load()
+
+    with pytest.raises(RequiredValueMissing):
+        TestConf(load=True)
 
 
 def test_nested():

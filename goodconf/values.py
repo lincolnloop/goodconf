@@ -45,7 +45,7 @@ class Value:
     @property
     def value(self):
         if self.key in os.environ:
-            return self.cast(os.environ[self.key])
+            self._value = self.cast(os.environ[self.key])
         if not hasattr(self, '_value'):
             self._value = self.default
             if callable(self._value):
