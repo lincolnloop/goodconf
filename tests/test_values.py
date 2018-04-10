@@ -70,6 +70,12 @@ def test_defined_value():
     v.value = 'x'
     assert v.value == 'x'
 
+def test_undefine_value():
+    v = Value(KEY, default='')
+    v.value = 'x'
+    v.value = None
+    assert hasattr(v, '_value') is False
+
 
 def test_env_var_precedence():
     v = Value(KEY)
