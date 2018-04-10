@@ -5,7 +5,9 @@ Change Log
 0.9.1 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Explicit ``load`` method
+- ``django_manage`` method helper on ``GoodConf``
+- Fixed a few minor bugs
 
 
 0.9.0 (8 April 2018)

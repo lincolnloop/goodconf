@@ -73,7 +73,7 @@ keyword args:
   the name of the configuration file to load.
 * ``default_files`` If no file is passed to the ``load`` method, try to load a
   configuration from these files in order.
-* ``load`` Trigger the load method during instanciation. Defaults to True.
+* ``load`` Trigger the load method during instanciation. Defaults to False.
 
 Use plain-text docstring for use as a header when generating a configuration
 file.
@@ -103,13 +103,11 @@ accept a ``--config`` argument. Replace your ``manage.py`` with the following:
 
   .. code:: python
 
-    import sys
-    from goodconf.contrib.django import execute_from_command_line_with_config
     # Define your GoodConf in `myproject/__init__.py`
     from myproject import config
 
     if __name__ == '__main__':
-        execute_from_command_line_with_config(config, sys.argv)
+        config.django_manage()
 
 
 Why?

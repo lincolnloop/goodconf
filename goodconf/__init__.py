@@ -10,6 +10,7 @@ from io import StringIO
 from typing import List
 
 from goodconf.base import DeclarativeValuesMetaclass
+from goodconf.values import Value  # noqa
 
 log = logging.getLogger(__name__)
 
