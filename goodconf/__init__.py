@@ -4,6 +4,7 @@ Transparently load variables from environment or JSON/YAML file.
 import json
 import logging
 import os
+import sys
 import errno
 from io import StringIO
 from typing import List
@@ -141,3 +142,8 @@ class GoodConf(metaclass=DeclarativeValuesMetaclass):
             if v.default:
                 lines.append('  default: `{}`  '.format(v.default))
         return '\n'.join(lines)
+
+    def django_manage(self, args: List[str] = None):
+        args = args or sys.argv
+        from .contrib.django import execute_from_command_line_with_config
+        execute_from_command_line_with_config(self, args)
