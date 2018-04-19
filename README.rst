@@ -30,7 +30,7 @@ Usage
 
 Examples:
 
-  .. code:: python
+.. code:: python
 
     # define a configuration
     import base64
@@ -69,11 +69,14 @@ Examples:
 Your subclassed ``GoodConf`` object can be initialized with the following
 keyword args:
 
-* ``file_env_var`` The name of an environment variable which can be used for
+``file_env_var``
+  The name of an environment variable which can be used for
   the name of the configuration file to load.
-* ``default_files`` If no file is passed to the ``load`` method, try to load a
+``default_files``
+  If no file is passed to the ``load`` method, try to load a
   configuration from these files in order.
-* ``load`` Trigger the load method during instanciation. Defaults to False.
+``load``
+  Trigger the load method during instanciation. Defaults to False.
 
 Use plain-text docstring for use as a header when generating a configuration
 file.
@@ -86,13 +89,17 @@ Declare configuration values by subclassing ``GoodConf`` and defining class
 attributes which are ``Value`` instances. They can be initialized with the
 following keyword args:
 
-* ``default`` Default value if none is provided. If left unset, loading
-              a config that fails to provide this value will raise accept
-              ``RequiredValueMissing`` exception.
-* ``initial`` Initial value to use when generating a config
-* ``cast_as``  Python type to cast variable as. Defaults to type of default
+``default``
+  Default value if none is provided. If left unset, loading
+  a config that fails to provide this value will raise accept
+  ``RequiredValueMissing`` exception.
+``initial``
+  Initial value to use when generating a config
+``cast_as``
+  Python type to cast variable as. Defaults to type of default
   (if provided) or str.
-* ``help`` Plain-text description of the value.
+``help``
+  Plain-text description of the value.
 
 
 Django Usage
@@ -101,7 +108,7 @@ Django Usage
 A helper is provided which monkey-patches Django's management commands to
 accept a ``--config`` argument. Replace your ``manage.py`` with the following:
 
-  .. code:: python
+.. code:: python
 
     # Define your GoodConf in `myproject/__init__.py`
     from myproject import config
