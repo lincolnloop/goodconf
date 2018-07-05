@@ -25,20 +25,22 @@ Installation
 parsing/generating YAML files is required.
 
 
-Usage
------
+Quick Start
+-----------
 
-Examples:
+Let's use configurable Django settings as an example.
+
+First, create a ``conf.py`` file in your project's directory, next to
+``settings.py``:
 
 .. code:: python
 
-    # define a configuration
     import base64
     import os
 
     from goodconf import GoodConf, Value
 
-    class MyConf(GoodConf):
+    class Config(GoodConf):
         "Configuration for My App"
         DEBUG = Value(default=False, help="Toggle debugging.")
         DATABASE_URL = Value(
@@ -49,19 +51,37 @@ Examples:
             help="Used for cryptographic signing. "
             "https://docs.djangoproject.com/en/2.0/ref/settings/#secret-key")
 
-    config = MyConf()
+Next, use the config in your ``settings.py`` file::
 
-    # load a configuration
-    config.load('myapp.conf')
+.. code:: python
 
-    # access values as attributes on the GoodConf instance
-    config.DATABASE_URL
+    import os
+    import dj_database_url
+    from .conf import Config
 
-    # generate an initial config file from the definition
-    print(MyConf.generate_yaml())
+    BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
-    # generate documentation for a configuration
-    print(MyConf.generate_markdown())
+    config = Config(
+        default_files=[
+            "/etc/myproject/myproject.yaml",
+            os.path.join(BASE_DIR, "myproject.yaml"),
+        ]
+    ).load()
+
+    DEBUG = config.DEBUG
+    SECRET_KEY = config.SECRET_KEY
+    DATABASES = {"default": dj_database_url.parse(config.DATABASE_URL)}
+
+In your initial developer installation instructions, give some advice such as:
+
+.. code:: shell
+
+    python -c "import myproject; print(myproject.config.generate_yaml(DEBUG=True))" > myproject.yaml
+
+
+Usage
+-----
+
 
 ``GoodConf``
 ^^^^^^^^^^^^
@@ -76,7 +96,7 @@ keyword args:
   If no file is passed to the ``load`` method, try to load a
   configuration from these files in order.
 ``load``
-  Trigger the load method during instanciation. Defaults to False.
+  Trigger the load method during instantiation. Defaults to False.
 
 Use plain-text docstring for use as a header when generating a configuration
 file.
