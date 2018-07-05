@@ -20,7 +20,7 @@ class Value:
         :param key:      Name of the value used in file or environment
                          variable. Set automatically by the GoodConf metaclass.
         :param default:  Default value if none is provided. If left unset,
-                         loading a config thait fails to provide this value
+                         loading a config that fails to provide this value
                          will raise a RequiredValueMissing exception.
         :param initial:  Initial value to use when generating a config
         :param cast_as:  Python type to cast variable as. Defaults to type of

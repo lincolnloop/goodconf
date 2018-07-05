@@ -83,6 +83,8 @@ def test_dump_json():
         a = Value(initial=lambda: True)
 
     assert TestConf.generate_json() == '{\n  "a": true\n}'
+    assert TestConf.generate_json(not_a_value=True) == '{\n  "a": true\n}'
+    assert TestConf.generate_json(a=False) == '{\n  "a": false\n}'
 
 
 def test_dump_yaml():
@@ -105,6 +107,10 @@ def test_dump_yaml():
         a: ''
         """) in output
     assert "b: ''" in output
+
+    output_override = TestConf.generate_yaml(b='yes')
+    assert "a: ''" in output_override
+    assert "b: yes" in output_override
 
 
 def test_dump_yaml_no_docstring():
