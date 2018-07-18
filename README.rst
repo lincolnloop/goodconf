@@ -51,7 +51,7 @@ First, create a ``conf.py`` file in your project's directory, next to
             help="Used for cryptographic signing. "
             "https://docs.djangoproject.com/en/2.0/ref/settings/#secret-key")
 
-Next, use the config in your ``settings.py`` file::
+Next, use the config in your ``settings.py`` file:
 
 .. code:: python
 
