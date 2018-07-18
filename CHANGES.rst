@@ -2,8 +2,8 @@
 Change Log
 ==========
 
-1.0.0 (unreleased)
-==================
+1.0.0 (18 July 2018)
+====================
 
 - Allow overriding of values in the generate_* methods
 - Python 3.7 supported
