@@ -153,6 +153,13 @@ def test_generate_markdown_no_docsttring():
     assert help_ in mkdn
 
 
+def test_generate_markdown_default_false():
+    class TestConf(GoodConf):
+        a = Value(default=False)
+
+    assert "False" in TestConf.generate_markdown()
+
+
 def test_undefined():
     c = GoodConf()
     with pytest.raises(AttributeError):

@@ -140,7 +140,7 @@ class GoodConf(metaclass=DeclarativeValuesMetaclass):
             if v.help:
                 lines.append('  {}  '.format(v.help))
             lines.append('  type: `{}`  '.format(v.cast_as.__name__))
-            if v.default:
+            if v.default is not None:
                 lines.append('  default: `{}`  '.format(v.default))
         return '\n'.join(lines)
 
