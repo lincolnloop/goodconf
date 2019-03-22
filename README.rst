@@ -65,8 +65,8 @@ Next, use the config in your ``settings.py`` file:
         default_files=[
             "/etc/myproject/myproject.yaml",
             os.path.join(BASE_DIR, "myproject.yaml"),
-        ]
-    ).load()
+        ], load=True
+    )
 
     DEBUG = config.DEBUG
     SECRET_KEY = config.SECRET_KEY
@@ -76,7 +76,7 @@ In your initial developer installation instructions, give some advice such as:
 
 .. code:: shell
 
-    python -c "import myproject; print(myproject.config.generate_yaml(DEBUG=True))" > myproject.yaml
+    python -c "import myproject.conf; print(myproject.conf.Config().generate_yaml(DEBUG=True))" > myproject.yaml
 
 
 Usage
