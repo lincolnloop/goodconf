@@ -51,22 +51,18 @@ First, create a ``conf.py`` file in your project's directory, next to
             help="Used for cryptographic signing. "
             "https://docs.djangoproject.com/en/2.0/ref/settings/#secret-key")
 
+    config = Config(
+        default_files=["/etc/myproject/myproject.yaml", "myproject.yaml"]
+    )
+
 Next, use the config in your ``settings.py`` file:
 
 .. code:: python
 
-    import os
     import dj_database_url
-    from .conf import Config
+    from .conf import config
 
-    BASE_DIR = os.path.dirname(os.path.dirname(__file__))
-
-    config = Config(
-        default_files=[
-            "/etc/myproject/myproject.yaml",
-            os.path.join(BASE_DIR, "myproject.yaml"),
-        ]
-    ).load()
+    config.load()
 
     DEBUG = config.DEBUG
     SECRET_KEY = config.SECRET_KEY
@@ -76,8 +72,10 @@ In your initial developer installation instructions, give some advice such as:
 
 .. code:: shell
 
-    python -c "import myproject; print(myproject.config.generate_yaml(DEBUG=True))" > myproject.yaml
+    python -c "import myproject; print(myproject.conf.config.generate_yaml(DEBUG=True))" > myproject.yaml
 
+Better yet, make it a function and `entry point <https://setuptools.readthedocs.io/en/latest/setuptools.html#automatic-script-creation>`__ so you can install
+your project and run something like ``generate-config > myproject.yaml``.
 
 Usage
 -----
@@ -130,8 +128,8 @@ accept a ``--config`` argument. Replace your ``manage.py`` with the following:
 
 .. code:: python
 
-    # Define your GoodConf in `myproject/__init__.py`
-    from myproject import config
+    # Define your GoodConf in `myproject/conf.py`
+    from myproject.conf import config
 
     if __name__ == '__main__':
         config.django_manage()
