@@ -56,13 +56,12 @@ class GoodConf(pydantic.BaseSettings):
         if load:
             self.load()
 
-    class Config(pydantic.BaseSettings.Config):
+    class Config:
         file_env_var: str = None
         # if no file is given, try to load a configuration from these files in order
         default_files: List[str] = None
         load: bool = False
 
-    __config__ = Config
 
     def load(self, filename: str = None):
         """Find config file and set values"""
