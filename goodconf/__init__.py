@@ -23,8 +23,9 @@ def _load_config(path: str) -> dict:
     extension can't be determined.
     """
     __, ext = os.path.splitext(path)
-    if ext in ['.yaml', '.yml']:
+    if ext in [".yaml", ".yml"]:
         import ruamel.yaml
+
         loader = ruamel.yaml.safe_load
     else:
         loader = json.load
@@ -37,8 +38,7 @@ def _find_file(filename: str, require: bool = True) -> str:
     if not os.path.exists(filename):
         if not require:
             return None
-        raise FileNotFoundError(
-            errno.ENOENT, os.strerror(errno.ENOENT), filename)
+        raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), filename)
     return os.path.abspath(filename)
 
 
@@ -70,8 +70,13 @@ class GoodConf(pydantic.BaseSettings):
         if filename:
             selected_config_file = _find_file(filename)
         else:
-            if self.__config__.file_env_var and self.__config__.file_env_var in os.environ:
-                selected_config_file = _find_file(os.environ[self.__config__.file_env_var])
+            if (
+                self.__config__.file_env_var
+                and self.__config__.file_env_var in os.environ
+            ):
+                selected_config_file = _find_file(
+                    os.environ[self.__config__.file_env_var]
+                )
             else:
                 for filename in self.__config__.default_files or []:
                     selected_config_file = _find_file(filename, require=False)
@@ -82,8 +87,7 @@ class GoodConf(pydantic.BaseSettings):
             log.info("Loading config from %s", selected_config_file)
         else:
             config = {}
-            log.info("No config file specified. "
-                     "Loading with environment variables.")
+            log.info("No config file specified. " "Loading with environment variables.")
         super().__init__(**config)
 
     @classmethod
@@ -105,18 +109,19 @@ class GoodConf(pydantic.BaseSettings):
         Dumps initial config in YAML
         """
         import ruamel.yaml
+
         yaml = ruamel.yaml.YAML()
         yaml_str = StringIO()
         yaml.dump(cls.get_initial(**override), stream=yaml_str)
         yaml_str.seek(0)
         dict_from_yaml = yaml.load(yaml_str)
         if cls.__doc__:
-            dict_from_yaml.yaml_set_start_comment(
-                '\n' + cls.__doc__ + '\n\n')
+            dict_from_yaml.yaml_set_start_comment("\n" + cls.__doc__ + "\n\n")
         for k in dict_from_yaml.keys():
             if cls.__fields__[k].field_info.description:
                 dict_from_yaml.yaml_set_comment_before_after_key(
-                    k, before='\n' + cls.__fields__[k].field_info.description)
+                    k, before="\n" + cls.__fields__[k].field_info.description
+                )
         yaml_str = StringIO()
         yaml.dump(dict_from_yaml, yaml_str)
         yaml_str.seek(0)
@@ -136,19 +141,20 @@ class GoodConf(pydantic.BaseSettings):
         """
         lines = []
         if cls.__doc__:
-            lines.extend(['# {}'.format(cls.__doc__), ''])
+            lines.extend(["# {}".format(cls.__doc__), ""])
         for k, v in cls.__fields__.items():
-            lines.append('* **{}**  '.format(k))
+            lines.append("* **{}**  ".format(k))
             if v.required:
-                lines[-1] = lines[-1] + '_REQUIRED_  '
+                lines[-1] = lines[-1] + "_REQUIRED_  "
             if v.field_info.description:
-                lines.append('  {}  '.format(v.field_info.description))
-            lines.append('  type: `{}`  '.format(v.type_.__name__))
+                lines.append("  {}  ".format(v.field_info.description))
+            lines.append("  type: `{}`  ".format(v.type_.__name__))
             if v.default is not None:
-                lines.append('  default: `{}`  '.format(v.default))
-        return '\n'.join(lines)
+                lines.append("  default: `{}`  ".format(v.default))
+        return "\n".join(lines)
 
     def django_manage(self, args: List[str] = None):
         args = args or sys.argv
         from .contrib.django import execute_from_command_line_with_config
+
         execute_from_command_line_with_config(self, args)

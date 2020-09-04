@@ -15,7 +15,7 @@ class Value(FieldInfo):
         # default pydantic behavior
         default = kwargs.pop("default", Undefined)
         if default is not ... and kwargs.get("default_factory") is not None:
-            raise ValueError('cannot specify both default and default_factory')
+            raise ValueError("cannot specify both default and default_factory")
         super().__init__(default, **kwargs)
 
     @property

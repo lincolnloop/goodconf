@@ -1,7 +1,7 @@
 import os
 from contextlib import contextmanager
 
-KEY = 'GOODCONF_TEST'
+KEY = "GOODCONF_TEST"
 
 
 @contextmanager

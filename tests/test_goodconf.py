@@ -9,19 +9,17 @@ from goodconf.values import Value
 
 
 def test_initial():
-
     class TestConf(GoodConf):
         a: bool = Value(initial=lambda: True)
         b: bool = Value(default=False)
 
     initial = TestConf.get_initial()
     assert len(initial) == 2
-    assert initial['a'] is True
-    assert initial['b'] is False
+    assert initial["a"] is True
+    assert initial["b"] is False
 
 
 def test_dump_json():
-
     class TestConf(GoodConf):
         a: bool = Value(initial=lambda: True)
 
@@ -31,7 +29,7 @@ def test_dump_json():
 
 
 def test_dump_yaml():
-    pytest.importorskip('ruamel.yaml')
+    pytest.importorskip("ruamel.yaml")
 
     class TestConf(GoodConf):
         "Configuration for My App"
@@ -39,35 +37,47 @@ def test_dump_yaml():
         b: str
 
     output = TestConf.generate_yaml()
-    output = re.sub(r' +\n', '\n', output)
-    assert dedent("""\
+    output = re.sub(r" +\n", "\n", output)
+    assert (
+        dedent(
+            """\
         #
         # Configuration for My App
         #
-        """) in output
-    assert dedent("""\
+        """
+        )
+        in output
+    )
+    assert (
+        dedent(
+            """\
         # this is a
         a: ''
-        """) in output
+        """
+        )
+        in output
+    )
     assert "b: ''" in output
 
-    output_override = TestConf.generate_yaml(b='yes')
+    output_override = TestConf.generate_yaml(b="yes")
     assert "a: ''" in output_override
     assert "b: yes" in output_override
 
 
 def test_dump_yaml_no_docstring():
-    pytest.importorskip('ruamel.yaml')
+    pytest.importorskip("ruamel.yaml")
 
     class TestConf(GoodConf):
         a: str = Value(description="this is a")
 
     output = TestConf.generate_yaml()
-    output = re.sub(r' +\n', '\n', output)
-    assert output == dedent("""
+    output = re.sub(r" +\n", "\n", output)
+    assert output == dedent(
+        """
         # this is a
         a: ''
-        """)
+        """
+    )
 
 
 def test_generate_markdown():
@@ -110,7 +120,6 @@ def test_undefined():
 
 
 def test_required_missing():
-
     class TestConf(GoodConf):
         a: str = Value()
 

@@ -12,6 +12,7 @@ def load_config_from_cli(config: GoodConf, argv: List[str]) -> List[str]:
 
     # Monkey patch Django's command parser
     from django.core.management.base import BaseCommand
+
     original_parser = BaseCommand.create_parser
 
     def patched_parser(self, prog_name, subcommand):
@@ -37,4 +38,5 @@ def execute_from_command_line_with_config(config: GoodConf, argv: List[str]):
     """Load's config then runs Django's execute_from_command_line"""
     with load_config_from_cli(config, argv) as args:
         from django.core.management import execute_from_command_line
+
         execute_from_command_line(args)
