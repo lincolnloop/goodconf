@@ -74,7 +74,7 @@ class GoodConf(pydantic.BaseSettings):
         default_files: List[str] = None
         load: bool = False
 
-    def load(self, filename: str = None):
+    def load(self, filename: str = None) -> None:
         """Find config file and set values"""
         selected_config_file = None
         if filename:
@@ -108,7 +108,7 @@ class GoodConf(pydantic.BaseSettings):
         }
 
     @classmethod
-    def generate_yaml(cls, **override):
+    def generate_yaml(cls, **override) -> str:
         """
         Dumps initial config in YAML
         """
@@ -132,14 +132,14 @@ class GoodConf(pydantic.BaseSettings):
         return yaml_str.read()
 
     @classmethod
-    def generate_json(cls, **override):
+    def generate_json(cls, **override) -> str:
         """
         Dumps initial config in JSON
         """
         return json.dumps(cls.get_initial(**override), indent=2)
 
     @classmethod
-    def generate_markdown(cls):
+    def generate_markdown(cls) -> str:
         """
         Documents values in markdown
         """
