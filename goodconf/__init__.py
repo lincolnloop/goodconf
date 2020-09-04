@@ -85,7 +85,7 @@ class GoodConf(pydantic.BaseSettings):
             log.info("Loading config from %s", selected_config_file)
         else:
             config = {}
-            log.info("No config file specified. " "Loading with environment variables.")
+            log.info("No config file specified. Loading with environment variables.")
         super().__init__(**config)
 
     @classmethod
@@ -139,20 +139,17 @@ class GoodConf(pydantic.BaseSettings):
         """
         lines = []
         if cls.__doc__:
-            lines.extend(["# {}".format(cls.__doc__), ""])
+            lines.extend([f"# {cls.__doc__}", ""])
         for k, v in cls.__fields__.items():
-            lines.append("* **{}**  ".format(k))
+            lines.append(f"* **{k}**  ")
             if v.required:
                 lines[-1] = lines[-1] + "_REQUIRED_  "
             if v.field_info.description:
-                lines.append("  {}  ".format(v.field_info.description))
-            lines.append(
-                "  type: `{}`  ".format(
-                    v.type_.__name__ if v.type_ == v.outer_type_ else v.outer_type_
-                )
-            )
+                lines.append(f"  {v.field_info.description}  ")
+            type_ = v.type_ == v.type_.__name__ if v.outer_type_ else v.outer_type_
+            lines.append(f"  type: `{type_}`  ")
             if v.default is not None:
-                lines.append("  default: `{}`  ".format(v.default))
+                lines.append(f"  default: `{v.default}`  ")
         return "\n".join(lines)
 
     def django_manage(self, args: List[str] = None):
