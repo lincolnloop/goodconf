@@ -62,7 +62,6 @@ class GoodConf(pydantic.BaseSettings):
         default_files: List[str] = None
         load: bool = False
 
-
     def load(self, filename: str = None):
         """Find config file and set values"""
         selected_config_file = None
@@ -147,7 +146,11 @@ class GoodConf(pydantic.BaseSettings):
                 lines[-1] = lines[-1] + "_REQUIRED_  "
             if v.field_info.description:
                 lines.append("  {}  ".format(v.field_info.description))
-            lines.append("  type: `{}`  ".format(v.type_.__name__))
+            lines.append(
+                "  type: `{}`  ".format(
+                    v.type_.__name__ if v.type_ == v.outer_type_ else v.outer_type_
+                )
+            )
             if v.default is not None:
                 lines.append("  default: `{}`  ".format(v.default))
         return "\n".join(lines)
