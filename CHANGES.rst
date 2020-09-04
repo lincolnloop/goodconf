@@ -6,7 +6,7 @@ Change Log
 ==================
 
 - Backwards Incompatible: Migrated backend to ``pydantic``.
-  - ``Value`` now mirrors arguments for the `Field function <https://pydantic-docs.helpmanual.io/usage/schema/#field-customisation>`__.
+  - ``Value`` is replaced by the `Field function <https://pydantic-docs.helpmanual.io/usage/schema/#field-customisation>`__.
     ``help`` is now ``description``
   - ``GoodConf`` is now backed by `BaseSettings <https://pydantic-docs.helpmanual.io/usage/settings/>`__
     Instead of passing keyword args when instantiating the class, they are now defined on a ``Config`` class on the object

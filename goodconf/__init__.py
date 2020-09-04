@@ -7,11 +7,10 @@ import logging
 import os
 import sys
 from io import StringIO
-from typing import List
+from typing import Any, List
 
 import pydantic
-
-from goodconf.values import Value, _default_for_initial  # noqa
+from pydantic.fields import FieldInfo, Undefined
 
 log = logging.getLogger(__name__)
 
@@ -40,6 +39,19 @@ def _find_file(filename: str, require: bool = True) -> str:
             return None
         raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), filename)
     return os.path.abspath(filename)
+
+
+def initial_for_field(name: str, f: FieldInfo) -> Any:
+    try:
+        if not callable(f.extra["initial"]):
+            raise ValueError(f"Initial value for `{name}` must be a callable.")
+        return f.extra["initial"]()
+    except KeyError:
+        if f.default is not Undefined and f.default is not ...:
+            return f.default
+        if f.default_factory is not None:
+            return f.default_factory()
+    return ""
 
 
 class GoodConf(pydantic.BaseSettings):
@@ -89,17 +101,11 @@ class GoodConf(pydantic.BaseSettings):
         super().__init__(**config)
 
     @classmethod
-    def get_initial(cls, **override):
-        initial = {}
-        for k, v in cls.__fields__.items():
-            # values defined with a simple type annotation won't have an `initial`
-            try:
-                i = v.field_info.initial
-            except AttributeError:
-                i = _default_for_initial(v.field_info)
-
-            initial[k] = override.get(k, i)
-        return initial
+    def get_initial(cls, **override) -> dict:
+        return {
+            k: override.get(k, initial_for_field(k, v.field_info))
+            for k, v in cls.__fields__.items()
+        }
 
     @classmethod
     def generate_yaml(cls, **override):

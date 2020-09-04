@@ -2,16 +2,15 @@ import re
 from textwrap import dedent
 
 import pytest
-from pydantic import ValidationError
+from pydantic import Field, ValidationError
 
 from goodconf import GoodConf
-from goodconf.values import Value
 
 
 def test_initial():
     class TestConf(GoodConf):
-        a: bool = Value(initial=lambda: True)
-        b: bool = Value(default=False)
+        a: bool = Field(initial=lambda: True)
+        b: bool = Field(default=False)
 
     initial = TestConf.get_initial()
     assert len(initial) == 2
@@ -21,7 +20,7 @@ def test_initial():
 
 def test_dump_json():
     class TestConf(GoodConf):
-        a: bool = Value(initial=lambda: True)
+        a: bool = Field(initial=lambda: True)
 
     assert TestConf.generate_json() == '{\n  "a": true\n}'
     assert TestConf.generate_json(not_a_value=True) == '{\n  "a": true\n}'
@@ -33,7 +32,7 @@ def test_dump_yaml():
 
     class TestConf(GoodConf):
         "Configuration for My App"
-        a: str = Value(description="this is a")
+        a: str = Field(description="this is a")
         b: str
 
     output = TestConf.generate_yaml()
@@ -68,7 +67,7 @@ def test_dump_yaml_no_docstring():
     pytest.importorskip("ruamel.yaml")
 
     class TestConf(GoodConf):
-        a: str = Value(description="this is a")
+        a: str = Field(description="this is a")
 
     output = TestConf.generate_yaml()
     output = re.sub(r" +\n", "\n", output)
@@ -85,7 +84,7 @@ def test_generate_markdown():
 
     class TestConf(GoodConf):
         "Configuration for My App"
-        a: int = Value(description=help_, default=5)
+        a: int = Field(description=help_, default=5)
         b: str
 
     mkdn = TestConf.generate_markdown()
@@ -98,7 +97,7 @@ def test_generate_markdown_no_docsttring():
     help_ = "this is a"
 
     class TestConf(GoodConf):
-        a: int = Value(description=help_, default=5)
+        a: int = Field(description=help_, default=5)
         b: str
 
     mkdn = TestConf.generate_markdown()
@@ -108,7 +107,7 @@ def test_generate_markdown_no_docsttring():
 
 def test_generate_markdown_default_false():
     class TestConf(GoodConf):
-        a: bool = Value(default=False)
+        a: bool = Field(default=False)
 
     assert "False" in TestConf.generate_markdown()
 
@@ -121,7 +120,7 @@ def test_undefined():
 
 def test_required_missing():
     class TestConf(GoodConf):
-        a: str = Value()
+        a: str = Field()
 
     c = TestConf()
 
