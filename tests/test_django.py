@@ -1,6 +1,5 @@
 import pytest
 from goodconf import GoodConf
-from goodconf.contrib.django import execute_from_command_line_with_config
 
 pytest.importorskip('django')
 
@@ -23,10 +22,12 @@ def test_help(mocker, tmpdir, capsys):
     mocked_load_config = mocker.patch('goodconf._load_config')
     temp_config = tmpdir.join('config.yml')
     temp_config.write('')
-    c = GoodConf(
-        file_env_var='MYAPP_CONF',
-        default_files=['/etc/myapp.json'])
-    assert c.file_env_var == 'MYAPP_CONF'
+    class G(GoodConf):
+        class Config:
+            file_env_var = "MYAPP_CONF"
+            default_files = ["/etc/myapp.json"]
+    c = G()
+    assert c.__config__.file_env_var == 'MYAPP_CONF'
     c.django_manage([
         'manage.py', 'diffsettings', '-C', str(temp_config),
         '--settings', __name__, '-h'])

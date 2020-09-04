@@ -13,7 +13,8 @@ Goodconf
 .. image:: https://img.shields.io/pypi/pyversions/goodconf.svg
     :target: https://pypi.python.org/pypi/goodconf
 
-Define configuration variables and load them from environment or JSON/YAML
+A thin wrapper over `Pydantic's settings management <https://pydantic-docs.helpmanual.io/usage/settings/>`__.
+Allows you to define configuration variables and load them from environment or JSON/YAML
 file. Also generates initial configuration files and documentation for your
 defined configuration.
 
@@ -39,21 +40,21 @@ First, create a ``conf.py`` file in your project's directory, next to
     import os
 
     from goodconf import GoodConf, Value
+    from pydantic import PostgresDsn
 
-    class Config(GoodConf):
+    class AppConfig(GoodConf):
         "Configuration for My App"
-        DEBUG = Value(default=False, help="Toggle debugging.")
-        DATABASE_URL = Value(
-            default='postgres://localhost:5432/mydb',
-            help="Database connection.")
-        SECRET_KEY = Value(
+        DEBUG: bool
+        DATABASE_URL: PostgresDsn = "postgres://localhost:5432/mydb"
+        SECRET_KEY: str = Value(
             initial=lambda: base64.b64encode(os.urandom(60)).decode(),
-            help="Used for cryptographic signing. "
+            description="Used for cryptographic signing. "
             "https://docs.djangoproject.com/en/2.0/ref/settings/#secret-key")
 
-    config = Config(
-        default_files=["/etc/myproject/myproject.yaml", "myproject.yaml"]
-    )
+        class Config:
+            default_files = ["/etc/myproject/myproject.yaml", "myproject.yaml"]
+
+    config = AppConfig()
 
 Next, use the config in your ``settings.py`` file:
 
@@ -84,8 +85,8 @@ Usage
 ``GoodConf``
 ^^^^^^^^^^^^
 
-Your subclassed ``GoodConf`` object can be initialized with the following
-keyword args:
+Your subclassed ``GoodConf`` object can include a ``Config`` class with the following
+attributes:
 
 ``file_env_var``
   The name of an environment variable which can be used for
@@ -93,6 +94,9 @@ keyword args:
 ``default_files``
   If no file is passed to the ``load`` method, try to load a
   configuration from these files in order.
+
+It also has one method:
+
 ``load``
   Trigger the load method during instantiation. Defaults to False.
 
@@ -104,20 +108,12 @@ file.
 ^^^^^^^^^
 
 Declare configuration values by subclassing ``GoodConf`` and defining class
-attributes which are ``Value`` instances. They can be initialized with the
-following keyword args:
+attributes which are standard Python type definitions or ``Value`` instances.
+The ``Value`` class calls `Pydantic's Field function <https://pydantic-docs.helpmanual.io/usage/schema/#field-customisation>`__ under-the-hood, but allows
+for one additional attribute for use when intitializing a new config file.
 
-``default``
-  Default value if none is provided. If left unset, loading
-  a config that fails to provide this value will raise accept
-  ``RequiredValueMissing`` exception.
 ``initial``
   Initial value to use when generating a config
-``cast_as``
-  Python type to cast variable as. Defaults to type of default
-  (if provided) or str.
-``help``
-  Plain-text description of the value.
 
 
 Django Usage

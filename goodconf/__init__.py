@@ -9,8 +9,9 @@ import errno
 from io import StringIO
 from typing import List
 
-from goodconf.base import DeclarativeValuesMetaclass
-from goodconf.values import Value  # noqa
+import pydantic
+
+from goodconf.values import Value, _default_for_initial  # noqa
 
 log = logging.getLogger(__name__)
 
@@ -41,59 +42,62 @@ def _find_file(filename: str, require: bool = True) -> str:
     return os.path.abspath(filename)
 
 
-class GoodConf(metaclass=DeclarativeValuesMetaclass):
-    def __init__(self,
-                 file_env_var: str = None,
-                 default_files: List[str] = None,
-                 load: bool = False):
+class GoodConf(pydantic.BaseSettings):
+    def __init__(self, load: bool = False):
         """
         :param file_env_var: the name of an environment variable which can be
                              used for the name of the configuration file to
                              load
-        :param default_files: if no file is given, try to load a configuration
-                              from these files in order
         :param load: load config file on instantiation [default: False].
 
         A docstring defined on the class should be a plain-text description
         used as a header when generating a configuration file.
         """
-        self.file_env_var = file_env_var
-        self.config_file = None
-        self.default_files = default_files or []
         if load:
             self.load()
 
+    class Config(pydantic.BaseSettings.Config):
+        file_env_var: str = None
+        # if no file is given, try to load a configuration from these files in order
+        default_files: List[str] = None
+        load: bool = False
+
+    __config__ = Config
+
     def load(self, filename: str = None):
         """Find config file and set values"""
+        selected_config_file = None
         if filename:
-            self.config_file = _find_file(filename)
+            selected_config_file = _find_file(filename)
         else:
-            if self.file_env_var and self.file_env_var in os.environ:
-                self.config_file = _find_file(os.environ[self.file_env_var])
-            if not self.config_file:
-                for filename in self.default_files:
-                    self.config_file = _find_file(filename, require=False)
-                    if self.config_file:
+            if self.__config__.file_env_var and self.__config__.file_env_var in os.environ:
+                selected_config_file = _find_file(os.environ[self.__config__.file_env_var])
+            else:
+                for filename in self.__config__.default_files or []:
+                    selected_config_file = _find_file(filename, require=False)
+                    if selected_config_file:
                         break
-        if self.config_file:
-            config = _load_config(self.config_file)
-            log.info("Loading config from %s", self.config_file)
+        if selected_config_file:
+            config = _load_config(selected_config_file)
+            log.info("Loading config from %s", selected_config_file)
         else:
             config = {}
             log.info("No config file specified. "
                      "Loading with environment variables.")
-        self.set_values(config)
-
-    def set_values(self, config: dict):
-        for k in self._values:
-            if k in config:
-                setattr(self, k, config.get(k))
-            else:
-                setattr(self, k, self._values[k].value)
+        super().__init__(**config)
 
     @classmethod
     def get_initial(cls, **override):
-        return {k: override.get(k, getattr(cls, k)) for k in cls._values}
+        initial = {}
+        for k, v in cls.__fields__.items():
+            # values defined with a simple type annotation won't have an `initial`
+            try:
+                i = v.field_info.initial
+            except AttributeError:
+                i = _default_for_initial(v.field_info)
+
+            initial[k] = override.get(k, i)
+        return initial
 
     @classmethod
     def generate_yaml(cls, **override):
@@ -110,9 +114,9 @@ class GoodConf(metaclass=DeclarativeValuesMetaclass):
             dict_from_yaml.yaml_set_start_comment(
                 '\n' + cls.__doc__ + '\n\n')
         for k in dict_from_yaml.keys():
-            if cls._values[k].help:
+            if cls.__fields__[k].field_info.description:
                 dict_from_yaml.yaml_set_comment_before_after_key(
-                    k, before='\n' + cls._values[k].help)
+                    k, before='\n' + cls.__fields__[k].field_info.description)
         yaml_str = StringIO()
         yaml.dump(dict_from_yaml, yaml_str)
         yaml_str.seek(0)
@@ -133,13 +137,13 @@ class GoodConf(metaclass=DeclarativeValuesMetaclass):
         lines = []
         if cls.__doc__:
             lines.extend(['# {}'.format(cls.__doc__), ''])
-        for k, v in cls._values.items():
+        for k, v in cls.__fields__.items():
             lines.append('* **{}**  '.format(k))
             if v.required:
                 lines[-1] = lines[-1] + '_REQUIRED_  '
-            if v.help:
-                lines.append('  {}  '.format(v.help))
-            lines.append('  type: `{}`  '.format(v.cast_as.__name__))
+            if v.field_info.description:
+                lines.append('  {}  '.format(v.field_info.description))
+            lines.append('  type: `{}`  '.format(v.type_.__name__))
             if v.default is not None:
                 lines.append('  default: `{}`  '.format(v.default))
         return '\n'.join(lines)

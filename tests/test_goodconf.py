@@ -2,74 +2,17 @@ import re
 from textwrap import dedent
 
 import pytest
+from pydantic import ValidationError
+
 from goodconf import GoodConf
-from goodconf.values import Value, RequiredValueMissing
-
-
-def test_define_values():
-
-    class MyConf(GoodConf):
-        a = Value()
-        c = Value()
-        b = Value()
-
-    v = MyConf._values
-    assert list(v.keys()) == ['a', 'c', 'b'], "Order should be retained"
-
-    assert v['a'].key == 'a', "Keys are implicitly set"
-    assert v['b'].key == 'b', "Keys are implicitly set"
-
-
-def test_explicit_key():
-
-    with pytest.raises(AttributeError):
-
-        class BadConf(GoodConf):
-            a = Value(key='not_a')
-
-
-def test_defaults():
-
-    class MyConf(GoodConf):
-        a = Value()
-        b = Value(default='fish')
-
-    conf = MyConf()
-
-    assert conf.a is None
-    assert conf.b == 'fish'
-
-
-def test_set_values():
-
-    class TestConf(GoodConf):
-        a = Value(default='')
-        c = Value(default=4)
-
-    c = TestConf()
-    c.set_values({'a': 'b'})
-    assert c.a == 'b'
-    assert c.c == 4
-
-
-def test_set_values_again():
-
-    class TestConf(GoodConf):
-        a = Value(default='')
-        c = Value(default=4)
-
-    c = TestConf()
-    c.set_values({'a': 'b'})
-    c.set_values({'c': 1})
-    assert c.a == ''
-    assert c.c == 1
+from goodconf.values import Value
 
 
 def test_initial():
 
     class TestConf(GoodConf):
-        a = Value(initial=lambda: True)
-        b = Value(default=False)
+        a: bool = Value(initial=lambda: True)
+        b: bool = Value(default=False)
 
     initial = TestConf.get_initial()
     assert len(initial) == 2
@@ -80,7 +23,7 @@ def test_initial():
 def test_dump_json():
 
     class TestConf(GoodConf):
-        a = Value(initial=lambda: True)
+        a: bool = Value(initial=lambda: True)
 
     assert TestConf.generate_json() == '{\n  "a": true\n}'
     assert TestConf.generate_json(not_a_value=True) == '{\n  "a": true\n}'
@@ -92,8 +35,8 @@ def test_dump_yaml():
 
     class TestConf(GoodConf):
         "Configuration for My App"
-        a = Value(help="this is a")
-        b = Value()
+        a: str = Value(description="this is a")
+        b: str
 
     output = TestConf.generate_yaml()
     output = re.sub(r' +\n', '\n', output)
@@ -117,7 +60,7 @@ def test_dump_yaml_no_docstring():
     pytest.importorskip('ruamel.yaml')
 
     class TestConf(GoodConf):
-        a = Value(help="this is a")
+        a: str = Value(description="this is a")
 
     output = TestConf.generate_yaml()
     output = re.sub(r' +\n', '\n', output)
@@ -132,8 +75,8 @@ def test_generate_markdown():
 
     class TestConf(GoodConf):
         "Configuration for My App"
-        a = Value(help=help_, default=5)
-        b = Value()
+        a: int = Value(description=help_, default=5)
+        b: str
 
     mkdn = TestConf.generate_markdown()
     # Not sure on final format, just do some basic smoke tests
@@ -145,8 +88,8 @@ def test_generate_markdown_no_docsttring():
     help_ = "this is a"
 
     class TestConf(GoodConf):
-        a = Value(help=help_, default=5)
-        b = Value()
+        a: int = Value(description=help_, default=5)
+        b: str
 
     mkdn = TestConf.generate_markdown()
     # Not sure on final format, just do some basic smoke tests
@@ -155,7 +98,7 @@ def test_generate_markdown_no_docsttring():
 
 def test_generate_markdown_default_false():
     class TestConf(GoodConf):
-        a = Value(default=False)
+        a: bool = Value(default=False)
 
     assert "False" in TestConf.generate_markdown()
 
@@ -169,23 +112,12 @@ def test_undefined():
 def test_required_missing():
 
     class TestConf(GoodConf):
-        a = Value()
+        a: str = Value()
 
     c = TestConf()
 
-    with pytest.raises(RequiredValueMissing):
+    with pytest.raises(ValidationError):
         c.load()
 
-    with pytest.raises(RequiredValueMissing):
+    with pytest.raises(ValidationError):
         TestConf(load=True)
-
-
-def test_nested():
-
-    class ParentConf(GoodConf):
-        a = Value()
-
-    class ChildConf(ParentConf):
-        b = Value()
-
-    assert list(ChildConf._values.keys()) == ['b', 'a']
