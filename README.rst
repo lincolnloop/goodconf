@@ -39,8 +39,8 @@ First, create a ``conf.py`` file in your project's directory, next to
     import base64
     import os
 
-    from goodconf import GoodConf
-    from pydantic import Field, PostgresDsn
+    from goodconf import GoodConf, Field
+    from pydantic import PostgresDsn
 
     class AppConfig(GoodConf):
         "Configuration for My App"

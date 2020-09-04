@@ -1,7 +1,6 @@
 import pytest
 
-from goodconf import GoodConf, initial_for_field
-from pydantic import Field
+from goodconf import GoodConf, Field, initial_for_field
 
 from .utils import KEY
 

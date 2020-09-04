@@ -9,8 +9,8 @@ import sys
 from io import StringIO
 from typing import Any, List
 
-import pydantic
-from pydantic.fields import FieldInfo, Undefined
+from pydantic import BaseSettings
+from pydantic.fields import Field, FieldInfo, Undefined  # noqa
 
 log = logging.getLogger(__name__)
 
@@ -54,7 +54,7 @@ def initial_for_field(name: str, f: FieldInfo) -> Any:
     return ""
 
 
-class GoodConf(pydantic.BaseSettings):
+class GoodConf(BaseSettings):
     def __init__(self, load: bool = False):
         """
         :param file_env_var: the name of an environment variable which can be
