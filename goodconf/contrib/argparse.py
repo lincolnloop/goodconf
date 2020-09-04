@@ -1,4 +1,5 @@
 import argparse
+
 from .. import GoodConf
 
 

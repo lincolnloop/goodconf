@@ -1,11 +1,11 @@
 """
 Transparently load variables from environment or JSON/YAML file.
 """
+import errno
 import json
 import logging
 import os
 import sys
-import errno
 from io import StringIO
 from typing import List
 

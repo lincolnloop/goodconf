@@ -1,8 +1,9 @@
 import argparse
-from typing import List
 from contextlib import contextmanager
+from typing import List
 
 from goodconf import GoodConf
+
 from .argparse import argparser_add_argument
 
 
