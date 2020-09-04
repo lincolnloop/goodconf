@@ -57,9 +57,6 @@ def initial_for_field(name: str, f: FieldInfo) -> Any:
 class GoodConf(BaseSettings):
     def __init__(self, load: bool = False):
         """
-        :param file_env_var: the name of an environment variable which can be
-                             used for the name of the configuration file to
-                             load
         :param load: load config file on instantiation [default: False].
 
         A docstring defined on the class should be a plain-text description
@@ -69,6 +66,8 @@ class GoodConf(BaseSettings):
             self.load()
 
     class Config:
+        # the name of an environment variable which can be used for the name of the
+        # configuration file to load
         file_env_var: str = None
         # if no file is given, try to load a configuration from these files in order
         default_files: List[str] = None
