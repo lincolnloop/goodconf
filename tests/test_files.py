@@ -17,7 +17,7 @@ def test_conf_env_var(mocker, tmpdir):
 
 
 def test_all_env_vars(mocker):
-    mocked_set_values = mocker.patch("goodconf.pydantic.BaseSettings.__init__")
+    mocked_set_values = mocker.patch("goodconf.BaseSettings.__init__")
     GoodConf().load()
     mocked_set_values.assert_called_once_with()
 
