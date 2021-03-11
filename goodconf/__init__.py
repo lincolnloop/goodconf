@@ -29,7 +29,7 @@ def _load_config(path: str) -> dict:
         loader = json.load
     with open(path) as f:
         config = loader(f)
-    return config
+    return config or {}
 
 
 def _find_file(filename: str, require: bool = True) -> str:

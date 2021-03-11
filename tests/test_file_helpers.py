@@ -17,6 +17,13 @@ def test_yaml(tmpdir):
     assert _load_config(str(conf)) == {'a': 'b', 'c': 3}
 
 
+def test_load_empty_yaml(tmpdir):
+    pytest.importorskip('ruamel.yaml')
+    conf = tmpdir.join('conf.yaml')
+    conf.write('')
+    assert _load_config(str(conf)) == {}
+
+
 def test_missing(tmpdir):
     conf = tmpdir.join('test.yml')
     assert _find_file(str(conf), require=False) is None
