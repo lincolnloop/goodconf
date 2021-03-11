@@ -174,7 +174,6 @@ Contribute
 Create virtual environment and install package and dependencies.
 
 .. code:: shell
-    pip install -e .
     pip install -e ".[tests]"
 
 
