@@ -2,6 +2,12 @@
 Change Log
 ==========
 
+2.0b2 (unreleased)
+==================
+
+- Nothing changed yet.
+
+
 2.0b1 (11 March 2021)
 =====================
 
