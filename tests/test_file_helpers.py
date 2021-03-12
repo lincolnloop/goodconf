@@ -18,9 +18,9 @@ def test_yaml(tmpdir):
 
 
 def test_load_empty_yaml(tmpdir):
-    pytest.importorskip('ruamel.yaml')
-    conf = tmpdir.join('conf.yaml')
-    conf.write('')
+    pytest.importorskip("ruamel.yaml")
+    conf = tmpdir.join("conf.yaml")
+    conf.write("")
     assert _load_config(str(conf)) == {}
 
 

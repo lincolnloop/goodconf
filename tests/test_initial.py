@@ -20,9 +20,11 @@ def test_initial_default():
     f = Field("x")
     assert initial_for_field(KEY, f) == "x"
 
+
 def test_initial_default_factory():
     f = Field(default_factory=lambda: "y")
     assert initial_for_field(KEY, f) == "y"
+
 
 def test_no_initial():
     f = Field()
