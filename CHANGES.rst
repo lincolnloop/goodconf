@@ -2,8 +2,8 @@
 Change Log
 ==========
 
-2.0 (unreleased)
-==================
+2.0b1 (11 March 2021)
+=====================
 
 - Backwards Incompatible: Migrated backend to ``pydantic``.
   - ``Value`` is replaced by the `Field function <https://pydantic-docs.helpmanual.io/usage/schema/#field-customisation>`__.
