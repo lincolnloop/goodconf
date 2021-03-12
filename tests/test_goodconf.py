@@ -37,16 +37,7 @@ def test_dump_yaml():
 
     output = TestConf.generate_yaml()
     output = re.sub(r" +\n", "\n", output)
-    assert (
-        dedent(
-            """\
-        #
-        # Configuration for My App
-        #
-        """
-        )
-        in output
-    )
+    assert "\n# Configuration for My App\n" in output
     assert (
         dedent(
             """\

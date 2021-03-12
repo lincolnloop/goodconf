@@ -164,3 +164,18 @@ where environment variables are the preferred configuration method.
 This module let's me do things the way I prefer in environments I control, but
 still run them with environment variables on environments I don't control with
 minimal fuss.
+
+
+Contribute
+----------
+
+Create virtual environment and install package and dependencies.
+
+.. code:: shell
+    pip install -e ".[tests]"
+
+
+Run tests
+
+.. code:: shell
+    pytest
