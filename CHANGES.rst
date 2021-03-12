@@ -2,8 +2,8 @@
 Change Log
 ==========
 
-2.0b2 (unreleased)
-==================
+2.0b2 (12 March 2021)
+=====================
 
 - Use null value for initial if allowed
 - Store the config file parsed as ``GoodConf.Config._config_file``
