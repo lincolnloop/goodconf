@@ -10,7 +10,7 @@ from io import StringIO
 from typing import Any, List
 
 from pydantic import BaseSettings
-from pydantic.fields import Field, FieldInfo, Undefined  # noqa
+from pydantic.fields import Field, FieldInfo, ModelField, Undefined  # noqa
 
 log = logging.getLogger(__name__)
 
@@ -41,16 +41,19 @@ def _find_file(filename: str, require: bool = True) -> str:
     return os.path.abspath(filename)
 
 
-def initial_for_field(name: str, f: FieldInfo) -> Any:
+def initial_for_field(name: str, field: ModelField) -> Any:
+    info = field.field_info
     try:
-        if not callable(f.extra["initial"]):
+        if not callable(info.extra["initial"]):
             raise ValueError(f"Initial value for `{name}` must be a callable.")
-        return f.extra["initial"]()
+        return info.extra["initial"]()
     except KeyError:
-        if f.default is not Undefined and f.default is not ...:
-            return f.default
-        if f.default_factory is not None:
-            return f.default_factory()
+        if info.default is not Undefined and info.default is not ...:
+            return info.default
+        if info.default_factory is not None:
+            return info.default_factory()
+    if field.allow_none:
+        return None
     return ""
 
 
@@ -102,7 +105,7 @@ class GoodConf(BaseSettings):
     @classmethod
     def get_initial(cls, **override) -> dict:
         return {
-            k: override.get(k, initial_for_field(k, v.field_info))
+            k: override.get(k, initial_for_field(k, v))
             for k, v in cls.__fields__.items()
         }
 
@@ -114,6 +117,10 @@ class GoodConf(BaseSettings):
         import ruamel.yaml
 
         yaml = ruamel.yaml.YAML()
+        yaml.representer.add_representer(
+            type(None),
+            lambda self, d: self.represent_scalar("tag:yaml.org,2002:null", "~"),
+        )
         yaml_str = StringIO()
         yaml.dump(cls.get_initial(**override), stream=yaml_str)
         yaml_str.seek(0)

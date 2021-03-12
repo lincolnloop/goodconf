@@ -1,5 +1,6 @@
 import re
 from textwrap import dedent
+from typing import Optional
 
 import pytest
 from pydantic import Field, ValidationError
@@ -68,6 +69,16 @@ def test_dump_yaml_no_docstring():
         a: ''
         """
     )
+
+
+def test_dump_yaml_none():
+    pytest.importorskip("ruamel.yaml")
+
+    class TestConf(GoodConf):
+        a: Optional[str]
+
+    output = TestConf.generate_yaml()
+    assert output.strip() == "a: ~"
 
 
 def test_generate_markdown():
