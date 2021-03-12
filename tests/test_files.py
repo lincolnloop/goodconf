@@ -12,22 +12,32 @@ def test_conf_env_var(mocker, tmpdir):
             file_env_var = "CONF"
 
     with env_var("CONF", str(path)):
-        G().load()
+        g = G()
+        g.load()
     mocked_load_config.assert_called_once_with(str(path))
+    assert g.Config._config_file == str(path)
 
 
 def test_all_env_vars(mocker):
     mocked_set_values = mocker.patch("goodconf.BaseSettings.__init__")
-    GoodConf().load()
+
+    class G(GoodConf):
+        pass
+
+    g = G()
+    g.load()
     mocked_set_values.assert_called_once_with()
+    assert g.Config._config_file is None
 
 
 def test_provided_file(mocker, tmpdir):
     mocked_load_config = mocker.patch("goodconf._load_config")
     path = tmpdir.join("myapp.json")
     path.write("")
-    GoodConf().load(str(path))
+    g = GoodConf()
+    g.load(str(path))
     mocked_load_config.assert_called_once_with(str(path))
+    assert g.Config._config_file == str(path)
 
 
 def test_default_files(mocker, tmpdir):
@@ -40,5 +50,7 @@ def test_default_files(mocker, tmpdir):
         class Config:
             default_files = [str(bad_path), str(path)]
 
-    G().load()
+    g = G()
+    g.load()
     mocked_load_config.assert_called_once_with(str(path))
+    assert g.Config._config_file == str(path)

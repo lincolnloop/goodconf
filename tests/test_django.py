@@ -9,7 +9,12 @@ def test_mgmt_command(mocker, tmpdir):
     mocked_dj_execute = mocker.patch("django.core.management.execute_from_command_line")
     temp_config = tmpdir.join("config.yml")
     temp_config.write("")
-    c = GoodConf()
+
+    class G(GoodConf):
+        class Config:
+            pass
+
+    c = G()
     dj_args = ["manage.py", "diffsettings", "-v", "2"]
     c.django_manage(dj_args + ["-C", str(temp_config)])
     mocked_load_config.assert_called_once_with(str(temp_config))

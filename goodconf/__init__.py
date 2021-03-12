@@ -9,7 +9,7 @@ import sys
 from io import StringIO
 from typing import Any, List
 
-from pydantic import BaseSettings
+from pydantic import BaseSettings, FilePath
 from pydantic.fields import Field, FieldInfo, ModelField, Undefined  # noqa
 
 log = logging.getLogger(__name__)
@@ -74,6 +74,8 @@ class GoodConf(BaseSettings):
         file_env_var: str = None
         # if no file is given, try to load a configuration from these files in order
         default_files: List[str] = None
+        # actual file used for configuration on load
+        _config_file: FilePath = None
         load: bool = False
 
     def load(self, filename: str = None) -> None:
@@ -97,6 +99,7 @@ class GoodConf(BaseSettings):
         if selected_config_file:
             config = _load_config(selected_config_file)
             log.info("Loading config from %s", selected_config_file)
+            self.Config._config_file = selected_config_file
         else:
             config = {}
             log.info("No config file specified. Loading with environment variables.")
