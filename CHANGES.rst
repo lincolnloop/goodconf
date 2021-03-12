@@ -5,7 +5,43 @@ Change Log
 2.0.0 (unreleased)
 ==================
 
-- Nothing changed yet.
+- **Backwards Incompatible Release**
+    Internals replaced with `pydantic <https://pypi.org/project/pydantic/>`_. Users can either pin to ``1.0.0`` or update their code as follows:
+
+    - Replace ``goodconf.Value`` with ``goodconf.Field``.
+    - Replace ``help`` keyword argument with ``description`` in ``Field`` (previously ``Value``).
+    - Remove ``cast_as`` keyword argument from ``Field`` (previously ``Value``). Standard Python type annotations are now used.
+    - Move ``file_env_var`` and ``default_files`` keyword arguments used in class initialization to a sub-class named ``Config``
+
+    Given a version ``1`` class that looks like this:
+
+    .. code:: python
+
+        from goodconf import GoodConf, Value
+
+        class AppConfig(GoodConf):
+            "Configuration for My App"
+            DEBUG = Value(default=False, help="Toggle debugging.")
+            MAX_REQUESTS = Value(cast_as=int)
+
+        config = AppConfig(default_files=["config.yml"])
+
+    A class updated for version `2` would be:
+
+    .. code:: python
+
+        from goodconf import GoodConf, Field
+
+        class AppConfig(GoodConf):
+            "Configuration for My App"
+            DEBUG: bool = Field(default=False, description="Toggle debugging.")
+            MAX_REQUESTS: int
+
+            class Config:
+                default_files=["config.yml"]
+
+        config = AppConfig()
+
 
 
 2.0b2 (12 March 2021)
