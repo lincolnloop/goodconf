@@ -1,4 +1,7 @@
+import json
+
 from goodconf import GoodConf
+
 from .utils import env_var
 
 
@@ -16,6 +19,24 @@ def test_conf_env_var(mocker, tmpdir):
         g.load()
     mocked_load_config.assert_called_once_with(str(path))
     assert g.Config._config_file == str(path)
+
+
+def test_conflict(tmpdir):
+    path = tmpdir.join("myapp.json")
+    path.write(json.dumps({"A": 1, "B": 2}))
+
+    class G(GoodConf):
+        A: int
+        B: int
+
+        class Config:
+            default_files = [path]
+
+    with env_var("A", "3"):
+        g = G()
+        g.load()
+    assert g.A == 3
+    assert g.B == 2
 
 
 def test_all_env_vars(mocker):

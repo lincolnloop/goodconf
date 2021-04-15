@@ -7,9 +7,10 @@ import logging
 import os
 import sys
 from io import StringIO
-from typing import Any, List
+from typing import Any, List, Tuple
 
 from pydantic import BaseSettings, FilePath
+from pydantic.env_settings import SettingsSourceCallable
 from pydantic.fields import Field, FieldInfo, ModelField, Undefined  # noqa
 
 log = logging.getLogger(__name__)
@@ -77,6 +78,16 @@ class GoodConf(BaseSettings):
         # actual file used for configuration on load
         _config_file: FilePath = None
         load: bool = False
+
+        @classmethod
+        def customise_sources(
+            cls,
+            init_settings: SettingsSourceCallable,
+            env_settings: SettingsSourceCallable,
+            file_secret_settings: SettingsSourceCallable,
+        ) -> Tuple[SettingsSourceCallable, ...]:
+            """Load environment variables before init"""
+            return env_settings, init_settings, file_secret_settings
 
     def load(self, filename: str = None) -> None:
         """Find config file and set values"""
