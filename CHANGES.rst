@@ -42,7 +42,10 @@ Change Log
 
         config = AppConfig()
 
+2.0b3 (15 April 2021)
+=====================
 
+- Environment variables take precedence over configuration files in the event of a conflict
 
 2.0b2 (12 March 2021)
 =====================
