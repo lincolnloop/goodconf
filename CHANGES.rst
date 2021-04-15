@@ -2,6 +2,12 @@
 Change Log
 ==========
 
+2.0b4 (unreleased)
+==================
+
+- Nothing changed yet.
+
+
 2.0.0 (unreleased)
 ==================
 
