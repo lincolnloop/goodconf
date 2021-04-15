@@ -103,6 +103,13 @@ It also has one method:
 Use plain-text docstring for use as a header when generating a configuration
 file.
 
+Environment variables always take precedence over variables in the configuration files.
+
+See Pydantic's docs for examples of loading:
+
+* `Dotenv (.env) files <https://pydantic-docs.helpmanual.io/usage/settings/#dotenv-env-support>`_
+* `Docker secrets <https://pydantic-docs.helpmanual.io/usage/settings/#secret-support>`_
+
 
 Fields
 ^^^^^^
