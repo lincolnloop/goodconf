@@ -1,7 +1,8 @@
 import os
+
 import pytest
 
-from goodconf import _load_config, _find_file
+from goodconf import _find_file, _load_config
 
 
 def test_json(tmpdir):

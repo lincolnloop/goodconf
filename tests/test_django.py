@@ -1,4 +1,5 @@
 import pytest
+
 from goodconf import GoodConf
 
 pytest.importorskip("django")

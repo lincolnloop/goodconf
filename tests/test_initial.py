@@ -2,7 +2,7 @@ from typing import Optional
 
 import pytest
 
-from goodconf import GoodConf, Field, initial_for_field
+from goodconf import Field, GoodConf, initial_for_field
 
 from .utils import KEY
 
