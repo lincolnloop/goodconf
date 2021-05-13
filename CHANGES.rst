@@ -2,8 +2,8 @@
 Change Log
 ==========
 
-2.0.0 (unreleased)
-==================
+2.0.0 (13 May 2021)
+===================
 
 - **Backwards Incompatible Release**
     Internals replaced with `pydantic <https://pypi.org/project/pydantic/>`_. Users can either pin to ``1.0.0`` or update their code as follows:
