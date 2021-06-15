@@ -2,8 +2,8 @@
 Change Log
 ==========
 
-2.0.1 (unreleased)
-==================
+2.0.1 (15 June 2021)
+====================
 
 - Change to newer syntax for safe loading yaml
 
