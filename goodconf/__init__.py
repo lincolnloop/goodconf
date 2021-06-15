@@ -26,7 +26,8 @@ def _load_config(path: str) -> dict:
     if ext in [".yaml", ".yml"]:
         import ruamel.yaml
 
-        loader = ruamel.yaml.safe_load
+        yaml = ruamel.yaml.YAML(typ="safe", pure=True)
+        loader = yaml.load
     else:
         loader = json.load
     with open(path) as f:

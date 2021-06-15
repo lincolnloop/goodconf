@@ -5,7 +5,7 @@ Change Log
 2.0.1 (unreleased)
 ==================
 
-- Nothing changed yet.
+- Change to newer syntax for safe loading yaml
 
 
 2.0.0 (13 May 2021)
