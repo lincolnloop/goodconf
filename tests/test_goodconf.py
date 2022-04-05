@@ -3,9 +3,10 @@ from textwrap import dedent
 from typing import Optional
 
 import pytest
+from goodconf import GoodConf
 from pydantic import Field, ValidationError
 
-from goodconf import GoodConf
+from tests.utils import env_var
 
 
 def test_initial():
@@ -124,10 +125,28 @@ def test_required_missing():
     class TestConf(GoodConf):
         a: str = Field()
 
-    c = TestConf()
-
     with pytest.raises(ValidationError):
-        c.load()
+        TestConf()
 
-    with pytest.raises(ValidationError):
-        TestConf(load=True)
+
+def test_set_on_init():
+    class TestConf(GoodConf):
+        a: str = Field()
+
+    val = "test"
+    c = TestConf(a=val)
+    assert c.a == val
+
+
+def test_env_prefix():
+    val = "test"
+
+    class TestConf(GoodConf):
+        a: str = Field()
+
+        class Config:
+            env_prefix = "PREFIX_"
+
+    with env_var("PREFIX_a", val):
+        c = TestConf()
+    assert c.a == val

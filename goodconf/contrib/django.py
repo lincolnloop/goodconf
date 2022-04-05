@@ -28,7 +28,7 @@ def load_config_from_cli(config: GoodConf, argv: List[str]) -> List[str]:
         argparser_add_argument(parser, config)
 
         config_arg, default_args = parser.parse_known_args(argv)
-        config.load(config_arg.config)
+        config.from_file(config_arg.config)
         yield default_args
     finally:
         # Put that create_parser back where it came from or so help me!

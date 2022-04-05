@@ -7,7 +7,7 @@ import logging
 import os
 import sys
 from io import StringIO
-from typing import Any, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from pydantic import BaseSettings, FilePath
 from pydantic.env_settings import SettingsSourceCallable
@@ -35,7 +35,7 @@ def _load_config(path: str) -> dict:
     return config or {}
 
 
-def _find_file(filename: str, require: bool = True) -> str:
+def _find_file(filename: str, require: bool = True) -> Optional[str]:
     if not os.path.exists(filename):
         if not require:
             return None
@@ -59,17 +59,30 @@ def initial_for_field(name: str, field: ModelField) -> Any:
     return ""
 
 
+def file_config_settings_source(settings: BaseSettings) -> Dict[str, Any]:
+    """Find config file and get values"""
+    selected_config_file = None
+    if (
+        settings.__config__.file_env_var
+        and settings.__config__.file_env_var in os.environ
+    ):
+        selected_config_file = _find_file(os.environ[settings.__config__.file_env_var])
+    else:
+        for filename in settings.__config__.default_files or []:
+            selected_config_file = _find_file(filename, require=False)
+            if selected_config_file:
+                break
+    if selected_config_file:
+        values = _load_config(selected_config_file)
+        log.info("Loading config from %s", selected_config_file)
+        settings.Config._config_file = selected_config_file
+    else:
+        values = {}
+        log.info("No config file specified. Loading with environment variables.")
+    return values
+
+
 class GoodConf(BaseSettings):
-    def __init__(self, load: bool = False):
-        """
-        :param load: load config file on instantiation [default: False].
-
-        A docstring defined on the class should be a plain-text description
-        used as a header when generating a configuration file.
-        """
-        if load:
-            self.load()
-
     class Config:
         # the name of an environment variable which can be used for the name of the
         # configuration file to load
@@ -78,7 +91,6 @@ class GoodConf(BaseSettings):
         default_files: List[str] = None
         # actual file used for configuration on load
         _config_file: FilePath = None
-        load: bool = False
 
         @classmethod
         def customise_sources(
@@ -88,34 +100,19 @@ class GoodConf(BaseSettings):
             file_secret_settings: SettingsSourceCallable,
         ) -> Tuple[SettingsSourceCallable, ...]:
             """Load environment variables before init"""
-            return env_settings, init_settings, file_secret_settings
+            return (
+                env_settings,
+                init_settings,
+                file_config_settings_source,
+                file_secret_settings,
+            )
 
-    def load(self, filename: str = None) -> None:
-        """Find config file and set values"""
-        selected_config_file = None
-        if filename:
-            selected_config_file = _find_file(filename)
-        else:
-            if (
-                self.__config__.file_env_var
-                and self.__config__.file_env_var in os.environ
-            ):
-                selected_config_file = _find_file(
-                    os.environ[self.__config__.file_env_var]
-                )
-            else:
-                for filename in self.__config__.default_files or []:
-                    selected_config_file = _find_file(filename, require=False)
-                    if selected_config_file:
-                        break
-        if selected_config_file:
-            config = _load_config(selected_config_file)
-            log.info("Loading config from %s", selected_config_file)
-            self.Config._config_file = selected_config_file
-        else:
-            config = {}
-            log.info("No config file specified. Loading with environment variables.")
-        super().__init__(**config)
+    @classmethod
+    def from_file(cls, filename):
+        log.info("Loading config from %s", filename)
+        settings = cls(**_load_config(filename))
+        settings.Config._config_file = filename
+        return settings
 
     @classmethod
     def get_initial(cls, **override) -> dict:
