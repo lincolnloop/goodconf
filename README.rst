@@ -1,8 +1,8 @@
 Goodconf
 ========
 
-.. image:: https://img.shields.io/travis/lincolnloop/goodconf.svg
-    :target: https://travis-ci.org/lincolnloop/goodconf
+.. image:: https://github.com/lincolnloop/goodconf/actions/workflows/test.yml/badge.svg?branch=main&event=push
+    :target: https://github.com/lincolnloop/goodconf/actions/workflows/test.yml?query=branch%3Amain+event%3Apush
 
 .. image:: https://img.shields.io/codecov/c/github/lincolnloop/goodconf.svg
     :target: https://codecov.io/gh/lincolnloop/goodconf
