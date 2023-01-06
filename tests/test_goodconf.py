@@ -28,6 +28,15 @@ def test_dump_json():
     assert TestConf.generate_json(a=False) == '{\n  "a": false\n}'
 
 
+def test_dump_toml():
+    pytest.importorskip("tomlkit")
+
+    class TestConf(GoodConf):
+        a: bool = Field(initial=lambda: True)
+
+    assert TestConf.generate_toml() == "a = true\n"
+
+
 def test_dump_yaml():
     pytest.importorskip("ruamel.yaml")
 

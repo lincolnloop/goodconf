@@ -22,8 +22,9 @@ defined configuration.
 Installation
 ------------
 
-``pip install goodconf`` or ``pip install goodconf[yaml]`` if
-parsing/generating YAML files is required.
+``pip install goodconf`` or ``pip install goodconf[yaml]`` /
+``pip install goodconf[toml]`` if parsing/generating YAML/TOML
+files is required.
 
 
 Quick Start

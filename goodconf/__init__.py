@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 
 def _load_config(path: str) -> dict:
     """
-    Given a file path, parse it based on its extension (YAML or JSON)
+    Given a file path, parse it based on its extension (YAML, TOML or JSON)
     and return the values as a Python dictionary. JSON is the default if an
     extension can't be determined.
     """
@@ -28,6 +28,12 @@ def _load_config(path: str) -> dict:
 
         yaml = ruamel.yaml.YAML(typ="safe", pure=True)
         loader = yaml.load
+    elif ext == ".toml":
+        import tomlkit
+
+        def loader(f):
+            return tomlkit.load(f).unwrap()
+
     else:
         loader = json.load
     with open(path) as f:
@@ -158,6 +164,15 @@ class GoodConf(BaseSettings):
         Dumps initial config in JSON
         """
         return json.dumps(cls.get_initial(**override), indent=2)
+
+    @classmethod
+    def generate_toml(cls, **override) -> str:
+        """
+        Dumps initial config in TOML
+        """
+        import tomlkit
+
+        return tomlkit.dumps(cls.get_initial(**override))
 
     @classmethod
     def generate_markdown(cls) -> str:
