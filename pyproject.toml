@@ -31,9 +31,9 @@ tests = [
     "django>=3.2.0",
     "ruamel.yaml>=0.17.0",
     "tomlkit>=0.11.6",
-    "pytest==7.1.*",
-    "pytest-cov==2.5.1",
-    "pytest-mock==1.7.1"
+    "pytest==7.2.*",
+    "pytest-cov==4.0.*",
+    "pytest-mock==3.10.*"
 ]
 maintainer = ["zest.releaser[recommended]"]
 
@@ -54,7 +54,7 @@ default_section = "THIRDPARTY"
 known_first_party = "goodconf"
 
 [tool.pytest.ini_options]
-addopts = "--cov"
+addopts = "--cov --cov-branch"
 
 [build-system]
 requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2"]
