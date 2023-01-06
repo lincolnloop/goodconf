@@ -1,3 +1,53 @@
+[project]
+name = "goodconf"
+description = "Load configuration variables from a file or environment"
+readme = "README.rst"
+authors = [
+    {name = "Peter Baumgartner", email = "brett@python.org"}
+]
+keywords = ["env", "config", "json", "yaml", "toml"]
+license = {file = "LICENSE"}
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11"
+]
+dynamic = ["version"]
+dependencies = [
+    "pydantic>=1.0"
+]
+
+[project.optional-dependencies]
+yaml = ["ruamel.yaml>=0.17.0"]
+toml = ["tomlkit>=0.11.6"]
+tests = [
+    "django>=3.2.0",
+    "ruamel.yaml>=0.17.0",
+    "tomlkit>=0.11.6",
+    "pytest==7.1.*",
+    "pytest-cov==2.5.1",
+    "pytest-mock==1.7.1"
+]
+maintainer = ["zest.releaser[recommended]"]
+
+[project.urls]
+homepage = "https://github.com/lincolnloop/goodconf/"
+
+[tools.setuptools]
+zip-safe = false
+
+[tool.setuptools_scm]
+
+[tool.distutils.bdist_wheel]
+universal = true
+
 [build-system]
-requires = ['setuptools>=40.8.0']
-build-backend = 'setuptools.build_meta'
+requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
