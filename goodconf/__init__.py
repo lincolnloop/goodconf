@@ -172,7 +172,16 @@ class GoodConf(BaseSettings):
         """
         import tomlkit
 
-        return tomlkit.dumps(cls.get_initial(**override))
+        toml_str = tomlkit.dumps(cls.get_initial(**override))
+        dict_from_toml = tomlkit.loads(toml_str)
+        document = tomlkit.document()
+        if cls.__doc__:
+            document.add(tomlkit.comment(cls.__doc__))
+        for k, v in dict_from_toml.unwrap().items():
+            document.add(k, v)
+            if cls.__fields__[k].field_info.description:
+                document[k].comment(cls.__fields__[k].field_info.description)
+        return tomlkit.dumps(document)
 
     @classmethod
     def generate_markdown(cls) -> str:

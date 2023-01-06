@@ -32,9 +32,23 @@ def test_dump_toml():
     pytest.importorskip("tomlkit")
 
     class TestConf(GoodConf):
-        a: bool = Field(initial=lambda: True)
+        a: bool = False
+        b: str = "Happy"
 
-    assert TestConf.generate_toml() == "a = true\n"
+    output = TestConf.generate_toml()
+    assert "a = false" in output
+    assert 'b = "Happy"' in output
+
+    class TestConf(GoodConf):
+        "Configuration for My App"
+        a: str = Field(description="this is a")
+        b: str
+
+    output = TestConf.generate_toml()
+
+    assert "# Configuration for My App\n" in output
+    assert 'a = "" # this is a' in output
+    assert 'b = ""' in output
 
 
 def test_dump_yaml():
