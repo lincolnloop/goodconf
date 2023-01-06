@@ -11,6 +11,20 @@ def test_json(tmpdir):
     assert _load_config(str(conf)) == {"a": "b", "c": 3}
 
 
+def test_load_toml(tmpdir):
+    pytest.importorskip("tomlkit")
+    conf = tmpdir.join("conf.toml")
+    conf.write('a = "b"\nc = 3')
+    assert _load_config(str(conf)) == {"a": "b", "c": 3}
+
+
+def test_load_empty_toml(tmpdir):
+    pytest.importorskip("tomlkit")
+    conf = tmpdir.join("conf.toml")
+    conf.write("")
+    assert _load_config(str(conf)) == {}
+
+
 def test_yaml(tmpdir):
     pytest.importorskip("ruamel.yaml")
     conf = tmpdir.join("conf.yaml")
