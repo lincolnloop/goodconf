@@ -7,9 +7,9 @@ import logging
 import os
 import sys
 from io import StringIO
-from typing import Any, List, Tuple
+from typing import Any, ClassVar, List, Tuple, Type, cast
 
-from pydantic import BaseSettings, FilePath
+from pydantic import BaseSettings
 from pydantic.env_settings import SettingsSourceCallable
 from pydantic.fields import Field, FieldInfo, ModelField, Undefined  # noqa
 
@@ -31,8 +31,10 @@ def _load_config(path: str) -> dict:
     elif ext == ".toml":
         import tomlkit
 
-        def loader(f):
+        def load(stream):
             return tomlkit.load(f).unwrap()
+
+        loader = load
 
     else:
         loader = json.load
@@ -41,7 +43,7 @@ def _load_config(path: str) -> dict:
     return config or {}
 
 
-def _find_file(filename: str, require: bool = True) -> str:
+def _find_file(filename: str, require: bool = True) -> str | None:
     if not os.path.exists(filename):
         if not require:
             return None
@@ -79,12 +81,11 @@ class GoodConf(BaseSettings):
     class Config:
         # the name of an environment variable which can be used for the name of the
         # configuration file to load
-        file_env_var: str = None
+        file_env_var: str | None = None
         # if no file is given, try to load a configuration from these files in order
-        default_files: List[str] = None
+        default_files: List[str] | None = None
         # actual file used for configuration on load
-        _config_file: FilePath = None
-        load: bool = False
+        _config_file: str | None = None
 
         @classmethod
         def customise_sources(
@@ -96,7 +97,10 @@ class GoodConf(BaseSettings):
             """Load environment variables before init"""
             return env_settings, init_settings, file_secret_settings
 
-    def load(self, filename: str = None) -> None:
+    # populated by the metaclass using the Config class defined above, annotated here to help IDEs only
+    __config__: ClassVar[Type[Config]]
+
+    def load(self, filename: str | None = None) -> None:
         """Find config file and set values"""
         selected_config_file = None
         if filename:
@@ -150,8 +154,9 @@ class GoodConf(BaseSettings):
             dict_from_yaml.yaml_set_start_comment("\n" + cls.__doc__ + "\n\n")
         for k in dict_from_yaml.keys():
             if cls.__fields__[k].field_info.description:
+                description = cast(str, cls.__fields__[k].field_info.description)
                 dict_from_yaml.yaml_set_comment_before_after_key(
-                    k, before="\n" + cls.__fields__[k].field_info.description
+                    k, before="\n" + description
                 )
         yaml_str = StringIO()
         yaml.dump(dict_from_yaml, yaml_str)
@@ -171,6 +176,7 @@ class GoodConf(BaseSettings):
         Dumps initial config in TOML
         """
         import tomlkit
+        from tomlkit.items import Item
 
         toml_str = tomlkit.dumps(cls.get_initial(**override))
         dict_from_toml = tomlkit.loads(toml_str)
@@ -180,7 +186,8 @@ class GoodConf(BaseSettings):
         for k, v in dict_from_toml.unwrap().items():
             document.add(k, v)
             if cls.__fields__[k].field_info.description:
-                document[k].comment(cls.__fields__[k].field_info.description)
+                description = cast(str, cls.__fields__[k].field_info.description)
+                cast(Item, document[k]).comment(description)
         return tomlkit.dumps(document)
 
     @classmethod
@@ -203,7 +210,7 @@ class GoodConf(BaseSettings):
                 lines.append(f"  default: `{v.default}`  ")
         return "\n".join(lines)
 
-    def django_manage(self, args: List[str] = None):
+    def django_manage(self, args: List[str] | None = None):
         args = args or sys.argv
         from .contrib.django import execute_from_command_line_with_config
 
