@@ -1,3 +1,5 @@
+import json
+import os
 import re
 from textwrap import dedent
 from typing import Optional
@@ -177,3 +179,24 @@ def test_env_prefix():
         c = TestConf(load=True)
 
     assert c.a
+
+
+def test_precedence(tmpdir):
+    path = tmpdir.join("myapp.json")
+    path.write(json.dumps({"init": "file", "env": "file", "file": "file"}))
+
+    class TestConf(GoodConf, default_files=[path]):
+        init: str = ""
+        env: str = ""
+        file: str = ""
+
+    os.environ["INIT"] = "env"
+    os.environ["ENV"] = "env"
+    try:
+        c = TestConf(init="init")
+        assert c.init == "init"
+        assert c.env == "env"
+        assert c.file == "file"
+    finally:
+        del os.environ["INIT"]
+        del os.environ["ENV"]
