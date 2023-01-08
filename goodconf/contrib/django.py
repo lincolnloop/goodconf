@@ -1,14 +1,15 @@
 import argparse
 from contextlib import contextmanager
-from typing import List
+from typing import Generator, List
 
-from goodconf import GoodConf
-
+from .. import GoodConf
 from .argparse import argparser_add_argument
 
 
 @contextmanager
-def load_config_from_cli(config: GoodConf, argv: List[str]) -> List[str]:
+def load_config_from_cli(
+    config: GoodConf, argv: List[str]
+) -> Generator[List[str], None, None]:
     """Loads config, checking CLI arguments for a config file"""
 
     # Monkey patch Django's command parser
