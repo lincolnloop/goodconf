@@ -18,7 +18,7 @@ def test_conf_env_var(mocker, tmpdir):
         g = G()
         g.load()
     mocked_load_config.assert_called_once_with(str(path))
-    assert g.Config._config_file == str(path)
+    assert g.__config__._config_file == str(path)
 
 
 def test_conflict(tmpdir):
@@ -48,7 +48,7 @@ def test_all_env_vars(mocker):
     g = G()
     g.load()
     mocked_set_values.assert_called_once_with()
-    assert g.Config._config_file is None
+    assert g.__config__._config_file is None
 
 
 def test_provided_file(mocker, tmpdir):
@@ -58,7 +58,7 @@ def test_provided_file(mocker, tmpdir):
     g = GoodConf()
     g.load(str(path))
     mocked_load_config.assert_called_once_with(str(path))
-    assert g.Config._config_file == str(path)
+    assert g.__config__._config_file == str(path)
 
 
 def test_default_files(mocker, tmpdir):
@@ -74,4 +74,4 @@ def test_default_files(mocker, tmpdir):
     g = G()
     g.load()
     mocked_load_config.assert_called_once_with(str(path))
-    assert g.Config._config_file == str(path)
+    assert g.__config__._config_file == str(path)
