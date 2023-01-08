@@ -6,6 +6,7 @@ import pytest
 from pydantic import Field, ValidationError
 
 from goodconf import GoodConf
+from tests.utils import env_var
 
 
 def test_initial():
@@ -154,3 +155,16 @@ def test_required_missing():
 
     with pytest.raises(ValidationError):
         TestConf(load=True)
+
+
+def test_env_prefix():
+    class TestConf(GoodConf):
+        a: bool = False
+
+        class Config:
+            env_prefix = "PREFIX_"
+
+    with env_var("PREFIX_A", "True"):
+        c = TestConf(load=True)
+
+    assert c.a
