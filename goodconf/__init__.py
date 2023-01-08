@@ -7,7 +7,7 @@ import logging
 import os
 import sys
 from io import StringIO
-from typing import Any, ClassVar, Dict, List, Tuple, Type, cast
+from typing import Any, ClassVar, Dict, List, Optional, Tuple, Type, cast
 
 from pydantic import BaseSettings, PrivateAttr
 from pydantic.env_settings import SettingsSourceCallable
@@ -43,7 +43,7 @@ def _load_config(path: str) -> dict:
     return config or {}
 
 
-def _find_file(filename: str, require: bool = True) -> str | None:
+def _find_file(filename: str, require: bool = True) -> Optional[str]:
     if not os.path.exists(filename):
         if not require:
             return None
@@ -108,16 +108,16 @@ class GoodConf(BaseSettings):
         elif load:
             return self.load()
 
-    _config_file: str | None = PrivateAttr()
+    _config_file: Optional[str] = PrivateAttr()
 
     class Config:
         # the name of an environment variable which can be used for the name of the
         # configuration file to load
-        file_env_var: str | None = None
+        file_env_var: Optional[str] = None
         # if no file is given, try to load a configuration from these files in order
-        default_files: List[str] | None = None
+        default_files: Optional[List[str]] = None
         # actual file used for configuration on load
-        _config_file: str | None = None
+        _config_file: Optional[str] = None
 
         @classmethod
         def customise_sources(
@@ -138,7 +138,7 @@ class GoodConf(BaseSettings):
     # annotated here to help IDEs only
     __config__: ClassVar[Type[Config]]
 
-    def load(self, filename: str | None = None) -> None:
+    def load(self, filename: Optional[str] = None) -> None:
         """Find config file and set values"""
         self._config_file = filename
         super().__init__()
@@ -226,7 +226,7 @@ class GoodConf(BaseSettings):
                 lines.append(f"  default: `{v.default}`  ")
         return "\n".join(lines)
 
-    def django_manage(self, args: List[str] | None = None):
+    def django_manage(self, args: Optional[List[str]] = None):
         args = args or sys.argv
         from .contrib.django import execute_from_command_line_with_config
 
