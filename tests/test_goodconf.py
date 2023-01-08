@@ -157,6 +157,15 @@ def test_required_missing():
         TestConf(load=True)
 
 
+def test_set_on_init():
+    class TestConf(GoodConf):
+        a: str = Field()
+
+    val = "test"
+    c = TestConf(a=val)
+    assert c.a == val
+
+
 def test_env_prefix():
     class TestConf(GoodConf):
         a: bool = False

@@ -7,9 +7,9 @@ import logging
 import os
 import sys
 from io import StringIO
-from typing import Any, ClassVar, List, Tuple, Type, cast
+from typing import Any, ClassVar, Dict, List, Tuple, Type, cast
 
-from pydantic import BaseSettings
+from pydantic import BaseSettings, PrivateAttr
 from pydantic.env_settings import SettingsSourceCallable
 from pydantic.fields import Field, FieldInfo, ModelField, Undefined  # noqa
 
@@ -67,16 +67,48 @@ def initial_for_field(name: str, field: ModelField) -> Any:
     return ""
 
 
+def file_config_settings_source(settings: BaseSettings) -> Dict[str, Any]:
+    """Find config file and get values"""
+    settings = cast(GoodConf, settings)
+    selected_config_file = None
+    if settings._config_file:
+        selected_config_file = settings._config_file
+    elif (
+        settings.__config__.file_env_var
+        and settings.__config__.file_env_var in os.environ
+    ):
+        selected_config_file = _find_file(os.environ[settings.__config__.file_env_var])
+    elif settings.__config__.default_files:
+        for filename in settings.__config__.default_files:
+            selected_config_file = _find_file(filename, require=False)
+            if selected_config_file:
+                break
+    if selected_config_file:
+        values = _load_config(selected_config_file)
+        log.info("Loading config from %s", selected_config_file)
+        settings.__config__._config_file = selected_config_file
+    else:
+        values = {}
+        log.info("No config file specified. Loading with environment variables.")
+    return values
+
+
 class GoodConf(BaseSettings):
-    def __init__(self, load: bool = False):
+    def __init__(self, load: bool = False, **kwargs):
         """
         :param load: load config file on instantiation [default: False].
 
         A docstring defined on the class should be a plain-text description
         used as a header when generating a configuration file.
         """
-        if load:
-            self.load()
+        self._config_file = None
+        # Emulate Pydantic behavior, load immediately
+        if kwargs:
+            return super().__init__(**kwargs)
+        elif load:
+            return self.load()
+
+    _config_file: str | None = PrivateAttr()
 
     class Config:
         # the name of an environment variable which can be used for the name of the
@@ -95,37 +127,21 @@ class GoodConf(BaseSettings):
             file_secret_settings: SettingsSourceCallable,
         ) -> Tuple[SettingsSourceCallable, ...]:
             """Load environment variables before init"""
-            return env_settings, init_settings, file_secret_settings
+            return (
+                init_settings,
+                env_settings,
+                file_config_settings_source,
+                file_secret_settings,
+            )
 
-    # populated by the metaclass using the Config class defined above, annotated here to help IDEs only
+    # populated by the metaclass using the Config class defined above,
+    # annotated here to help IDEs only
     __config__: ClassVar[Type[Config]]
 
     def load(self, filename: str | None = None) -> None:
         """Find config file and set values"""
-        selected_config_file = None
-        if filename:
-            selected_config_file = _find_file(filename)
-        else:
-            if (
-                self.__config__.file_env_var
-                and self.__config__.file_env_var in os.environ
-            ):
-                selected_config_file = _find_file(
-                    os.environ[self.__config__.file_env_var]
-                )
-            else:
-                for filename in self.__config__.default_files or []:
-                    selected_config_file = _find_file(filename, require=False)
-                    if selected_config_file:
-                        break
-        if selected_config_file:
-            config = _load_config(selected_config_file)
-            log.info("Loading config from %s", selected_config_file)
-            self.__config__._config_file = selected_config_file
-        else:
-            config = {}
-            log.info("No config file specified. Loading with environment variables.")
-        super().__init__(**config)
+        self._config_file = filename
+        super().__init__()
 
     @classmethod
     def get_initial(cls, **override) -> dict:
