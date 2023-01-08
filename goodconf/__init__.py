@@ -78,8 +78,8 @@ def file_config_settings_source(settings: BaseSettings) -> Dict[str, Any]:
         and settings.__config__.file_env_var in os.environ
     ):
         selected_config_file = _find_file(os.environ[settings.__config__.file_env_var])
-    elif settings.__config__.default_files:
-        for filename in settings.__config__.default_files:
+    else:
+        for filename in settings.__config__.default_files or []:
             selected_config_file = _find_file(filename, require=False)
             if selected_config_file:
                 break
