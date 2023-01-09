@@ -4,6 +4,10 @@ Goodconf
 .. image:: https://github.com/lincolnloop/goodconf/actions/workflows/test.yml/badge.svg?branch=main&event=push
     :target: https://github.com/lincolnloop/goodconf/actions/workflows/test.yml?query=branch%3Amain+event%3Apush
 
+.. image:: https://results.pre-commit.ci/badge/github/lincolnloop/goodconf/main.svg
+    :target: https://results.pre-commit.ci/latest/github/lincolnloop/goodconf/main
+    :alt: pre-commit.ci status
+
 .. image:: https://img.shields.io/codecov/c/github/lincolnloop/goodconf.svg
     :target: https://codecov.io/gh/lincolnloop/goodconf
 
