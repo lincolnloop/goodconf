@@ -2,6 +2,7 @@
 name = "goodconf"
 description = "Load configuration variables from a file or environment"
 readme = "README.rst"
+requires-python = ">=3.7"
 authors = [
     {name = "Peter Baumgartner", email = "brett@python.org"}
 ]
@@ -40,13 +41,13 @@ maintainer = ["zest.releaser[recommended]"]
 [project.urls]
 homepage = "https://github.com/lincolnloop/goodconf/"
 
-[tools.setuptools]
-zip-safe = false
+[tool.hatch.build.targets.sdist]
+exclude = [
+  "/.github",
+]
 
-[tool.setuptools_scm]
-
-[tool.distutils.bdist_wheel]
-universal = true
+[tool.hatch.version]
+source = "vcs"
 
 [tool.isort]
 profile = "black"
@@ -57,5 +58,5 @@ known_first_party = "goodconf"
 addopts = "--cov --cov-branch"
 
 [build-system]
-requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
