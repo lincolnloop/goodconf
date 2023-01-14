@@ -2,10 +2,11 @@
 Change Log
 ==========
 
-2.0.2 (unreleased)
+2.1.0 (unreleased)
 ==================
 
-- Nothing changed yet.
+- TOML files are now supported as configuration source
+- Python 3.11 is now officially supported
 
 
 2.0.1 (15 June 2021)
