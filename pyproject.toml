@@ -39,6 +39,7 @@ tests = [
 
 [project.urls]
 homepage = "https://github.com/lincolnloop/goodconf/"
+changelog = "https://github.com/lincolnloop/goodconf/blob/main/CHANGES.rst"
 
 [tool.hatch.build.targets.sdist]
 exclude = [

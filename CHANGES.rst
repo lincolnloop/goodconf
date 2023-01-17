@@ -2,11 +2,14 @@
 Change Log
 ==========
 
-2.1.0 (unreleased)
+3.0.0 (17 January 2023)
 ==================
 
 - TOML files are now supported as configuration source
-- Python 3.11 is now officially supported
+- Python 3.11 and 3.10 are now officially supported
+- Python 3.6 is no longer officially supported
+- Requires Pydantic 1.7+
+- Variables can now be set during class initialization
 
 
 2.0.1 (15 June 2021)
