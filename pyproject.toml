@@ -36,7 +36,6 @@ tests = [
     "pytest-cov==4.0.*",
     "pytest-mock==3.10.*"
 ]
-maintainer = ["zest.releaser[recommended]"]
 
 [project.urls]
 homepage = "https://github.com/lincolnloop/goodconf/"
