@@ -198,7 +198,10 @@ Releasing a new version to PyPI:
 
 .. code:: shell
 
-    git tag -s vX.Y.Z -m vX.Y.Z
+    export VERSION=X.Y.Z
+    git tag -s v$VERSION -m v$VERSION
     git push --tags
+    rm -rf ./dist
     hatch build
     hatch publish
+    gh release create v$VERSION dist/goodconf-$VERSION* --generate-notes --verify-tag
