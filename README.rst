@@ -193,3 +193,12 @@ Run tests
 .. code:: shell
 
     pytest
+
+Releasing a new version to PyPI:
+
+.. code:: shell
+
+    git tag -s vX.Y.Z -m vX.Y.Z
+    git push --tags
+    hatch build
+    hatch publish
