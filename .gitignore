@@ -1,5 +1,6 @@
 /dist
 /build
+/goodconf/_version.py
 .coverage
 htmlcov
 .pytest_cache

@@ -45,6 +45,9 @@ exclude = [
   "/.github",
 ]
 
+[tool.hatch.build.hooks.vcs]
+version-file = "goodconf/_version.py"
+
 [tool.hatch.version]
 source = "vcs"
 
