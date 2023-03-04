@@ -1,6 +1,7 @@
 from typing import Optional
 
 import pytest
+from pydantic import BaseModel
 
 from goodconf import Field, GoodConf, initial_for_field
 
@@ -59,3 +60,40 @@ def test_optional_initial():
 
     initial = G().get_initial()
     assert initial["a"] is None
+
+
+def test_complex_initial():
+    """Test a nested inner BaseModel"""
+
+    class G(GoodConf):
+        class A(BaseModel):
+            inner: str = "test A"
+
+        outer_a = A()
+
+    initial = G().get_initial()
+    assert initial["outer_a"]["inner"] == "test A"
+
+
+def test_list_initial():
+    """Test a list of basic types"""
+
+    class G(GoodConf):
+        list = [0, 1, 2]
+
+    initial = G().get_initial()
+    assert len(initial["list"]) == 3
+
+
+def test_list_complex_initial():
+    """Test a list of nested inner BaseModel"""
+
+    class G(GoodConf):
+        class A(BaseModel):
+            inner: str = "test A"
+
+        list = [A()]
+
+    initial = G().get_initial()
+    assert len(initial["list"]) == 1
+    assert initial["list"][0]["inner"] == "test A"

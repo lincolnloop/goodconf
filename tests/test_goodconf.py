@@ -5,7 +5,7 @@ from textwrap import dedent
 from typing import Optional
 
 import pytest
-from pydantic import Field, ValidationError
+from pydantic import BaseModel, Field, ValidationError
 
 from goodconf import GoodConf
 from tests.utils import env_var
@@ -52,6 +52,34 @@ def test_dump_toml():
     assert "# Configuration for My App\n" in output
     assert 'a = "" # this is a' in output
     assert 'b = ""' in output
+
+
+def test_dump_complex_toml():
+    """Dump a complex configuration class, with inner classes and lists"""
+    pytest.importorskip("tomlkit")
+    import tomlkit
+
+    class TestConf(GoodConf):
+        class A(BaseModel):
+            inner: bool = False
+            index: int
+
+        outer = A(index=0)
+        simple_list: list[int] = [1, 2]
+        complex_list: list[A] = [A(index=0)]
+
+    output = TestConf.generate_toml()
+    assert "[outer]" in output
+    assert "inner = false" in output
+
+    # Check that generated toml is valid
+    doc = tomlkit.parse(output)
+    assert doc["outer"]["inner"] is False
+
+    # Check the lists
+    assert len(doc["simple_list"]) == 2
+    assert doc["simple_list"][0] == 1
+    assert doc["complex_list"][0]["index"] == 0
 
 
 def test_dump_yaml():
