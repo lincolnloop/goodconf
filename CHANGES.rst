@@ -2,6 +2,11 @@
 Change Log
 ==========
 
+unreleased
+==========
+
+- pin to pydantic < 2 due to breaking changes in 2.0
+
 3.0.0 (17 January 2023)
 ==================
 
