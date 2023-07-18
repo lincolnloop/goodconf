@@ -7,11 +7,32 @@ import logging
 import os
 import sys
 from io import StringIO
-from typing import Any, ClassVar, Dict, List, Optional, Tuple, Type, cast, Callable, get_args
+from typing import (
+    Any,
+    Callable,
+    ClassVar,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    cast,
+    get_args,
+)
 
-from pydantic import PrivateAttr, ConfigDict as PydanticConfigDict
-from pydantic_settings import BaseSettings, SettingsConfigDict, PydanticBaseSettingsSource
-from pydantic.fields import Field, FieldInfo, PydanticUndefined, ModelPrivateAttr  # noqa
+from pydantic import ConfigDict as PydanticConfigDict
+from pydantic import PrivateAttr
+from pydantic.fields import (  # noqa
+    Field,
+    FieldInfo,
+    ModelPrivateAttr,
+    PydanticUndefined,
+)
+from pydantic_settings import (
+    BaseSettings,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+)
 
 log = logging.getLogger(__name__)
 
@@ -21,6 +42,7 @@ class GoodConfConfigDict(SettingsConfigDict):
     file_env_var: Optional[str]
     # if no file is given, try to load a configuration from these files in order
     default_files: Optional[List[str]]
+
 
 def _load_config(path: str) -> dict[str, Any]:
     """
@@ -64,13 +86,17 @@ def initial_for_field(name: str, field_info: FieldInfo) -> Any:
         # return field_info.extra["initial"]()
         pass
     except KeyError:
-        if field_info.default is not PydanticUndefined and field_info.default is not ...:
+        if (
+            field_info.default is not PydanticUndefined
+            and field_info.default is not ...
+        ):
             return field_info.default
         if field_info.default_factory is not None:
             return field_info.default_factory()
     if type(None) in get_args(field_info.annotation):
         return None
     return ""
+
 
 class FileConfigSettingsSource(PydanticBaseSettingsSource):
     """
@@ -80,9 +106,11 @@ class FileConfigSettingsSource(PydanticBaseSettingsSource):
     def __init__(self, settings_cls: type[BaseSettings]):
         super().__init__(settings_cls)
 
-    def get_field_value(self, field: FieldInfo, field_name: str) -> tuple[Any, str, bool]:
+    def get_field_value(
+        self, field: FieldInfo, field_name: str
+    ) -> tuple[Any, str, bool]:
         # Nothing to do here. Only implement the return statement to make mypy happy
-        return None, '', False
+        return None, "", False
 
     def __call__(self) -> dict[str, Any]:
         settings = cast(GoodConf, self.settings_cls)
@@ -91,10 +119,12 @@ class FileConfigSettingsSource(PydanticBaseSettingsSource):
         if not isinstance(settings._config_file, ModelPrivateAttr):
             return {}
         elif (
-                settings.model_config.get("file_env_var")
-                and settings.model_config["file_env_var"] in os.environ
+            settings.model_config.get("file_env_var")
+            and settings.model_config["file_env_var"] in os.environ
         ):
-            selected_config_file = _find_file(os.environ[settings.model_config["file_env_var"]])
+            selected_config_file = _find_file(
+                os.environ[settings.model_config["file_env_var"]]
+            )
         else:
             for filename in settings.model_config.get("default_files") or []:
                 selected_config_file = _find_file(filename, require=False)
@@ -111,11 +141,12 @@ class FileConfigSettingsSource(PydanticBaseSettingsSource):
         return values
 
     def __repr__(self) -> str:
-        return f'FileConfigSettingsSource()'
+        return f"FileConfigSettingsSource()"
 
 
 class GoodConf(BaseSettings):
     _config_file: str = PrivateAttr(None)
+
     def __init__(self, load: bool = False, **kwargs):
         """
         :param load: load config file on instantiation [default: False].
@@ -131,12 +162,12 @@ class GoodConf(BaseSettings):
 
     @classmethod
     def settings_customise_sources(
-            cls,
-            settings_cls: Type[BaseSettings],
-            init_settings: PydanticBaseSettingsSource,
-            env_settings: PydanticBaseSettingsSource,
-            dotenv_settings: PydanticBaseSettingsSource,
-            file_secret_settings: PydanticBaseSettingsSource,
+        cls,
+        settings_cls: Type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
     ) -> Tuple[PydanticBaseSettingsSource, ...]:
         """Load environment variables before init"""
         return (
