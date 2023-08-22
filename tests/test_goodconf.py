@@ -172,8 +172,7 @@ def test_env_prefix():
     class TestConf(GoodConf):
         a: bool = False
 
-        class Config:
-            env_prefix = "PREFIX_"
+        model_config = {"env_prefix": "PREFIX_"}
 
     with env_var("PREFIX_A", "True"):
         c = TestConf(load=True)

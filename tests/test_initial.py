@@ -9,38 +9,38 @@ from .utils import KEY
 
 def test_initial():
     class C(GoodConf):
-        f = Field(initial=lambda: "x")
+        f: str = Field(initial=lambda: "x")
 
-    assert initial_for_field(KEY, C.__fields__["f"]) == "x"
+    assert initial_for_field(KEY, C.model_fields["f"]) == "x"
 
 
 def test_initial_bad():
     class C(GoodConf):
-        f = Field(initial="x")
+        f: str = Field(initial="x")
 
     with pytest.raises(ValueError):
-        initial_for_field(KEY, C.__fields__["f"])
+        initial_for_field(KEY, C.model_fields["f"])
 
 
 def test_initial_default():
     class C(GoodConf):
-        f = Field("x")
+        f: str = Field("x")
 
-    assert initial_for_field(KEY, C.__fields__["f"]) == "x"
+    assert initial_for_field(KEY, C.model_fields["f"]) == "x"
 
 
 def test_initial_default_factory():
     class C(GoodConf):
         f: str = Field(default_factory=lambda: "y")
 
-    assert initial_for_field(KEY, C.__fields__["f"]) == "y"
+    assert initial_for_field(KEY, C.model_fields["f"]) == "y"
 
 
 def test_no_initial():
     class C(GoodConf):
-        f = Field()
+        f: str = Field()
 
-    assert initial_for_field(KEY, C.__fields__["f"]) == ""
+    assert initial_for_field(KEY, C.model_fields["f"]) == ""
 
 
 def test_default_initial():

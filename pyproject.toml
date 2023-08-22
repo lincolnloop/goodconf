@@ -22,7 +22,8 @@ classifiers = [
 ]
 dynamic = ["version"]
 dependencies = [
-    "pydantic >= 1.7, < 2"
+    "pydantic>=2.0",
+    "pydantic-settings>=2.0",
 ]
 
 [project.optional-dependencies]
