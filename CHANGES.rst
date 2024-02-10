@@ -6,6 +6,8 @@ Unreleased
 ========================
 
 - Removed errant print statement
+- Removed official support for Python 3.7
+- Added support for Python 3.12
 
 3.1.0 (10 February 2024)
 ========================
