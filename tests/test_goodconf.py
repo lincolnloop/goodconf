@@ -154,6 +154,7 @@ def test_generate_markdown_types():
     assert "  * type: `Literal['a', 'b']`" in lines
     assert "  * type: `list[str]`" in lines
 
+
 def test_generate_markdown_required():
     class TestConf(GoodConf):
         a: str
