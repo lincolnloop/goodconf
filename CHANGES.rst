@@ -2,6 +2,11 @@
 Change Log
 ==========
 
+Unreleased
+========================
+
+- Removed errant print statement
+
 3.1.0 (10 February 2024)
 ========================
 

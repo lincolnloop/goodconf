@@ -107,7 +107,6 @@ def file_config_settings_source(settings: BaseSettings) -> Dict[str, Any]:
 
 def type_to_str(tp: Type[Any]) -> str:
     """String representation of a type."""
-    print(tp)
     origin = get_origin(tp)
     if origin is None:  # Simple type or a specific value in Literal
         if hasattr(tp, "__name__"):
