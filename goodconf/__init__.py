@@ -260,7 +260,7 @@ class GoodConf(BaseSettings):
         for k, v in cls.__fields__.items():
             lines.append(f"* **{k}**")
             if v.required:
-                lines[-1] = lines[-1] + " _REQUIRED_"
+                lines[-1] = f"{lines[-1]} _REQUIRED_"
             if v.field_info.description:
                 lines.append(f"  * description: {v.field_info.description}")
             lines.append(f"  * type: `{type_to_str(v.outer_type_)}`")
