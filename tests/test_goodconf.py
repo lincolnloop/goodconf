@@ -2,7 +2,7 @@ import json
 import os
 import re
 from textwrap import dedent
-from typing import Optional, Literal
+from typing import Optional, List, Literal
 
 import pytest
 from pydantic import Field, ValidationError
@@ -148,7 +148,7 @@ def test_generate_markdown_default_false():
 def test_generate_markdown_types():
     class TestConf(GoodConf):
         a: Literal["a", "b"] = Field(default="a")
-        b: list[str] = Field()
+        b: List[str] = Field()
 
     lines = TestConf.generate_markdown().splitlines()
     assert "  * type: `Literal['a', 'b']`" in lines
