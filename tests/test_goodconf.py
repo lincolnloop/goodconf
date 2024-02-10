@@ -44,6 +44,7 @@ def test_dump_toml():
 
     class TestConf(GoodConf):
         "Configuration for My App"
+
         a: str = Field(description="this is a")
         b: str
 
@@ -59,6 +60,7 @@ def test_dump_yaml():
 
     class TestConf(GoodConf):
         "Configuration for My App"
+
         a: str = Field(description="this is a")
         b: str
 
@@ -112,6 +114,7 @@ def test_generate_markdown():
 
     class TestConf(GoodConf):
         "Configuration for My App"
+
         a: int = Field(description=help_, default=5)
         b: str
 
@@ -121,7 +124,7 @@ def test_generate_markdown():
     assert help_ in mkdn
 
 
-def test_generate_markdown_no_docsttring():
+def test_generate_markdown_no_docstring():
     help_ = "this is a"
 
     class TestConf(GoodConf):

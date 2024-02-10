@@ -7,7 +7,19 @@ import logging
 import os
 import sys
 from io import StringIO
-from typing import Any, ClassVar, Dict, List, Optional, Tuple, Type, cast
+from typing import (
+    Any,
+    ClassVar,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    cast,
+    get_origin,
+    get_args,
+    Union,
+)
 
 from pydantic import BaseSettings, PrivateAttr
 from pydantic.env_settings import SettingsSourceCallable
