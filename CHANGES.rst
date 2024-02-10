@@ -2,6 +2,12 @@
 Change Log
 ==========
 
+Unreleased
+==========
+
+- Fixed type display in Markdown generation
+- Changed markdown output format (trailing spaces were problematic).
+
 3.0.1 (30 June 2023)
 ====================
 

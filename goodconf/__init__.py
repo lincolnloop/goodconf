@@ -105,6 +105,32 @@ def file_config_settings_source(settings: BaseSettings) -> Dict[str, Any]:
     return values
 
 
+def type_to_str(tp: Type[Any]) -> str:
+    """String representation of a type."""
+    print(tp)
+    origin = get_origin(tp)
+    if origin is None:  # Simple type or a specific value in Literal
+        if hasattr(tp, "__name__"):
+            return tp.__name__
+        return repr(
+            tp
+        )  # Use repr for values to get their string representation properly
+
+    args = get_args(tp)
+
+    if (
+        origin is Union and len(args) == 2 and type(None) in args
+    ):  # Handle Optional as a special case
+        non_none_args = [arg for arg in args if arg is not type(None)]
+        return f"Optional[{type_to_str(non_none_args[0])}]"
+
+    if origin:  # Generic or special type like Union, Literal, etc.
+        type_name = origin.__name__
+        args_str = ", ".join(type_to_str(arg) for arg in args)
+        return f"{type_name}[{args_str}]"
+    return str(tp)  # Fallback for any other type
+
+
 class GoodConf(BaseSettings):
     def __init__(self, load: bool = False, **kwargs):
         """
@@ -229,13 +255,12 @@ class GoodConf(BaseSettings):
         for k, v in cls.__fields__.items():
             lines.append(f"* **{k}**  ")
             if v.required:
-                lines[-1] = lines[-1] + "_REQUIRED_  "
+                lines[-1] = lines[-1] + "_REQUIRED_"
             if v.field_info.description:
-                lines.append(f"  {v.field_info.description}  ")
-            type_ = v.type_ == v.type_.__name__ if v.outer_type_ else v.outer_type_
-            lines.append(f"  type: `{type_}`  ")
+                lines.append(f"  * description: {v.field_info.description}")
+            lines.append(f"  * type: `{type_to_str(v.outer_type_)}`")
             if v.default is not None:
-                lines.append(f"  default: `{v.default}`  ")
+                lines.append(f"  * default: `{v.default}`")
         return "\n".join(lines)
 
     def django_manage(self, args: Optional[List[str]] = None):

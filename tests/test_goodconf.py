@@ -2,7 +2,7 @@ import json
 import os
 import re
 from textwrap import dedent
-from typing import Optional
+from typing import Optional, Literal
 
 import pytest
 from pydantic import Field, ValidationError
@@ -133,14 +133,26 @@ def test_generate_markdown_no_docstring():
 
     mkdn = TestConf.generate_markdown()
     # Not sure on final format, just do some basic smoke tests
-    assert help_ in mkdn
+    assert f"  * description: {help_}" in mkdn.splitlines()
 
 
 def test_generate_markdown_default_false():
     class TestConf(GoodConf):
         a: bool = Field(default=False)
 
-    assert "False" in TestConf.generate_markdown()
+    lines = TestConf.generate_markdown().splitlines()
+    assert "  * type: `bool`" in lines
+    assert "  * default: `False`" in lines
+
+
+def test_generate_markdown_types():
+    class TestConf(GoodConf):
+        a: Literal["a", "b"] = Field(default="a")
+        b: list[str] = Field()
+
+    lines = TestConf.generate_markdown().splitlines()
+    assert "  * type: `Literal['a', 'b']`" in lines
+    assert "  * type: `list[str]`" in lines
 
 
 def test_undefined():
