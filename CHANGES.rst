@@ -2,7 +2,7 @@
 Change Log
 ==========
 
-Unreleased
+4.0.0 (10 February 2024)
 ========================
 
 - Removed errant print statement
