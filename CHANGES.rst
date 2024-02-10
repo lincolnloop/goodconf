@@ -2,6 +2,11 @@
 Change Log
 ==========
 
+4.0.1 (10 February 2024)
+========================
+
+- Fix trailing whitespace in markdown output
+
 4.0.0 (10 February 2024)
 ========================
 

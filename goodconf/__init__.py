@@ -252,7 +252,7 @@ class GoodConf(BaseSettings):
         if cls.__doc__:
             lines.extend([f"# {cls.__doc__}", ""])
         for k, v in cls.__fields__.items():
-            lines.append(f"* **{k}**  ")
+            lines.append(f"* **{k}**")
             if v.required:
                 lines[-1] = lines[-1] + "_REQUIRED_"
             if v.field_info.description:

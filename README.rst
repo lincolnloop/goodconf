@@ -203,5 +203,5 @@ Releasing a new version to PyPI:
     git push --tags
     rm -rf ./dist
     hatch build
-    hatch publish
+    hatch publish --user __token__
     gh release create v$VERSION dist/goodconf-$VERSION* --generate-notes --verify-tag
