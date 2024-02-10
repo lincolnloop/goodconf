@@ -2,6 +2,11 @@
 Change Log
 ==========
 
+Unreleased
+==========
+
+- Another markdown output fix
+
 4.0.1 (10 February 2024)
 ========================
 
