@@ -2,10 +2,11 @@
 Change Log
 ==========
 
-Unreleased
-==========
+4.0.2 (11 February 2024)
+========================
 
 - Another markdown output fix
+- Fix for markdown generation generation on Python 3.8 & 3.9
 
 4.0.1 (10 February 2024)
 ========================
