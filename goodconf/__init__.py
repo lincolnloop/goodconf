@@ -125,11 +125,11 @@ def type_to_str(tp: Type[Any]) -> str:
 
     if origin:  # Generic or special type like Union, Literal, etc.
         # Python 3.8 - 3.9 compatibility
-        if hasattr(origin, '__name__'):
+        if hasattr(origin, "__name__"):
             type_name = origin.__name__
         else:
             # Attempt to get a readable name for special forms
-            type_name = repr(origin).replace('typing.', '')
+            type_name = repr(origin).replace("typing.", "")
 
         args_str = ", ".join(type_to_str(arg) for arg in args)
         return f"{type_name}[{args_str}]"
