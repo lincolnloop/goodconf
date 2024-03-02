@@ -21,9 +21,9 @@ from typing import (
     Union,
 )
 
-from pydantic import BaseSettings, PrivateAttr
+from pydantic import BaseModel, BaseSettings, PrivateAttr
 from pydantic.env_settings import SettingsSourceCallable
-from pydantic.fields import Field, FieldInfo, ModelField, Undefined  # noqa
+from pydantic.fields import ModelField, Undefined
 
 log = logging.getLogger(__name__)
 
@@ -65,18 +65,32 @@ def _find_file(filename: str, require: bool = True) -> Optional[str]:
 
 def initial_for_field(name: str, field: ModelField) -> Any:
     info = field.field_info
+    initial = ""  # Default value
     try:
         if not callable(info.extra["initial"]):
             raise ValueError(f"Initial value for `{name}` must be a callable.")
-        return info.extra["initial"]()
+        initial = info.extra["initial"]()
     except KeyError:
         if info.default is not Undefined and info.default is not ...:
-            return info.default
+            initial = info.default
         if info.default_factory is not None:
-            return info.default_factory()
+            initial = info.default_factory()
+
+    # If initial is a BaseModel generate the dictionary representation using pydantic
+    #  built-in method
+    if isinstance(initial, BaseModel):
+        return initial.dict()
+    # If initial is a list, concatenate the result in an output list
+    elif isinstance(initial, list):
+        # If it contains a list of BaseModel, invoke dict on each of them
+        if any(isinstance(element, BaseModel) for element in initial):
+            return [element.dict() for element in initial]
+        else:
+            # If they are basic types, simply concatenate them
+            return [inner for inner in initial]
     if field.allow_none:
         return None
-    return ""
+    return initial
 
 
 def file_config_settings_source(settings: BaseSettings) -> Dict[str, Any]:
@@ -187,7 +201,7 @@ class GoodConf(BaseSettings):
         super().__init__()
 
     @classmethod
-    def get_initial(cls, **override) -> dict:
+    def get_initial(cls, **override) -> dict[str, Any]:
         return {
             k: override.get(k, initial_for_field(k, v))
             for k, v in cls.__fields__.items()
@@ -242,11 +256,62 @@ class GoodConf(BaseSettings):
         document = tomlkit.document()
         if cls.__doc__:
             document.add(tomlkit.comment(cls.__doc__))
-        for k, v in dict_from_toml.unwrap().items():
-            document.add(k, v)
-            if cls.__fields__[k].field_info.description:
-                description = cast(str, cls.__fields__[k].field_info.description)
-                cast(Item, document[k]).comment(description)
+
+        def create_item(field: ModelField, initial_value: Any) -> Item:
+            """Recursively traverse the input field,
+            building the appropriate TOML Item while descending the hierarchy.
+            Stop when find a basic type is encountered, created as a basic TOML Item"""
+            # Check to see if the initial_value is a complex type
+            if isinstance(initial_value, dict):
+                # If this field contains sub-fields inside,
+                # create them inside a TOML table
+                table = tomlkit.table()
+                # Invoke recursively on each subfield
+                for name, field in field.type_.__fields__.items():
+                    item = create_item(field, initial_value[name])
+                    # Add the item to the table
+                    table[name] = item
+                return table
+            # Che if the initial_value is a list of object
+            elif isinstance(initial_value, list):
+                # Check to see if the list of sub-fields contains any complex type.
+                # In that case, an array of table (aot) is required
+                if getattr(field, "sub_fields") and any(
+                    sub_field.is_complex() for sub_field in field.sub_fields
+                ):
+                    array = tomlkit.aot()
+                else:
+                    # The sub-fields are basic types
+                    array = tomlkit.array()
+
+                for index, _ in enumerate(initial_value):
+                    # Invoke recursively on each element
+                    if getattr(field, "sub_fields"):
+                        # We have a complex type in the sub_fields
+                        item = create_item(field.sub_fields[0], initial_value[index])
+                    else:
+                        # We have a simple type
+                        item = create_item(field, initial_value[index])
+                    # Append each item to the array
+                    array.append(item)
+
+                return array
+            # Base of the recursion: the initial_value is a simple type
+            else:
+                # Create a base TOML item
+                item = tomlkit.item(initial_value)
+
+                # Add description to the item, if present
+                if field.field_info.description:
+                    description = cast(str, field.field_info.description)
+                    item.comment(description)
+
+                return item
+
+        for k, initial_value in dict_from_toml.unwrap().items():
+            item = create_item(cls.__fields__[k], initial_value)
+            document.add(k, item)
+
         return tomlkit.dumps(document)
 
     @classmethod
