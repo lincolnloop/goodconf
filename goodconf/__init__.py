@@ -1,6 +1,7 @@
 """
 Transparently load variables from environment or JSON/YAML file.
 """
+
 import errno
 import json
 import logging
@@ -21,9 +22,11 @@ from typing import (
     Union,
 )
 
-from pydantic import BaseSettings, PrivateAttr
-from pydantic.env_settings import SettingsSourceCallable
-from pydantic.fields import Field, FieldInfo, ModelField, Undefined  # noqa
+from pydantic_settings import BaseSettings, PydanticBaseSettingsSource
+from pydantic import PrivateAttr
+from pydantic_core import PydanticUndefined
+from pydantic_core.core_schema import ModelField
+from pydantic.fields import Field, FieldInfo  # noqa
 
 log = logging.getLogger(__name__)
 
@@ -64,13 +67,13 @@ def _find_file(filename: str, require: bool = True) -> Optional[str]:
 
 
 def initial_for_field(name: str, field: ModelField) -> Any:
-    info = field.field_info
+    info = field["schema"]
     try:
         if not callable(info.extra["initial"]):
             raise ValueError(f"Initial value for `{name}` must be a callable.")
         return info.extra["initial"]()
     except KeyError:
-        if info.default is not Undefined and info.default is not ...:
+        if info.default is not PydanticUndefined and info.default is not ...:
             return info.default
         if info.default_factory is not None:
             return info.default_factory()
@@ -153,6 +156,8 @@ class GoodConf(BaseSettings):
 
     _config_file: Optional[str] = PrivateAttr()
 
+    # TODO[pydantic]: We couldn't refactor this class, please create the `model_config` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-config for more information.
     class Config:
         # the name of an environment variable which can be used for the name of the
         # configuration file to load
@@ -165,10 +170,10 @@ class GoodConf(BaseSettings):
         @classmethod
         def customise_sources(
             cls,
-            init_settings: SettingsSourceCallable,
-            env_settings: SettingsSourceCallable,
-            file_secret_settings: SettingsSourceCallable,
-        ) -> Tuple[SettingsSourceCallable, ...]:
+            init_settings: PydanticBaseSettingsSource,
+            env_settings: PydanticBaseSettingsSource,
+            file_secret_settings: PydanticBaseSettingsSource,
+        ) -> Tuple[PydanticBaseSettingsSource, ...]:
             """Load environment variables before init"""
             return (
                 init_settings,
@@ -190,7 +195,7 @@ class GoodConf(BaseSettings):
     def get_initial(cls, **override) -> dict:
         return {
             k: override.get(k, initial_for_field(k, v))
-            for k, v in cls.__fields__.items()
+            for k, v in cls.model_fields.items()
         }
 
     @classmethod
@@ -212,8 +217,8 @@ class GoodConf(BaseSettings):
         if cls.__doc__:
             dict_from_yaml.yaml_set_start_comment("\n" + cls.__doc__ + "\n\n")
         for k in dict_from_yaml.keys():
-            if cls.__fields__[k].field_info.description:
-                description = cast(str, cls.__fields__[k].field_info.description)
+            if cls.model_fields[k].field_info.description:
+                description = cast(str, cls.model_fields[k].field_info.description)
                 dict_from_yaml.yaml_set_comment_before_after_key(
                     k, before="\n" + description
                 )
@@ -244,8 +249,8 @@ class GoodConf(BaseSettings):
             document.add(tomlkit.comment(cls.__doc__))
         for k, v in dict_from_toml.unwrap().items():
             document.add(k, v)
-            if cls.__fields__[k].field_info.description:
-                description = cast(str, cls.__fields__[k].field_info.description)
+            if cls.model_fields[k].description:
+                description = cast(str, cls.model_fields[k].description)
                 cast(Item, document[k]).comment(description)
         return tomlkit.dumps(document)
 
@@ -257,12 +262,12 @@ class GoodConf(BaseSettings):
         lines = []
         if cls.__doc__:
             lines.extend([f"# {cls.__doc__}", ""])
-        for k, v in cls.__fields__.items():
+        for k, v in cls.model_fields.items():
             lines.append(f"* **{k}**")
-            if v.required:
+            if v.is_required():
                 lines[-1] = f"{lines[-1]} _REQUIRED_"
-            if v.field_info.description:
-                lines.append(f"  * description: {v.field_info.description}")
+            if v.description:
+                lines.append(f"  * description: {v.description}")
             lines.append(f"  * type: `{type_to_str(v.outer_type_)}`")
             if v.default is not None:
                 lines.append(f"  * default: `{v.default}`")
