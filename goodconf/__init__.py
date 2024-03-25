@@ -1,6 +1,7 @@
 """
 Transparently load variables from environment or JSON/YAML file.
 """
+
 import errno
 import json
 import logging
