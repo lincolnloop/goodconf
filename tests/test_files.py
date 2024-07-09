@@ -53,7 +53,11 @@ def test_provided_file(mocker, tmpdir):
     mocked_load_config = mocker.patch("goodconf._load_config")
     path = tmpdir.join("myapp.json")
     path.write("")
-    g = GoodConf()
+
+    class G(GoodConf):
+        pass
+
+    g = G()
     g.load(str(path))
     mocked_load_config.assert_called_once_with(str(path))
     assert g._config_file == str(path)

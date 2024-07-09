@@ -28,6 +28,7 @@ from pydantic.fields import (  # noqa
     ModelPrivateAttr,
     PydanticUndefined,
 )
+from pydantic.main import _object_setattr
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
@@ -81,10 +82,10 @@ def _find_file(filename: str, require: bool = True) -> Optional[str]:
 
 def initial_for_field(name: str, field_info: FieldInfo) -> Any:
     try:
-        # if not callable(field_info.extra["initial"]):
-        #     raise ValueError(f"Initial value for `{name}` must be a callable.")
-        # return field_info.extra["initial"]()
-        pass
+        json_schema_extra = field_info.json_schema_extra or {}
+        if not callable(json_schema_extra["initial"]):
+            raise ValueError(f"Initial value for `{name}` must be a callable.")
+        return field_info.json_schema_extra["initial"]()
     except KeyError:
         if (
             field_info.default is not PydanticUndefined
@@ -147,13 +148,19 @@ class FileConfigSettingsSource(PydanticBaseSettingsSource):
 class GoodConf(BaseSettings):
     _config_file: str = PrivateAttr(None)
 
-    def __init__(self, load: bool = False, **kwargs):
+    def __init__(self, load: bool = False, config_file: Optional[str] = None, **kwargs):
         """
         :param load: load config file on instantiation [default: False].
 
         A docstring defined on the class should be a plain-text description
         used as a header when generating a configuration file.
         """
+        # At this point __pydantic_private__ is None, so setting self.config_file
+        # raises an error. To avoid this error, explicitly set __pydantic_private__ to {}
+        # prior to setting self._config_file.
+        _object_setattr(self, "__pydantic_private__", {})
+        self._config_file = config_file
+
         # Emulate Pydantic behavior, load immediately
         if kwargs:
             return super().__init__(**kwargs)
@@ -178,7 +185,7 @@ class GoodConf(BaseSettings):
             file_secret_settings,
         )
 
-    model_config: GoodConfConfigDict
+    model_config = GoodConfConfigDict()
 
     def load(self, filename: Optional[str] = None) -> None:
         """Find config file and set values"""
@@ -189,7 +196,7 @@ class GoodConf(BaseSettings):
             values = {}
         super().__init__(**values)
         if filename:
-            self._config_file = filename
+            _object_setattr(self, "_config_file", filename)
 
     @classmethod
     def get_initial(cls, **override) -> dict:
