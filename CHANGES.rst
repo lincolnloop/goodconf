@@ -2,6 +2,30 @@
 Change Log
 ==========
 
+4.0.2 (11 February 2024)
+========================
+
+- Another markdown output fix
+- Fix for markdown generation generation on Python 3.8 & 3.9
+
+4.0.1 (10 February 2024)
+========================
+
+- Fix trailing whitespace in markdown output
+
+4.0.0 (10 February 2024)
+========================
+
+- Removed errant print statement
+- Removed official support for Python 3.7
+- Added support for Python 3.12
+
+3.1.0 (10 February 2024)
+========================
+
+- Fixed type display in Markdown generation
+- Changed markdown output format (trailing spaces were problematic).
+
 3.0.1 (30 June 2023)
 ====================
 

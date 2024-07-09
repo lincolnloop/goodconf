@@ -7,7 +7,17 @@ import logging
 import os
 import sys
 from io import StringIO
-from typing import Any, List, Optional, Tuple, Type, cast, get_args
+from typing import (
+    Any,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    cast,
+    get_origin,
+    get_args,
+    Union,
+)
 
 from pydantic import PrivateAttr
 from pydantic.fields import (  # noqa
@@ -131,6 +141,37 @@ class FileConfigSettingsSource(PydanticBaseSettingsSource):
 
     def __repr__(self) -> str:
         return "FileConfigSettingsSource()"
+
+
+def type_to_str(tp: Type[Any]) -> str:
+    """String representation of a type."""
+    origin = get_origin(tp)
+    if origin is None:  # Simple type or a specific value in Literal
+        if hasattr(tp, "__name__"):
+            return tp.__name__
+        return repr(
+            tp
+        )  # Use repr for values to get their string representation properly
+
+    args = get_args(tp)
+
+    if (
+        origin is Union and len(args) == 2 and type(None) in args
+    ):  # Handle Optional as a special case
+        non_none_args = [arg for arg in args if arg is not type(None)]
+        return f"Optional[{type_to_str(non_none_args[0])}]"
+
+    if origin:  # Generic or special type like Union, Literal, etc.
+        # Python 3.8 - 3.9 compatibility
+        if hasattr(origin, "__name__"):
+            type_name = origin.__name__
+        else:
+            # Attempt to get a readable name for special forms
+            type_name = repr(origin).replace("typing.", "")
+
+        args_str = ", ".join(type_to_str(arg) for arg in args)
+        return f"{type_name}[{args_str}]"
+    return str(tp)  # Fallback for any other type
 
 
 class GoodConf(BaseSettings):
@@ -257,15 +298,16 @@ class GoodConf(BaseSettings):
         lines = []
         if cls.__doc__:
             lines.extend([f"# {cls.__doc__}", ""])
+
         for k, field_info in cls.model_fields.items():
-            lines.append(f"* **{k}**  ")
+            lines.append(f"* **{k}**")
             if field_info.is_required():
-                lines[-1] = lines[-1] + "_REQUIRED_  "
+                lines[-1] = f"{lines[-1]} _REQUIRED_"
             if field_info.description:
-                lines.append(f"  {field_info.description}  ")
-            lines.append(f"  type: `{field_info.annotation}`  ")
+                lines.append(f"  * description: {field_info.description}")
+            lines.append(f"  * type: `{field_info.annotation}`")
             if field_info.default is not None:
-                lines.append(f"  default: `{field_info.default}`  ")
+                lines.append(f"  * default: `{field_info.default}`")
         return "\n".join(lines)
 
     def django_manage(self, args: Optional[List[str]] = None):

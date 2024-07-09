@@ -2,7 +2,7 @@ import json
 import os
 import re
 from textwrap import dedent
-from typing import Optional
+from typing import Optional, List, Literal
 
 import pytest
 from pydantic import Field, ValidationError
@@ -44,6 +44,7 @@ def test_dump_toml():
 
     class TestConf(GoodConf):
         "Configuration for My App"
+
         a: str = Field(description="this is a")
         b: str
 
@@ -59,6 +60,7 @@ def test_dump_yaml():
 
     class TestConf(GoodConf):
         "Configuration for My App"
+
         a: str = Field(description="this is a")
         b: str
 
@@ -112,6 +114,7 @@ def test_generate_markdown():
 
     class TestConf(GoodConf):
         "Configuration for My App"
+
         a: int = Field(description=help_, default=5)
         b: str
 
@@ -121,7 +124,7 @@ def test_generate_markdown():
     assert help_ in mkdn
 
 
-def test_generate_markdown_no_docsttring():
+def test_generate_markdown_no_docstring():
     help_ = "this is a"
 
     class TestConf(GoodConf):
@@ -130,14 +133,34 @@ def test_generate_markdown_no_docsttring():
 
     mkdn = TestConf.generate_markdown()
     # Not sure on final format, just do some basic smoke tests
-    assert help_ in mkdn
+    assert f"  * description: {help_}" in mkdn.splitlines()
 
 
 def test_generate_markdown_default_false():
     class TestConf(GoodConf):
         a: bool = Field(default=False)
 
-    assert "False" in TestConf.generate_markdown()
+    lines = TestConf.generate_markdown().splitlines()
+    assert "  * type: `<class 'bool'>`" in lines
+    assert "  * default: `False`" in lines
+
+
+def test_generate_markdown_types():
+    class TestConf(GoodConf):
+        a: Literal["a", "b"] = Field(default="a")
+        b: List[str] = Field()
+
+    lines = TestConf.generate_markdown().splitlines()
+    assert "  * type: `typing.Literal['a', 'b']`" in lines
+    assert "  * type: `typing.List[str]`" in lines
+
+
+def test_generate_markdown_required():
+    class TestConf(GoodConf):
+        a: str
+
+    lines = TestConf.generate_markdown().splitlines()
+    assert "* **a** _REQUIRED_" in lines
 
 
 def test_undefined():
