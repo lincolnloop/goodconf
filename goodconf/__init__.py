@@ -7,20 +7,8 @@ import logging
 import os
 import sys
 from io import StringIO
-from typing import (
-    Any,
-    Callable,
-    ClassVar,
-    Dict,
-    List,
-    Optional,
-    Tuple,
-    Type,
-    cast,
-    get_args,
-)
+from typing import Any, List, Optional, Tuple, Type, cast, get_args
 
-from pydantic import ConfigDict as PydanticConfigDict
 from pydantic import PrivateAttr
 from pydantic.fields import (  # noqa
     Field,
@@ -142,7 +130,7 @@ class FileConfigSettingsSource(PydanticBaseSettingsSource):
         return values
 
     def __repr__(self) -> str:
-        return f"FileConfigSettingsSource()"
+        return "FileConfigSettingsSource()"
 
 
 class GoodConf(BaseSettings):
@@ -156,8 +144,8 @@ class GoodConf(BaseSettings):
         used as a header when generating a configuration file.
         """
         # At this point __pydantic_private__ is None, so setting self.config_file
-        # raises an error. To avoid this error, explicitly set __pydantic_private__ to {}
-        # prior to setting self._config_file.
+        # raises an error. To avoid this error, explicitly set
+        # __pydantic_private__ to {} prior to setting self._config_file.
         _object_setattr(self, "__pydantic_private__", {})
         self._config_file = config_file
 
