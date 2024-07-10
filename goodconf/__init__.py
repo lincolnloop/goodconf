@@ -41,9 +41,9 @@ log = logging.getLogger(__name__)
 
 class GoodConfConfigDict(SettingsConfigDict):
     # configuration file to load
-    file_env_var: Optional[str]
+    file_env_var: str | None
     # if no file is given, try to load a configuration from these files in order
-    default_files: Optional[List[str]]
+    default_files: list[str] | None
 
 
 def _load_config(path: str) -> dict[str, Any]:
@@ -73,7 +73,7 @@ def _load_config(path: str) -> dict[str, Any]:
     return config or {}
 
 
-def _find_file(filename: str, require: bool = True) -> Optional[str]:
+def _find_file(filename: str, require: bool = True) -> str | None:
     if not os.path.exists(filename):
         if not require:
             return None
@@ -146,7 +146,7 @@ class FileConfigSettingsSource(PydanticBaseSettingsSource):
         return "FileConfigSettingsSource()"
 
 
-def type_to_str(tp: Type[Any]) -> str:
+def type_to_str(tp: type[Any]) -> str:
     """String representation of a type."""
     origin = get_origin(tp)
     if origin is None:  # Simple type or a specific value in Literal
@@ -180,7 +180,7 @@ def type_to_str(tp: Type[Any]) -> str:
 class GoodConf(BaseSettings):
     _config_file: str = PrivateAttr(None)
 
-    def __init__(self, load: bool = False, config_file: Optional[str] = None, **kwargs):
+    def __init__(self, load: bool = False, config_file: str | None = None, **kwargs):
         """
         :param load: load config file on instantiation [default: False].
 
@@ -202,12 +202,12 @@ class GoodConf(BaseSettings):
     @classmethod
     def settings_customise_sources(
         cls,
-        settings_cls: Type[BaseSettings],
+        settings_cls: type[BaseSettings],
         init_settings: PydanticBaseSettingsSource,
         env_settings: PydanticBaseSettingsSource,
         dotenv_settings: PydanticBaseSettingsSource,
         file_secret_settings: PydanticBaseSettingsSource,
-    ) -> Tuple[PydanticBaseSettingsSource, ...]:
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
         """Load environment variables before init"""
         return (
             init_settings,
@@ -219,7 +219,7 @@ class GoodConf(BaseSettings):
 
     model_config = GoodConfConfigDict()
 
-    def load(self, filename: Optional[str] = None) -> None:
+    def load(self, filename: str | None = None) -> None:
         """Find config file and set values"""
         if filename:
             values = _load_config(filename)
@@ -313,7 +313,7 @@ class GoodConf(BaseSettings):
                 lines.append(f"  * default: `{field_info.default}`")
         return "\n".join(lines)
 
-    def django_manage(self, args: Optional[List[str]] = None):
+    def django_manage(self, args: list[str] | None = None):
         args = args or sys.argv
         from .contrib.django import execute_from_command_line_with_config
 
