@@ -1,6 +1,7 @@
 import argparse
 from contextlib import contextmanager
-from typing import Generator, List
+from typing import List
+from collections.abc import Generator
 
 from .. import GoodConf
 from .argparse import argparser_add_argument
@@ -8,8 +9,8 @@ from .argparse import argparser_add_argument
 
 @contextmanager
 def load_config_from_cli(
-    config: GoodConf, argv: List[str]
-) -> Generator[List[str], None, None]:
+    config: GoodConf, argv: list[str]
+) -> Generator[list[str], None, None]:
     """Loads config, checking CLI arguments for a config file"""
 
     # Monkey patch Django's command parser
@@ -36,7 +37,7 @@ def load_config_from_cli(
         BaseCommand.create_parser = original_parser
 
 
-def execute_from_command_line_with_config(config: GoodConf, argv: List[str]):
+def execute_from_command_line_with_config(config: GoodConf, argv: list[str]):
     """Load's config then runs Django's execute_from_command_line"""
     with load_config_from_cli(config, argv) as args:
         from django.core.management import execute_from_command_line

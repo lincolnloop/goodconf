@@ -148,11 +148,11 @@ def test_generate_markdown_default_false():
 def test_generate_markdown_types():
     class TestConf(GoodConf):
         a: Literal["a", "b"] = Field(default="a")
-        b: List[str] = Field()
+        b: list[str] = Field()
 
     lines = TestConf.generate_markdown().splitlines()
     assert "  * type: `typing.Literal['a', 'b']`" in lines
-    assert "  * type: `typing.List[str]`" in lines
+    assert "  * type: `list[str]`" in lines
 
 
 def test_generate_markdown_required():
