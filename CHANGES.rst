@@ -5,6 +5,7 @@ Change Log
 Unreleased
 ========================
 
+- upgraded to pydantic2
 - Removed official support for Python 3.8
 
 4.0.2 (11 February 2024)
