@@ -141,7 +141,7 @@ def test_generate_markdown_default_false():
         a: bool = Field(default=False)
 
     lines = TestConf.generate_markdown().splitlines()
-    assert "  * type: `<class 'bool'>`" in lines
+    assert "  * type: `bool`" in lines
     assert "  * default: `False`" in lines
 
 

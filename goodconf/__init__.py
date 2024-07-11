@@ -10,6 +10,7 @@ import logging
 import os
 import sys
 from io import StringIO
+from types import GenericAlias
 from typing import (
     Any,
     List,
@@ -308,7 +309,18 @@ class GoodConf(BaseSettings):
                 lines[-1] = f"{lines[-1]} _REQUIRED_"
             if field_info.description:
                 lines.append(f"  * description: {field_info.description}")
-            lines.append(f"  * type: `{field_info.annotation}`")
+            # We want to append a line with the field_info type, and sometimes
+            # field_info.annotation looks the way we want, like
+            # 'typing.Literal['a', 'b']', but other times, it includes some extra
+            # text, like '<class 'bool'>'. Therefore, we have some logic to make
+            # the type show up the way we want.
+            field_type = (
+                field_info.annotation.__name__
+                if isinstance(field_info.annotation, type)
+                and not isinstance(field_info.annotation, GenericAlias)
+                else field_info.annotation
+            )
+            lines.append(f"  * type: `{field_type}`")
             if field_info.default is not None:
                 lines.append(f"  * default: `{field_info.default}`")
         return "\n".join(lines)
