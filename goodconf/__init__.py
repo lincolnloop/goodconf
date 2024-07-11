@@ -1,7 +1,7 @@
 """
 Transparently load variables from environment or JSON/YAML file.
 """
-# Note: the following line is included to ensure Python3.8 compatibility.
+# Note: the following line is included to ensure Python3.9 compatibility.
 from __future__ import annotations
 
 import errno
@@ -165,7 +165,7 @@ def type_to_str(tp: type[Any]) -> str:
         return f"Optional[{type_to_str(non_none_args[0])}]"
 
     if origin:  # Generic or special type like Union, Literal, etc.
-        # Python 3.8 - 3.9 compatibility
+        # Python 3.9 compatibility
         if hasattr(origin, "__name__"):
             type_name = origin.__name__
         else:
