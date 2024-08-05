@@ -89,7 +89,7 @@ Usage
 ``GoodConf``
 ^^^^^^^^^^^^
 
-Your subclassed ``GoodConf`` object can include a ``Config`` class with the following
+Your subclassed ``GoodConf`` object can include a ``model_config`` dictionary with the following
 attributes:
 
 ``file_env_var``
