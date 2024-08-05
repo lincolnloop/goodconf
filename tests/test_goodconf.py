@@ -6,8 +6,9 @@ from typing import Optional, List, Literal
 
 import pytest
 from pydantic import Field, ValidationError
+from pydantic.fields import FieldInfo
 
-from goodconf import GoodConf
+from goodconf import GoodConf, FileConfigSettingsSource
 from tests.utils import env_var
 
 
@@ -115,8 +116,9 @@ def test_generate_markdown():
     class TestConf(GoodConf):
         "Configuration for My App"
 
-        a: int = Field(description=help_, default=5)
-        b: str
+        a: int = Field(description=help_, default=None)
+        b: int = Field(description=help_, default=5)
+        c: str
 
     mkdn = TestConf.generate_markdown()
     # Not sure on final format, just do some basic smoke tests
@@ -222,3 +224,24 @@ def test_precedence(tmpdir):
     finally:
         del os.environ["INIT"]
         del os.environ["ENV"]
+
+
+def test_fileconfigsettingssource_repr():
+    class SettingsClass:
+        model_config = {}
+
+    fileconfigsettingssource = FileConfigSettingsSource(SettingsClass)
+
+    assert repr(fileconfigsettingssource) == "FileConfigSettingsSource()"
+
+    field = FieldInfo(title="testfield")
+
+
+def test_fileconfigsettingssource_get_field_value():
+    class SettingsClass:
+        model_config = {}
+
+    fileconfigsettingssource = FileConfigSettingsSource(SettingsClass)
+    field = FieldInfo(title="testfield")
+    assert fileconfigsettingssource.get_field_value(field, "testfield") == (None, "", False)
+    assert fileconfigsettingssource.get_field_value(None, "a") == (None, "", False)
