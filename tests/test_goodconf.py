@@ -207,12 +207,10 @@ def test_precedence(tmpdir):
     path = tmpdir.join("myapp.json")
     path.write(json.dumps({"init": "file", "env": "file", "file": "file"}))
 
-    class TestConf(GoodConf):
+    class TestConf(GoodConf, default_files=[path]):
         init: str = ""
         env: str = ""
         file: str = ""
-
-        model_config = {"default_files": [path]}
 
     os.environ["INIT"] = "env"
     os.environ["ENV"] = "env"
