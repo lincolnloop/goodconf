@@ -243,5 +243,9 @@ def test_fileconfigsettingssource_get_field_value():
 
     fileconfigsettingssource = FileConfigSettingsSource(SettingsClass)
     field = FieldInfo(title="testfield")
-    assert fileconfigsettingssource.get_field_value(field, "testfield") == (None, "", False)
+    assert fileconfigsettingssource.get_field_value(field, "testfield") == (
+        None,
+        "",
+        False,
+    )
     assert fileconfigsettingssource.get_field_value(None, "a") == (None, "", False)
