@@ -2,7 +2,7 @@
 name = "goodconf"
 description = "Load configuration variables from a file or environment"
 readme = "README.rst"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 authors = [
     {name = "Peter Baumgartner", email = "brett@python.org"}
 ]
@@ -14,7 +14,6 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -22,7 +21,8 @@ classifiers = [
 ]
 dynamic = ["version"]
 dependencies = [
-    "pydantic >= 1.7, < 2"
+    "pydantic>=2.0",
+    "pydantic-settings>=2.0",
 ]
 
 [project.optional-dependencies]

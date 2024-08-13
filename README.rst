@@ -56,8 +56,7 @@ First, create a ``conf.py`` file in your project's directory, next to
             description="Used for cryptographic signing. "
             "https://docs.djangoproject.com/en/2.0/ref/settings/#secret-key")
 
-        class Config:
-            default_files = ["/etc/myproject/myproject.yaml", "myproject.yaml"]
+        model_config = {"default_files": ["/etc/myproject/myproject.yaml", "myproject.yaml"]}
 
     config = AppConfig()
 
@@ -90,7 +89,7 @@ Usage
 ``GoodConf``
 ^^^^^^^^^^^^
 
-Your subclassed ``GoodConf`` object can include a ``Config`` class with the following
+Your subclassed ``GoodConf`` object can include a ``model_config`` dictionary with the following
 attributes:
 
 ``file_env_var``

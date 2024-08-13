@@ -1,16 +1,18 @@
 """
 Transparently load variables from environment or JSON/YAML file.
 """
+# Note: the following line is included to ensure Python3.9 compatibility.
+from __future__ import annotations
+
 import errno
 import json
 import logging
 import os
 import sys
 from io import StringIO
+from types import GenericAlias
 from typing import (
     Any,
-    ClassVar,
-    Dict,
     List,
     Optional,
     Tuple,
@@ -21,14 +23,42 @@ from typing import (
     Union,
 )
 
-from pydantic import BaseSettings, PrivateAttr
-from pydantic.env_settings import SettingsSourceCallable
-from pydantic.fields import Field, FieldInfo, ModelField, Undefined  # noqa
+from pydantic import PrivateAttr
+from pydantic._internal._config import config_keys
+from pydantic.fields import (  # noqa
+    Field,
+    FieldInfo,
+    ModelPrivateAttr,
+    PydanticUndefined,
+)
+from pydantic.main import _object_setattr
+from pydantic_settings import (
+    BaseSettings,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+)
 
 log = logging.getLogger(__name__)
 
 
-def _load_config(path: str) -> dict:
+class GoodConfConfigDict(SettingsConfigDict):
+    # configuration file to load
+    file_env_var: str | None
+    # if no file is given, try to load a configuration from these files in order
+    default_files: list[str] | None
+
+
+# Note: code from pydantic-settings/pydantic_settings/main.py:
+# Extend `config_keys` by pydantic settings config keys to
+# support setting config through class kwargs.
+# Pydantic uses `config_keys` in `pydantic._internal._config.ConfigWrapper.for_model`
+# to extract config keys from model kwargs, So, by adding pydantic settings keys to
+# `config_keys`, they will be considered as valid config keys and will be collected
+# by Pydantic.
+config_keys |= set(GoodConfConfigDict.__annotations__.keys())
+
+
+def _load_config(path: str) -> dict[str, Any]:
     """
     Given a file path, parse it based on its extension (YAML, TOML or JSON)
     and return the values as a Python dictionary. JSON is the default if an
@@ -55,7 +85,7 @@ def _load_config(path: str) -> dict:
     return config or {}
 
 
-def _find_file(filename: str, require: bool = True) -> Optional[str]:
+def _find_file(filename: str, require: bool = True) -> str | None:
     if not os.path.exists(filename):
         if not require:
             return None
@@ -63,134 +93,129 @@ def _find_file(filename: str, require: bool = True) -> Optional[str]:
     return os.path.abspath(filename)
 
 
-def initial_for_field(name: str, field: ModelField) -> Any:
-    info = field.field_info
+def initial_for_field(name: str, field_info: FieldInfo) -> Any:
     try:
-        if not callable(info.extra["initial"]):
+        json_schema_extra = field_info.json_schema_extra or {}
+        if not callable(json_schema_extra["initial"]):
             raise ValueError(f"Initial value for `{name}` must be a callable.")
-        return info.extra["initial"]()
+        return field_info.json_schema_extra["initial"]()
     except KeyError:
-        if info.default is not Undefined and info.default is not ...:
-            return info.default
-        if info.default_factory is not None:
-            return info.default_factory()
-    if field.allow_none:
+        if (
+            field_info.default is not PydanticUndefined
+            and field_info.default is not ...
+        ):
+            return field_info.default
+        if field_info.default_factory is not None:
+            return field_info.default_factory()
+    if type(None) in get_args(field_info.annotation):
         return None
     return ""
 
 
-def file_config_settings_source(settings: BaseSettings) -> Dict[str, Any]:
-    """Find config file and get values"""
-    settings = cast(GoodConf, settings)
-    selected_config_file = None
-    if settings._config_file:
-        selected_config_file = settings._config_file
-    elif (
-        settings.__config__.file_env_var
-        and settings.__config__.file_env_var in os.environ
-    ):
-        selected_config_file = _find_file(os.environ[settings.__config__.file_env_var])
-    else:
-        for filename in settings.__config__.default_files or []:
-            selected_config_file = _find_file(filename, require=False)
-            if selected_config_file:
-                break
-    if selected_config_file:
-        values = _load_config(selected_config_file)
-        log.info("Loading config from %s", selected_config_file)
-        settings.__config__._config_file = selected_config_file
-    else:
-        values = {}
-        log.info("No config file specified. Loading with environment variables.")
-    return values
+class FileConfigSettingsSource(PydanticBaseSettingsSource):
+    """
+    Source class for loading values provided during settings class initialization.
+    """
 
+    def __init__(self, settings_cls: type[BaseSettings]):
+        super().__init__(settings_cls)
 
-def type_to_str(tp: Type[Any]) -> str:
-    """String representation of a type."""
-    origin = get_origin(tp)
-    if origin is None:  # Simple type or a specific value in Literal
-        if hasattr(tp, "__name__"):
-            return tp.__name__
-        return repr(
-            tp
-        )  # Use repr for values to get their string representation properly
+    def get_field_value(
+        self, field: FieldInfo, field_name: str
+    ) -> tuple[Any, str, bool]:
+        # Nothing to do here. Only implement the return statement to make mypy happy
+        return None, "", False
 
-    args = get_args(tp)
-
-    if (
-        origin is Union and len(args) == 2 and type(None) in args
-    ):  # Handle Optional as a special case
-        non_none_args = [arg for arg in args if arg is not type(None)]
-        return f"Optional[{type_to_str(non_none_args[0])}]"
-
-    if origin:  # Generic or special type like Union, Literal, etc.
-        # Python 3.8 - 3.9 compatibility
-        if hasattr(origin, "__name__"):
-            type_name = origin.__name__
+    def __call__(self) -> dict[str, Any]:
+        settings = cast(GoodConf, self.settings_cls)
+        selected_config_file = None
+        # already loaded from a file
+        if not isinstance(settings._config_file, ModelPrivateAttr):
+            return {}
+        elif (
+            settings.model_config.get("file_env_var")
+            and settings.model_config["file_env_var"] in os.environ
+        ):
+            selected_config_file = _find_file(
+                os.environ[settings.model_config["file_env_var"]]
+            )
         else:
-            # Attempt to get a readable name for special forms
-            type_name = repr(origin).replace("typing.", "")
+            for filename in settings.model_config.get("default_files") or []:
+                selected_config_file = _find_file(filename, require=False)
+                if selected_config_file:
+                    break
+        if selected_config_file:
+            values = _load_config(selected_config_file)
+            log.info("Loading config from %s", selected_config_file)
+            settings._config_file = selected_config_file
+        else:
+            values = {}
+            log.info("No config file specified. Loading with environment variables.")
+            settings._config_file = None
+        return values
 
-        args_str = ", ".join(type_to_str(arg) for arg in args)
-        return f"{type_name}[{args_str}]"
-    return str(tp)  # Fallback for any other type
+    def __repr__(self) -> str:
+        return "FileConfigSettingsSource()"
 
 
 class GoodConf(BaseSettings):
-    def __init__(self, load: bool = False, **kwargs):
+    _config_file: str = PrivateAttr(None)
+
+    def __init__(self, load: bool = False, config_file: str | None = None, **kwargs):
         """
         :param load: load config file on instantiation [default: False].
 
         A docstring defined on the class should be a plain-text description
         used as a header when generating a configuration file.
         """
-        self._config_file = None
+        # At this point __pydantic_private__ is None, so setting self.config_file
+        # raises an error. To avoid this error, explicitly set
+        # __pydantic_private__ to {} prior to setting self._config_file.
+        _object_setattr(self, "__pydantic_private__", {})
+        self._config_file = config_file
+
         # Emulate Pydantic behavior, load immediately
         if kwargs:
             return super().__init__(**kwargs)
         elif load:
             return self.load()
 
-    _config_file: Optional[str] = PrivateAttr()
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        """Load environment variables before init"""
+        return (
+            init_settings,
+            env_settings,
+            dotenv_settings,
+            FileConfigSettingsSource(settings_cls),
+            file_secret_settings,
+        )
 
-    class Config:
-        # the name of an environment variable which can be used for the name of the
-        # configuration file to load
-        file_env_var: Optional[str] = None
-        # if no file is given, try to load a configuration from these files in order
-        default_files: Optional[List[str]] = None
-        # actual file used for configuration on load
-        _config_file: Optional[str] = None
+    model_config = GoodConfConfigDict()
 
-        @classmethod
-        def customise_sources(
-            cls,
-            init_settings: SettingsSourceCallable,
-            env_settings: SettingsSourceCallable,
-            file_secret_settings: SettingsSourceCallable,
-        ) -> Tuple[SettingsSourceCallable, ...]:
-            """Load environment variables before init"""
-            return (
-                init_settings,
-                env_settings,
-                file_config_settings_source,
-                file_secret_settings,
-            )
-
-    # populated by the metaclass using the Config class defined above,
-    # annotated here to help IDEs only
-    __config__: ClassVar[Type[Config]]
-
-    def load(self, filename: Optional[str] = None) -> None:
+    def load(self, filename: str | None = None) -> None:
         """Find config file and set values"""
-        self._config_file = filename
-        super().__init__()
+        if filename:
+            values = _load_config(filename)
+            log.info("Loading config from %s", filename)
+        else:
+            values = {}
+        super().__init__(**values)
+        if filename:
+            _object_setattr(self, "_config_file", filename)
 
     @classmethod
     def get_initial(cls, **override) -> dict:
         return {
             k: override.get(k, initial_for_field(k, v))
-            for k, v in cls.__fields__.items()
+            for k, v in cls.model_fields.items()
         }
 
     @classmethod
@@ -212,8 +237,8 @@ class GoodConf(BaseSettings):
         if cls.__doc__:
             dict_from_yaml.yaml_set_start_comment("\n" + cls.__doc__ + "\n\n")
         for k in dict_from_yaml.keys():
-            if cls.__fields__[k].field_info.description:
-                description = cast(str, cls.__fields__[k].field_info.description)
+            if cls.model_fields[k].description:
+                description = cast(str, cls.model_fields[k].description)
                 dict_from_yaml.yaml_set_comment_before_after_key(
                     k, before="\n" + description
                 )
@@ -244,8 +269,8 @@ class GoodConf(BaseSettings):
             document.add(tomlkit.comment(cls.__doc__))
         for k, v in dict_from_toml.unwrap().items():
             document.add(k, v)
-            if cls.__fields__[k].field_info.description:
-                description = cast(str, cls.__fields__[k].field_info.description)
+            if cls.model_fields[k].description:
+                description = cast(str, cls.model_fields[k].description)
                 cast(Item, document[k]).comment(description)
         return tomlkit.dumps(document)
 
@@ -257,18 +282,30 @@ class GoodConf(BaseSettings):
         lines = []
         if cls.__doc__:
             lines.extend([f"# {cls.__doc__}", ""])
-        for k, v in cls.__fields__.items():
+
+        for k, field_info in cls.model_fields.items():
             lines.append(f"* **{k}**")
-            if v.required:
+            if field_info.is_required():
                 lines[-1] = f"{lines[-1]} _REQUIRED_"
-            if v.field_info.description:
-                lines.append(f"  * description: {v.field_info.description}")
-            lines.append(f"  * type: `{type_to_str(v.outer_type_)}`")
-            if v.default is not None:
-                lines.append(f"  * default: `{v.default}`")
+            if field_info.description:
+                lines.append(f"  * description: {field_info.description}")
+            # We want to append a line with the field_info type, and sometimes
+            # field_info.annotation looks the way we want, like
+            # 'typing.Literal['a', 'b']', but other times, it includes some extra
+            # text, like '<class 'bool'>'. Therefore, we have some logic to make
+            # the type show up the way we want.
+            field_type = (
+                field_info.annotation.__name__
+                if isinstance(field_info.annotation, type)
+                and not isinstance(field_info.annotation, GenericAlias)
+                else field_info.annotation
+            )
+            lines.append(f"  * type: `{field_type}`")
+            if field_info.default is not None:
+                lines.append(f"  * default: `{field_info.default}`")
         return "\n".join(lines)
 
-    def django_manage(self, args: Optional[List[str]] = None):
+    def django_manage(self, args: list[str] | None = None):
         args = args or sys.argv
         from .contrib.django import execute_from_command_line_with_config
 
