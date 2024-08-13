@@ -2,7 +2,7 @@
 Change Log
 ==========
 
-Unreleased
+5.0.0 (13 August 2024)
 ========================
 
 - upgraded to pydantic2
