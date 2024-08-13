@@ -16,7 +16,7 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: "3.12"
-    - Install hatch
+    - name: Install hatch
       run: pip install hatch
     - name: Build a binary wheel and a source tarball
       run: hatch build
