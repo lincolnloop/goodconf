@@ -193,14 +193,5 @@ Run tests
 
     pytest
 
-Releasing a new version to PyPI:
-
-.. code:: shell
-
-    export VERSION=X.Y.Z
-    git tag -s v$VERSION -m v$VERSION
-    git push --tags
-    rm -rf ./dist
-    hatch build
-    hatch publish --user __token__
-    gh release create v$VERSION dist/goodconf-$VERSION* --generate-notes --verify-tag
+Releases are done with GitHub Actions whenever a new tag is created. For more information,
+see `<./.github/workflows/build.yml>`_
