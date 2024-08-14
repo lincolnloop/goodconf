@@ -5,8 +5,43 @@ Change Log
 5.0.0 (13 August 2024)
 ========================
 
-- upgraded to pydantic2
-- Removed official support for Python 3.8
+- **Backwards Incompatible Release**
+
+  - Removed official support for Python 3.8
+  - upgraded to pydantic2
+
+  To upgrade from goodconf v4 to goodconf v5:
+
+  - If subclassing ``GoodConf``, replace uses of ``class Config`` with ``model_config``.
+
+    For example goodconf v4 code like this:
+
+    .. code:: python
+
+        from goodconf import GoodConf
+
+        class AppConfig(GoodConf):
+            "Configuration for My App"
+            DATABASE_URL: PostgresDsn = "postgres://localhost:5432/mydb"
+
+            class Config:
+                default_files = ["/etc/myproject/myproject.yaml", "myproject.yaml"]
+
+        config = AppConfig()
+
+    should be replaced in goodconf v5 with:
+
+    .. code:: python
+
+        from goodconf import GoodConf
+
+        class AppConfig(GoodConf):
+            "Configuration for My App"
+            DATABASE_URL: PostgresDsn = "postgres://localhost:5432/mydb"
+
+            model_config = {"default_files": ["/etc/myproject/myproject.yaml", "myproject.yaml"]}
+
+        config = AppConfig()
 
 4.0.3 (13 August 2024)
 ========================
