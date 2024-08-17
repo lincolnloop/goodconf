@@ -18,7 +18,7 @@ Goodconf
     :target: https://pypi.python.org/pypi/goodconf
 
 A thin wrapper over `Pydantic's settings management <https://pydantic-docs.helpmanual.io/usage/settings/>`__.
-Allows you to define configuration variables and load them from environment or JSON/YAML
+Allows you to define configuration variables and load them from environment or JSON/YAML/TOML
 file. Also generates initial configuration files and documentation for your
 defined configuration.
 
