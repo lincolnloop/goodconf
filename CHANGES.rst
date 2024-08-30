@@ -2,6 +2,11 @@
 Change Log
 ==========
 
+5.0.1 (Unreleased)
+========================
+
+- Update Markdown generation, so that output matches v4 output
+
 5.0.0 (13 August 2024)
 ========================
 
