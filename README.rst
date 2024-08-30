@@ -28,7 +28,9 @@ Installation
 
 ``pip install goodconf`` or ``pip install goodconf[yaml]`` /
 ``pip install goodconf[toml]`` if parsing/generating YAML/TOML
-files is required.
+files is required. When running on Python 3.11+ the ``[toml]``
+extra is only required for generating TOML files as parsing
+is supported natively.
 
 
 Quick Start

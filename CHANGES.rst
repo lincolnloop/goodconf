@@ -2,6 +2,11 @@
 Change Log
 ==========
 
+5.0.1 (Unreleased)
+==================
+
+- Support reading TOML files via ``tomllib`` on Python 3.11+
+
 5.0.0 (13 August 2024)
 ========================
 

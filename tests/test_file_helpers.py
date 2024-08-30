@@ -1,5 +1,5 @@
 import os
-
+import sys
 import pytest
 
 from goodconf import _find_file, _load_config
@@ -12,14 +12,16 @@ def test_json(tmpdir):
 
 
 def test_load_toml(tmpdir):
-    pytest.importorskip("tomlkit")
+    if sys.version_info < (3, 11):
+        pytest.importorskip("tomlkit")
     conf = tmpdir.join("conf.toml")
     conf.write('a = "b"\nc = 3')
     assert _load_config(str(conf)) == {"a": "b", "c": 3}
 
 
 def test_load_empty_toml(tmpdir):
-    pytest.importorskip("tomlkit")
+    if sys.version_info < (3, 11):
+        pytest.importorskip("tomlkit")
     conf = tmpdir.join("conf.toml")
     conf.write("")
     assert _load_config(str(conf)) == {}
