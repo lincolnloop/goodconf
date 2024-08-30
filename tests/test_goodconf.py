@@ -151,10 +151,12 @@ def test_generate_markdown_types():
     class TestConf(GoodConf):
         a: Literal["a", "b"] = Field(default="a")
         b: list[str] = Field()
+        c: None
 
     lines = TestConf.generate_markdown().splitlines()
-    assert "  * type: `typing.Literal['a', 'b']`" in lines
+    assert "  * type: `Literal['a', 'b']`" in lines
     assert "  * type: `list[str]`" in lines
+    assert "default: `PydanticUndefined`" not in str(lines)
 
 
 def test_generate_markdown_required():
