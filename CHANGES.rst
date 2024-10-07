@@ -5,6 +5,7 @@ Change Log
 5.0.1 (Unreleased)
 ========================
 
+- Support reading TOML files via ``tomllib`` on Python 3.11+
 - Update Markdown generation, so that output matches v4 output
 
 5.0.0 (13 August 2024)

@@ -71,10 +71,16 @@ def _load_config(path: str) -> dict[str, Any]:
         yaml = ruamel.yaml.YAML(typ="safe", pure=True)
         loader = yaml.load
     elif ext == ".toml":
-        import tomlkit
+        try:
+            import tomllib
 
-        def load(stream):
-            return tomlkit.load(f).unwrap()
+            def load(stream):
+                return tomllib.loads(f.read())
+        except ImportError:  # Fallback for Python < 3.11
+            import tomlkit
+
+            def load(stream):
+                return tomlkit.load(f).unwrap()
 
         loader = load
 
