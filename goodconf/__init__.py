@@ -99,6 +99,27 @@ def _find_file(filename: str, require: bool = True) -> str | None:
     return os.path.abspath(filename)
 
 
+def _fieldinfo_to_str(field_info: FieldInfo) -> str:
+    """
+    Return the string representation of a pydantic.fields.FieldInfo.
+    """
+    if isinstance(field_info.annotation, type) and not isinstance(
+        field_info.annotation, GenericAlias
+    ):
+        # For annotation like <class 'int'>, we use its name ("int").
+        field_type = field_info.annotation.__name__
+    else:
+        if str(field_info.annotation).startswith("typing."):
+            # For annotation like typing.Literal['a', 'b'], we use
+            # its string representation, but without "typing." ("Literal['a', 'b']").
+            field_type = str(field_info.annotation)[len("typing.") :]
+        else:
+            # For annotation like list[str], we use its string
+            # representation ("list[str]").
+            field_type = field_info.annotation
+    return field_type
+
+
 def initial_for_field(name: str, field_info: FieldInfo) -> Any:
     try:
         json_schema_extra = field_info.json_schema_extra or {}
@@ -296,18 +317,12 @@ class GoodConf(BaseSettings):
             if field_info.description:
                 lines.append(f"  * description: {field_info.description}")
             # We want to append a line with the field_info type, and sometimes
-            # field_info.annotation looks the way we want, like
-            # 'typing.Literal['a', 'b']', but other times, it includes some extra
-            # text, like '<class 'bool'>'. Therefore, we have some logic to make
-            # the type show up the way we want.
-            field_type = (
-                field_info.annotation.__name__
-                if isinstance(field_info.annotation, type)
-                and not isinstance(field_info.annotation, GenericAlias)
-                else field_info.annotation
-            )
+            # field_info.annotation looks the way we want, like 'list[str]', but
+            # other times, it includes some extra text, like '<class 'bool'>'.
+            # Therefore, we have some logic to make the type show up the way we want.
+            field_type = _fieldinfo_to_str(field_info)
             lines.append(f"  * type: `{field_type}`")
-            if field_info.default is not None:
+            if field_info.default not in [None, PydanticUndefined]:
                 lines.append(f"  * default: `{field_info.default}`")
         return "\n".join(lines)
 
