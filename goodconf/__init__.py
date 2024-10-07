@@ -1,6 +1,7 @@
 """
 Transparently load variables from environment or JSON/YAML file.
 """
+
 # Note: the following line is included to ensure Python3.9 compatibility.
 from __future__ import annotations
 
