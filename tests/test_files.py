@@ -17,7 +17,6 @@ def test_conf_env_var(mocker, tmpdir):
         g = G()
         g.load()
     mocked_load_config.assert_called_once_with(str(path))
-    assert g._config_file == str(path)
 
 
 def test_conflict(tmpdir):
@@ -39,6 +38,7 @@ def test_conflict(tmpdir):
 
 def test_all_env_vars(mocker):
     mocked_set_values = mocker.patch("goodconf.BaseSettings.__init__")
+    mocked_load_config = mocker.patch("goodconf._load_config")
 
     class G(GoodConf):
         pass
@@ -46,7 +46,7 @@ def test_all_env_vars(mocker):
     g = G()
     g.load()
     mocked_set_values.assert_called_once_with()
-    assert g._config_file is None
+    mocked_load_config.assert_not_called()
 
 
 def test_provided_file(mocker, tmpdir):
@@ -60,7 +60,19 @@ def test_provided_file(mocker, tmpdir):
     g = G()
     g.load(str(path))
     mocked_load_config.assert_called_once_with(str(path))
-    assert g._config_file == str(path)
+
+
+def test_provided_file_from_init(mocker, tmpdir):
+    mocked_load_config = mocker.patch("goodconf._load_config")
+    path = tmpdir.join("myapp.json")
+    path.write("")
+
+    class G(GoodConf):
+        pass
+
+    g = G(config_file=str(path))
+    g.load()
+    mocked_load_config.assert_called_once_with(str(path))
 
 
 def test_default_files(mocker, tmpdir):
@@ -75,4 +87,3 @@ def test_default_files(mocker, tmpdir):
     g = G()
     g.load()
     mocked_load_config.assert_called_once_with(str(path))
-    assert g._config_file == str(path)
