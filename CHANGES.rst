@@ -2,9 +2,13 @@
 Change Log
 ==========
 
-5.0.1 (Unreleased)
+6.0.0 (8 October 2024)
 ========================
 
+- **Backwards Incompatible Release**
+
+  - Removed the ``_config_file`` attribute from ``GoodConf``.
+    If you previously set this attribute, you are no longer be able to do so.
 - Support reading TOML files via ``tomllib`` on Python 3.11+
 - Update Markdown generation, so that output matches v4 output
 
