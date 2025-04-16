@@ -36,19 +36,16 @@ log = logging.getLogger(__name__)
 
 
 def Field(
+    *args,
     initial=None,
     json_schema_extra=None,
     **kwargs,
 ):
-    """ """
-    if initial and not callable(initial):
-        val = initial
-        initial = lambda: val
-
-    json_schema_extra = json_schema_extra or {}
-    if initial and isinstance(json_schema_extra, dict):
+    if initial:
+        json_schema_extra = json_schema_extra or {}
         json_schema_extra["initial"] = initial
-    return PydanticField(json_schema_extra=json_schema_extra, **kwargs)
+
+    return PydanticField(*args, json_schema_extra=json_schema_extra, **kwargs)
 
 
 class GoodConfConfigDict(SettingsConfigDict):
