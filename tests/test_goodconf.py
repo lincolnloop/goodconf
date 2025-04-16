@@ -186,6 +186,29 @@ def test_required_missing():
         TestConf(load=True)
 
 
+def test_default_values_are_used(monkeypatch):
+    """
+    Covers regression in: https://github.com/lincolnloop/goodconf/pull/51
+
+    Requires more than one defined field to reproduce.
+    """
+    monkeypatch.delenv("a", raising=False)
+    monkeypatch.setenv("b", "value_from_env")
+    monkeypatch.delenv("c", raising=False)
+
+    class TestConf(GoodConf):
+        a: str = Field(default="default_for_a")
+        b: str = Field(initial=lambda: "1234")
+        c: str = Field("default_for_c")
+
+    c = TestConf()
+    c.load()
+
+    assert c.a == "default_for_a"
+    assert c.b == "value_from_env"
+    assert c.c == "default_for_c"
+
+
 def test_set_on_init():
     class TestConf(GoodConf):
         a: str = Field()
