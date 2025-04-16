@@ -1,3 +1,5 @@
+import sys
+
 import pytest
 from pydantic import ConfigDict
 
@@ -49,7 +51,11 @@ def test_help(mocker, tmpdir, capsys):
     )
     mocked_load_config.assert_called_once_with(str(temp_config))
     output = capsys.readouterr()
-    assert "-C FILE, --config FILE" in output.out
+    if sys.version_info < (3, 13):
+        assert "-C FILE, --config FILE" in output.out
+    else:
+        assert "-C, --config FILE" in output.out
+
     assert "MYAPP_CONF" in output.out
     assert "/etc/myapp.json" in output.out
 

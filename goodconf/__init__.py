@@ -16,7 +16,7 @@ from types import GenericAlias
 from typing import TYPE_CHECKING, cast, get_args
 
 from pydantic._internal._config import config_keys
-from pydantic.fields import Field, PydanticUndefined
+from pydantic.fields import Field as PydanticField, PydanticUndefined
 from pydantic.main import _object_setattr
 from pydantic_settings import (
     BaseSettings,
@@ -33,6 +33,22 @@ if TYPE_CHECKING:
 __all__ = ["GoodConf", "GoodConfConfigDict", "Field"]
 
 log = logging.getLogger(__name__)
+
+
+def Field(
+    initial=None,
+    json_schema_extra=None,
+    **kwargs,
+):
+    """ """
+    if initial and not callable(initial):
+        val = initial
+        initial = lambda: val
+
+    json_schema_extra = json_schema_extra or {}
+    if initial and isinstance(json_schema_extra, dict):
+        json_schema_extra["initial"] = initial
+    return PydanticField(json_schema_extra=json_schema_extra, **kwargs)
 
 
 class GoodConfConfigDict(SettingsConfigDict):

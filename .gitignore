@@ -8,3 +8,4 @@ htmlcov
 env
 venv
 __pycache__
+uv.lock
