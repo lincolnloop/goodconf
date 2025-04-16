@@ -53,7 +53,7 @@ version-file = "goodconf/_version.py"
 source = "vcs"
 
 [tool.pytest.ini_options]
-addopts = "--cov --cov-branch"
+addopts = "-s --cov --cov-branch"
 
 [tool.ruff.lint]
 select = ["ALL"]
