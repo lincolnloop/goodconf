@@ -1,5 +1,7 @@
 from typing import Optional
 
+import pytest
+
 from goodconf import Field, GoodConf, initial_for_field
 
 from .utils import KEY
@@ -12,11 +14,12 @@ def test_initial():
     assert initial_for_field(KEY, C.model_fields["f"]) == "x"
 
 
-def test_initial_converts_to_callable():
+def test_initial_bad():
     class C(GoodConf):
         f: str = Field(initial="x")
 
-    assert initial_for_field(KEY, C.model_fields["f"]) == "x"
+    with pytest.raises(ValueError):
+        initial_for_field(KEY, C.model_fields["f"])
 
 
 def test_initial_default():
