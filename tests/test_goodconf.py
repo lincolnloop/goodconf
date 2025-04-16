@@ -5,10 +5,10 @@ from textwrap import dedent
 from typing import Optional, List, Literal
 
 import pytest
-from pydantic import Field, ValidationError
+from pydantic import ValidationError
 from pydantic.fields import FieldInfo
 
-from goodconf import GoodConf, FileConfigSettingsSource
+from goodconf import Field, GoodConf, FileConfigSettingsSource
 from tests.utils import env_var
 
 
