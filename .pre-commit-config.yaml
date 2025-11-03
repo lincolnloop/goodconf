@@ -1,13 +1,13 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.5
+    rev: v0.14.3
     hooks:
       # Run the linter.
       # - id: ruff
       # Run the formatter.
       - id: ruff-format
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.19.1
+    rev: v3.21.0
     hooks:
     -   id: pyupgrade
         args: ["--py39-plus"]
