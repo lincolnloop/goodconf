@@ -10,22 +10,16 @@ import sys
 from functools import partial
 from io import StringIO
 from types import GenericAlias
-from typing import TYPE_CHECKING, cast, get_args
+from typing import Any, cast, get_args
 
 from pydantic._internal._config import config_keys
-from pydantic.fields import Field as PydanticField, PydanticUndefined
+from pydantic.fields import Field as PydanticField, FieldInfo, PydanticUndefined
 from pydantic.main import _object_setattr
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
     SettingsConfigDict,
 )
-
-if TYPE_CHECKING:
-    from typing import Any
-
-    from pydantic.fields import FieldInfo
-
 
 __all__ = ["GoodConf", "GoodConfConfigDict", "Field"]
 
