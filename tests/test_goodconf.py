@@ -2,13 +2,13 @@ import json
 import os
 import re
 from textwrap import dedent
-from typing import Optional, List, Literal
+from typing import List, Literal, Optional
 
 import pytest
 from pydantic import ValidationError
 from pydantic.fields import FieldInfo
 
-from goodconf import Field, GoodConf, FileConfigSettingsSource
+from goodconf import Field, FileConfigSettingsSource, GoodConf
 from tests.utils import env_var
 
 

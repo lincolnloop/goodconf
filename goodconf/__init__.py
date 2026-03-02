@@ -223,14 +223,15 @@ class GoodConf(BaseSettings):
 
     model_config = GoodConfConfigDict()
 
+    @classmethod
     def _settings_build_values(
-        self,
+        cls,
+        sources: tuple[PydanticBaseSettingsSource, ...],
         init_kwargs: dict[str, Any],
-        **kwargs,
     ) -> dict[str, Any]:
         state = super()._settings_build_values(
+            sources,
             init_kwargs,
-            **kwargs,
         )
         state.pop("_config_file", None)
         return state
