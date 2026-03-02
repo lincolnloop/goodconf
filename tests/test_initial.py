@@ -1,5 +1,3 @@
-from typing import Optional
-
 import pytest
 
 from goodconf import Field, GoodConf, initial_for_field
@@ -55,7 +53,7 @@ def test_default_initial():
 
 def test_optional_initial():
     class G(GoodConf):
-        a: Optional[str]
+        a: str | None
 
     initial = G().get_initial()
     assert initial["a"] is None

@@ -2,7 +2,7 @@ import json
 import os
 import re
 from textwrap import dedent
-from typing import List, Literal, Optional
+from typing import Literal
 
 import pytest
 from pydantic import ValidationError
@@ -104,7 +104,7 @@ def test_dump_yaml_none():
     pytest.importorskip("ruamel.yaml")
 
     class TestConf(GoodConf):
-        a: Optional[str]
+        a: str | None
 
     output = TestConf.generate_yaml()
     assert output.strip() == "a: ~"
