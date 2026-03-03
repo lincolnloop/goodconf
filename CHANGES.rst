@@ -2,6 +2,15 @@
 Change Log
 ==========
 
+7.0.0 (TBD)
+========================
+
+- **Backwards Incompatible Release**
+
+  - Removed official support for Python 3.9
+  - Added official support for Python 3.13 and 3.14
+  - Updated pydantic-settings requirement to >=2.13 (was >=2.4)
+
 6.0.0 (8 October 2024)
 ========================
 
