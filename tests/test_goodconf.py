@@ -2,13 +2,13 @@ import json
 import os
 import re
 from textwrap import dedent
-from typing import Optional, List, Literal
+from typing import Literal
 
 import pytest
 from pydantic import ValidationError
 from pydantic.fields import FieldInfo
 
-from goodconf import Field, GoodConf, FileConfigSettingsSource
+from goodconf import Field, FileConfigSettingsSource, GoodConf
 from tests.utils import env_var
 
 
@@ -104,7 +104,7 @@ def test_dump_yaml_none():
     pytest.importorskip("ruamel.yaml")
 
     class TestConf(GoodConf):
-        a: Optional[str]
+        a: str | None
 
     output = TestConf.generate_yaml()
     assert output.strip() == "a: ~"

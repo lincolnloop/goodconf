@@ -2,7 +2,7 @@
 name = "goodconf"
 description = "Load configuration variables from a file or environment"
 readme = "README.rst"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [
     {name = "Peter Baumgartner", email = "brett@python.org"}
 ]
@@ -14,15 +14,16 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
 dynamic = ["version"]
 dependencies = [
     "pydantic>=2.7",
-    "pydantic-settings>=2.4",
+    "pydantic-settings>=2.13",
 ]
 
 [project.optional-dependencies]
@@ -32,9 +33,9 @@ tests = [
     "django>=3.2.0",
     "ruamel.yaml>=0.17.0",
     "tomlkit>=0.11.6",
-    "pytest==7.2.*",
-    "pytest-cov==4.0.*",
-    "pytest-mock==3.10.*"
+    "pytest==9.0.*",
+    "pytest-cov==7.0.*",
+    "pytest-mock==3.15.*"
 ]
 
 [project.urls]

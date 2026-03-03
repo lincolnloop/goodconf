@@ -2,9 +2,6 @@
 Transparently load variables from environment or JSON/YAML file.
 """
 
-# Note: the following line is included to ensure Python3.9 compatibility.
-from __future__ import annotations
-
 import errno
 import json
 import logging
@@ -13,22 +10,16 @@ import sys
 from functools import partial
 from io import StringIO
 from types import GenericAlias
-from typing import TYPE_CHECKING, cast, get_args
+from typing import Any, cast, get_args
 
 from pydantic._internal._config import config_keys
-from pydantic.fields import Field as PydanticField, PydanticUndefined
+from pydantic.fields import Field as PydanticField, FieldInfo, PydanticUndefined
 from pydantic.main import _object_setattr
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
     SettingsConfigDict,
 )
-
-if TYPE_CHECKING:
-    from typing import Any
-
-    from pydantic.fields import FieldInfo
-
 
 __all__ = ["GoodConf", "GoodConfConfigDict", "Field"]
 
@@ -223,14 +214,15 @@ class GoodConf(BaseSettings):
 
     model_config = GoodConfConfigDict()
 
+    @classmethod
     def _settings_build_values(
-        self,
+        cls,
+        sources: tuple[PydanticBaseSettingsSource, ...],
         init_kwargs: dict[str, Any],
-        **kwargs,
     ) -> dict[str, Any]:
         state = super()._settings_build_values(
+            sources,
             init_kwargs,
-            **kwargs,
         )
         state.pop("_config_file", None)
         return state
