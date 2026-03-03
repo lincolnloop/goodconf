@@ -2,7 +2,7 @@
 Change Log
 ==========
 
-7.0.0 (TBD)
+7.0.0 (3 March 2026)
 ========================
 
 - **Backwards Incompatible Release**
