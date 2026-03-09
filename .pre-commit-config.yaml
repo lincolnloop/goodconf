@@ -27,3 +27,27 @@ repos:
       - id: ruff-check
         args: [--fix]
       - id: ruff-format
+
+  - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
+    rev: v2.16.0
+    hooks:
+      - id: pretty-format-toml
+        args: [--autofix, --trailing-commas]
+        types: [toml]
+        files: \.toml
+
+  - repo: https://github.com/ninoseki/uv-sort
+    rev: v0.7.0
+    hooks:
+      - id: uv-sort
+
+  - repo: local
+    hooks:
+      - id: prettier
+        name: prettier
+        language: node
+        entry: prettier
+        args: [--write, --ignore-unknown]
+        additional_dependencies: [prettier@3]
+        exclude_types: [python]
+        pass_filenames: true
