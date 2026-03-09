@@ -51,3 +51,13 @@ repos:
         additional_dependencies: [prettier@3]
         exclude_types: [python]
         pass_filenames: true
+
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy
+        language: system
+        entry: uv run mypy goodconf
+        types: [python]
+        require_serial: true
+        pass_filenames: false
