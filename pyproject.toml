@@ -29,13 +29,15 @@ dependencies = [
 [project.optional-dependencies]
 yaml = ["ruamel.yaml>=0.17.0"]
 toml = ["tomlkit>=0.11.6"]
-tests = [
+
+[dependency-groups]
+dev = [
     "django>=3.2.0",
-    "ruamel.yaml>=0.17.0",
-    "tomlkit>=0.11.6",
     "pytest==9.0.*",
     "pytest-cov==7.0.*",
-    "pytest-mock==3.15.*"
+    "pytest-mock==3.15.*",
+    "ruamel.yaml>=0.17.0",
+    "tomlkit>=0.11.6",
 ]
 
 [project.urls]
@@ -54,7 +56,24 @@ version-file = "goodconf/_version.py"
 source = "vcs"
 
 [tool.pytest.ini_options]
-addopts = "-s --cov --cov-branch"
+addopts = ["--cov", "--strict-markers"]
+
+[tool.coverage.run]
+branch = true
+source = ["goodconf", "tests"]
+disable_warnings = [
+    "module-not-imported",
+    "module-not-measured",
+    "no-data-collected",
+]
+
+[tool.coverage.report]
+skip_covered = true
+exclude_lines = [
+    "if TYPE_CHECKING:",
+    "pragma: no cover",
+    "raise NotImplementedError",
+]
 
 [tool.ruff.lint]
 select = ["ALL"]
