@@ -16,7 +16,7 @@ def test_initial_bad():
     class C(GoodConf):
         f: str = Field(initial="x")
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="callable"):
         initial_for_field(KEY, C.model_fields["f"])
 
 

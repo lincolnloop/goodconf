@@ -13,7 +13,8 @@ from types import GenericAlias
 from typing import Any, cast, get_args
 
 from pydantic._internal._config import config_keys
-from pydantic.fields import Field as PydanticField, FieldInfo, PydanticUndefined
+from pydantic.fields import Field as PydanticField
+from pydantic.fields import FieldInfo, PydanticUndefined
 from pydantic.main import _object_setattr
 from pydantic_settings import (
     BaseSettings,
@@ -21,7 +22,7 @@ from pydantic_settings import (
     SettingsConfigDict,
 )
 
-__all__ = ["GoodConf", "GoodConfConfigDict", "Field"]
+__all__ = ["Field", "GoodConf", "GoodConfConfigDict"]
 
 log = logging.getLogger(__name__)
 
@@ -106,15 +107,14 @@ def _fieldinfo_to_str(field_info: FieldInfo) -> str:
     ):
         # For annotation like <class 'int'>, we use its name ("int").
         field_type = field_info.annotation.__name__
+    elif str(field_info.annotation).startswith("typing."):
+        # For annotation like typing.Literal['a', 'b'], we use
+        # its string representation, but without "typing." ("Literal['a', 'b']").
+        field_type = str(field_info.annotation)[len("typing.") :]
     else:
-        if str(field_info.annotation).startswith("typing."):
-            # For annotation like typing.Literal['a', 'b'], we use
-            # its string representation, but without "typing." ("Literal['a', 'b']").
-            field_type = str(field_info.annotation)[len("typing.") :]
-        else:
-            # For annotation like list[str], we use its string
-            # representation ("list[str]").
-            field_type = field_info.annotation
+        # For annotation like list[str], we use its string
+        # representation ("list[str]").
+        field_type = field_info.annotation
     return field_type
 
 
@@ -152,7 +152,7 @@ class FileConfigSettingsSource(PydanticBaseSettingsSource):
         return None, "", False
 
     def __call__(self) -> dict[str, Any]:
-        settings = cast(GoodConf, self.settings_cls)
+        settings = cast("GoodConf", self.settings_cls)
         selected_config_file = None
         if cfg_file := self.current_state.get("_config_file"):
             selected_config_file = cfg_file
@@ -257,7 +257,7 @@ class GoodConf(BaseSettings):
         yaml = ruamel.yaml.YAML()
         yaml.representer.add_representer(
             type(None),
-            lambda self, d: self.represent_scalar("tag:yaml.org,2002:null", "~"),
+            lambda self, d: self.represent_scalar("tag:yaml.org,2002:null", "~"),  # noqa: ARG005
         )
         yaml_str = StringIO()
         yaml.dump(cls.get_initial(**override), stream=yaml_str)
@@ -265,9 +265,9 @@ class GoodConf(BaseSettings):
         dict_from_yaml = yaml.load(yaml_str)
         if cls.__doc__:
             dict_from_yaml.yaml_set_start_comment("\n" + cls.__doc__ + "\n\n")
-        for k in dict_from_yaml.keys():
+        for k in dict_from_yaml:
             if cls.model_fields[k].description:
-                description = cast(str, cls.model_fields[k].description)
+                description = cast("str", cls.model_fields[k].description)
                 dict_from_yaml.yaml_set_comment_before_after_key(
                     k, before="\n" + description
                 )
@@ -299,8 +299,8 @@ class GoodConf(BaseSettings):
         for k, v in dict_from_toml.unwrap().items():
             document.add(k, v)
             if cls.model_fields[k].description:
-                description = cast(str, cls.model_fields[k].description)
-                cast(Item, document[k]).comment(description)
+                description = cast("str", cls.model_fields[k].description)
+                cast("Item", document[k]).comment(description)
         return tomlkit.dumps(document)
 
     @classmethod

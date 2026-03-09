@@ -19,7 +19,7 @@ def test_mgmt_command(mocker, tmpdir):
 
     c = G()
     dj_args = ["manage.py", "diffsettings", "-v", "2"]
-    c.django_manage(dj_args + ["-C", str(temp_config)])
+    c.django_manage([*dj_args, "-C", str(temp_config)])
     mocked_load_config.assert_called_once_with(str(temp_config))
     mocked_dj_execute.assert_called_once_with(dj_args)
 

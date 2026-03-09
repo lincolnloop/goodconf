@@ -1,7 +1,6 @@
 import argparse
-from contextlib import contextmanager
-from typing import List
 from collections.abc import Generator
+from contextlib import contextmanager
 
 from .. import GoodConf
 from .argparse import argparser_add_argument
