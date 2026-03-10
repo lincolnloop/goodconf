@@ -35,7 +35,7 @@ jobs:
 
       - name: mypy
         if: matrix.python == '3.14'
-        run: uv run mypy goodconf tests
+        run: uv run mypy .
 
       - name: Upload coverage to Codecov
         if: ${{ (success() || failure()) && matrix.python == '3.14' }}
