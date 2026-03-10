@@ -153,7 +153,9 @@ class FileConfigSettingsSource(PydanticBaseSettingsSource):
         super().__init__(settings_cls)
 
     def get_field_value(
-        self, field: FieldInfo, field_name: str
+        self,
+        field: FieldInfo,  # noqa: ARG002
+        field_name: str,  # noqa: ARG002
     ) -> tuple[Any, str, bool]:
         # Nothing to do here. Only implement the return statement to make mypy happy
         return None, "", False

@@ -101,7 +101,6 @@ ignore = [
   "A001",  # Variable shadowing builtin (intentional: `help` in argparse)
   "ANN401",  # Dynamically typed expressions (typing.Any) are disallowed in `**kwargs`
   "ARG001",  # Unused function argument
-  "ARG002",  # Unused method argument
   "COM812",  # (ruff format) Checks for the absence of trailing commas
   "D",  # Missing or badly formatted docstrings
   "E501",  # Let the formatter handle long lines
