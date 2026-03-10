@@ -14,7 +14,7 @@ def load_config_from_cli(
     """Loads config, checking CLI arguments for a config file"""
 
     # Monkey patch Django's command parser
-    from django.core.management.base import BaseCommand, CommandParser
+    from django.core.management.base import BaseCommand, CommandParser  # noqa: PLC0415
 
     original_parser = BaseCommand.create_parser
 
@@ -45,6 +45,6 @@ def load_config_from_cli(
 def execute_from_command_line_with_config(config: GoodConf, argv: list[str]) -> None:
     """Load's config then runs Django's execute_from_command_line"""
     with load_config_from_cli(config, argv) as args:
-        from django.core.management import execute_from_command_line
+        from django.core.management import execute_from_command_line  # noqa: PLC0415
 
         execute_from_command_line(args)

@@ -75,18 +75,18 @@ def _load_config(path: str) -> dict[str, Any]:
     loader: Callable[..., Any]
     ext = Path(path).suffix
     if ext in [".yaml", ".yml"]:
-        import ruamel.yaml
+        import ruamel.yaml  # noqa: PLC0415
 
         yaml = ruamel.yaml.YAML(typ="safe", pure=True)
         loader = yaml.load
     elif ext == ".toml":
         try:
-            import tomllib
+            import tomllib  # noqa: PLC0415
 
             def load(stream: Any) -> Any:  # noqa: ARG001
                 return tomllib.loads(f.read())
         except ImportError:  # Fallback for Python < 3.11
-            import tomlkit
+            import tomlkit  # noqa: PLC0415
 
             def load(stream: Any) -> Any:  # noqa: ARG001
                 return tomlkit.load(f).unwrap()
@@ -261,7 +261,7 @@ class GoodConf(BaseSettings):
         """
         Dumps initial config in YAML
         """
-        import ruamel.yaml
+        import ruamel.yaml  # noqa: PLC0415
 
         yaml = ruamel.yaml.YAML()
         yaml.representer.add_representer(
@@ -297,7 +297,7 @@ class GoodConf(BaseSettings):
         """
         Dumps initial config in TOML
         """
-        import tomlkit
+        import tomlkit  # noqa: PLC0415
 
         toml_str = tomlkit.dumps(cls.get_initial(**override))
         dict_from_toml = tomlkit.loads(toml_str)
@@ -338,6 +338,8 @@ class GoodConf(BaseSettings):
 
     def django_manage(self, args: list[str] | None = None) -> None:
         args = args or sys.argv
-        from .contrib.django import execute_from_command_line_with_config
+        from .contrib.django import (  # noqa: PLC0415
+            execute_from_command_line_with_config,
+        )
 
         execute_from_command_line_with_config(self, args)
