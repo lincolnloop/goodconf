@@ -33,6 +33,10 @@ jobs:
       - name: Test
         run: uv run pytest --cov-report=xml --cov-report=term --junitxml=junit.xml
 
+      - name: mypy
+        if: matrix.python == '3.14'
+        run: uv run mypy goodconf tests
+
       - name: Upload coverage to Codecov
         if: ${{ (success() || failure()) && matrix.python == '3.14' }}
         uses: codecov/codecov-action@v5

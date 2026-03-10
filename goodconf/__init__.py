@@ -35,10 +35,10 @@ log = logging.getLogger(__name__)
 
 
 def Field(  # noqa: N802
-    *args: Any,
+    *args: Any,  # noqa: ANN401
     initial: Callable[[], Any] | None = None,
     json_schema_extra: dict[str, Any] | None = None,
-    **kwargs: Any,
+    **kwargs: Any,  # noqa: ANN401
 ) -> FieldInfo:
     if initial:
         json_schema_extra = json_schema_extra or {}
@@ -83,12 +83,12 @@ def _load_config(path: str) -> dict[str, Any]:
         try:
             import tomllib  # noqa: PLC0415
 
-            def load(stream: Any) -> Any:  # noqa: ARG001
+            def load(stream: object) -> dict[str, Any]:  # noqa: ARG001
                 return tomllib.loads(f.read())
         except ImportError:  # Fallback for Python < 3.11
             import tomlkit  # noqa: PLC0415
 
-            def load(stream: Any) -> Any:  # noqa: ARG001
+            def load(stream: object) -> dict[str, Any]:  # noqa: ARG001
                 return tomlkit.load(f).unwrap()
 
         loader = load
@@ -128,7 +128,7 @@ def _fieldinfo_to_str(field_info: FieldInfo) -> str:
     return field_type
 
 
-def initial_for_field(name: str, field_info: FieldInfo) -> Any:
+def initial_for_field(name: str, field_info: FieldInfo) -> Any:  # noqa: ANN401
     json_schema_extra = field_info.json_schema_extra
     if isinstance(json_schema_extra, dict) and "initial" in json_schema_extra:
         if not callable(json_schema_extra["initial"]):
@@ -188,7 +188,10 @@ class FileConfigSettingsSource(PydanticBaseSettingsSource):
 
 class GoodConf(BaseSettings):
     def __init__(
-        self, load: bool = False, config_file: str | None = None, **kwargs: Any
+        self,
+        load: bool = False,
+        config_file: str | None = None,
+        **kwargs: Any,  # noqa: ANN401
     ) -> None:
         """
         :param load: load config file on instantiation [default: False].
@@ -240,7 +243,7 @@ class GoodConf(BaseSettings):
         self,
         _config_file: str | None = None,
         _init_config_file: str | None = None,
-        **kwargs: Any,
+        **kwargs: Any,  # noqa: ANN401
     ) -> None:
         if config_file := _config_file or _init_config_file:
             kwargs["_config_file"] = config_file
@@ -250,14 +253,14 @@ class GoodConf(BaseSettings):
         self._load(_config_file=filename)
 
     @classmethod
-    def get_initial(cls, **override: Any) -> dict[str, Any]:
+    def get_initial(cls, **override: Any) -> dict[str, Any]:  # noqa: ANN401
         return {
             k: override.get(k, initial_for_field(k, v))
             for k, v in cls.model_fields.items()
         }
 
     @classmethod
-    def generate_yaml(cls, **override: Any) -> str:
+    def generate_yaml(cls, **override: Any) -> str:  # noqa: ANN401
         """
         Dumps initial config in YAML
         """
@@ -286,14 +289,14 @@ class GoodConf(BaseSettings):
         return yaml_str.read()
 
     @classmethod
-    def generate_json(cls, **override: Any) -> str:
+    def generate_json(cls, **override: Any) -> str:  # noqa: ANN401
         """
         Dumps initial config in JSON
         """
         return json.dumps(cls.get_initial(**override), indent=2)
 
     @classmethod
-    def generate_toml(cls, **override: Any) -> str:
+    def generate_toml(cls, **override: Any) -> str:  # noqa: ANN401
         """
         Dumps initial config in TOML
         """

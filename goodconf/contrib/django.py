@@ -22,7 +22,7 @@ def load_config_from_cli(
         self: BaseCommand,
         prog_name: str,
         subcommand: str,
-        **kwargs: Any,  # noqa: ARG001
+        **kwargs: Any,  # noqa: ANN401, ARG001
     ) -> CommandParser:
         parser = original_parser(self, prog_name, subcommand)
         argparser_add_argument(parser, config)

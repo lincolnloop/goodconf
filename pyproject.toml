@@ -98,7 +98,6 @@ exclude = ["goodconf/_version.py"]
 [tool.ruff.lint]
 ignore = [
   # Permanently suppressed
-  "ANN401",  # Dynamically typed expressions (typing.Any) are disallowed in `**kwargs`
   "COM812",  # (ruff format) Checks for the absence of trailing commas
   "D",  # Missing or badly formatted docstrings
   "FBT",  # Flake Boolean Trap (don't use arg=True in functions)
