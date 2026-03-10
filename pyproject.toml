@@ -1,86 +1,119 @@
-[project]
-name = "goodconf"
-description = "Load configuration variables from a file or environment"
-readme = "README.rst"
-requires-python = ">=3.10"
-authors = [
-    {name = "Peter Baumgartner", email = "brett@python.org"}
+[build-system]
+build-backend = "hatchling.build"
+requires = ["hatchling", "hatch-vcs"]
+
+[dependency-groups]
+dev = [
+  "django>=3.2.0",
+  "mypy>=1.19.1",
+  "pytest-cov==7.0.*",
+  "pytest-mock==3.15.*",
+  "pytest==9.0.*",
+  "ruamel.yaml>=0.17.0",
+  "tomlkit>=0.11.6",
 ]
+
+[project]
+authors = [
+  {name = "Peter Baumgartner", email = "brett@python.org"},
+]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+]
+dependencies = [
+  "pydantic-settings>=2.13",
+  "pydantic>=2.7",
+]
+description = "Load configuration variables from a file or environment"
+dynamic = ["version"]
 keywords = ["env", "config", "json", "yaml", "toml"]
 license = {file = "LICENSE"}
-classifiers = [
-    "Development Status :: 5 - Production/Stable",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
-    "Programming Language :: Python :: 3.13",
-    "Programming Language :: Python :: 3.14",
-]
-dynamic = ["version"]
-dependencies = [
-    "pydantic>=2.7",
-    "pydantic-settings>=2.13",
-]
+name = "goodconf"
+readme = "README.rst"
+requires-python = ">=3.10"
 
 [project.optional-dependencies]
-yaml = ["ruamel.yaml>=0.17.0"]
 toml = ["tomlkit>=0.11.6"]
-tests = [
-    "django>=3.2.0",
-    "ruamel.yaml>=0.17.0",
-    "tomlkit>=0.11.6",
-    "pytest==9.0.*",
-    "pytest-cov==7.0.*",
-    "pytest-mock==3.15.*"
-]
+yaml = ["ruamel.yaml>=0.17.0"]
 
 [project.urls]
-homepage = "https://github.com/lincolnloop/goodconf/"
 changelog = "https://github.com/lincolnloop/goodconf/blob/main/CHANGES.rst"
+homepage = "https://github.com/lincolnloop/goodconf/"
+
+[tool.coverage.report]
+exclude_lines = [
+  "if TYPE_CHECKING:",
+  "pragma: no cover",
+  "raise NotImplementedError",
+]
+skip_covered = true
+
+[tool.coverage.run]
+branch = true
+disable_warnings = [
+  "module-not-imported",
+  "module-not-measured",
+  "no-data-collected",
+]
+source = ["goodconf", "tests"]
+
+[tool.hatch.build.hooks.vcs]
+version-file = "goodconf/_version.py"
 
 [tool.hatch.build.targets.sdist]
 exclude = [
   "/.github",
 ]
 
-[tool.hatch.build.hooks.vcs]
-version-file = "goodconf/_version.py"
-
 [tool.hatch.version]
 source = "vcs"
 
+[tool.mypy]
+ignore_errors = true
+
 [tool.pytest.ini_options]
-addopts = "-s --cov --cov-branch"
+addopts = ["--cov", "--strict-markers"]
 
 [tool.ruff.lint]
-select = ["ALL"]
 ignore = [
-  "ANN101",   # Missing Type Annotation for "self"
-  "ANN401",   # Dynamically typed expressions (typing.Any) are disallowed in `**kwargs`"
-  "ARG001",   # Unused function argument (request, ...)
-  "ARG002",   # Unused method argument (*args, **kwargs)
-  "D",        # Missing or badly formatted docstrings
-  "E501",     # Let the formatter handle long lines
-  "FBT",      # Flake Boolean Trap (don't use arg=True in functions)
-  "RUF012",   # Mutable class attributes https://github.com/astral-sh/ruff/issues/5243
-
-  "COM812",   # (ruff format) Checks for the absence of trailing commas
-  "ISC001",   # (ruff format) Checks for implicitly concatenated strings on a single line
+  # Permanently suppressed
+  "A001",  # Variable shadowing builtin (intentional: `help` in argparse)
+  "ANN401",  # Dynamically typed expressions (typing.Any) are disallowed in `**kwargs`
+  "ARG001",  # Unused function argument
+  "ARG002",  # Unused method argument
+  "COM812",  # (ruff format) Checks for the absence of trailing commas
+  "D",  # Missing or badly formatted docstrings
+  "E501",  # Let the formatter handle long lines
+  "FBT",  # Flake Boolean Trap (don't use arg=True in functions)
+  "ISC001",  # (ruff format) Checks for implicitly concatenated strings on a single line
+  "N802",  # Function name should be lowercase (Field is a public API name)
+  "PLC0415",  # Import not at top level (intentional: lazy imports for optional deps)
+  "RUF012",  # Mutable class attributes https://github.com/astral-sh/ruff/issues/5243
+  # Temporary — see docs/plans/ruff-cleanup.md
+  "ANN",  # Missing type annotations (annotation work deferred)
+  "EM102",  # Exception message in f-string
+  "PTH",  # Use pathlib instead of os.path (refactoring deferred)
+  "TC002",  # Move import to TYPE_CHECKING block
+  "TID252",  # Relative imports
+  "TRY003",  # Long exception messages
+  "TRY004",  # Prefer TypeError over AttributeError
 ]
+select = ["ALL"]
 
 [tool.ruff.lint.extend-per-file-ignores]
-# Also ignore `E402` in all `__init__.py` files.
 "test_*.py" = [
-  "ANN001",   # Missing type annotation for function argument
-  "ANN201",   # Missing return type annotation
-  "S101",     # S101 Use of `assert` detected
-  "PLR2004",  # Magic value used in comparison,
+  "ANN001",  # Missing type annotation for function argument
+  "ANN201",  # Missing return type annotation
+  "PLR2004",  # Magic value used in comparison
+  "S101",  # Use of `assert` detected
+  "S105",  # Hardcoded password (test fixtures)
 ]
-
-[build-system]
-requires = ["hatchling", "hatch-vcs"]
-build-backend = "hatchling.build"

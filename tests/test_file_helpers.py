@@ -1,5 +1,6 @@
 import os
 import sys
+
 import pytest
 
 from goodconf import _find_file, _load_config
