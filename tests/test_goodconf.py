@@ -170,7 +170,7 @@ def test_generate_markdown_required():
 def test_undefined():
     c = GoodConf()
     with pytest.raises(AttributeError):
-        c.UNDEFINED
+        c.UNDEFINED  # noqa: B018
 
 
 def test_required_missing():
@@ -258,8 +258,6 @@ def test_fileconfigsettingssource_repr():
     fileconfigsettingssource = FileConfigSettingsSource(SettingsClass)
 
     assert repr(fileconfigsettingssource) == "FileConfigSettingsSource()"
-
-    field = FieldInfo(title="testfield")
 
 
 def test_fileconfigsettingssource_get_field_value():
