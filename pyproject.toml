@@ -107,7 +107,6 @@ ignore = [
   "E501",  # Let the formatter handle long lines
   "FBT",  # Flake Boolean Trap (don't use arg=True in functions)
   "ISC001",  # (ruff format) Checks for implicitly concatenated strings on a single line
-  "N802",  # Function name should be lowercase (Field is a public API name)
   "PLC0415",  # Import not at top level (intentional: lazy imports for optional deps)
   "RUF012",  # Mutable class attributes https://github.com/astral-sh/ruff/issues/5243
 ]

@@ -34,7 +34,7 @@ __all__ = ["Field", "GoodConf", "GoodConfConfigDict"]
 log = logging.getLogger(__name__)
 
 
-def Field(
+def Field(  # noqa: N802
     *args: Any,
     initial: Callable[[], Any] | None = None,
     json_schema_extra: dict[str, Any] | None = None,
