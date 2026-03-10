@@ -1,0 +1,11 @@
+printWidth = 88
+semi = true
+singleQuote = false
+tabWidth = 2
+trailingComma = "all"
+
+[[overrides]]
+files = ["*.md"]
+
+[overrides.options]
+proseWrap = "always"
