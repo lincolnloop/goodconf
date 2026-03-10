@@ -31,10 +31,19 @@ jobs:
         run: uv sync --group dev --python ${{ matrix.python }}
 
       - name: Test
-        run: uv run pytest --cov-report=xml --cov-report=term
+        run: uv run pytest --cov-report=xml --cov-report=term --junitxml=junit.xml
 
-      - uses: codecov/codecov-action@v5
-        if: ${{ matrix.python == '3.14' }}
+      - name: Upload coverage to Codecov
+        if: ${{ (success() || failure()) && matrix.python == '3.14' }}
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+
+      - name: Upload test results to Codecov
+        if: ${{ (success() || failure()) && matrix.python == '3.14' }}
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          report_type: test_results
           fail_ci_if_error: true
