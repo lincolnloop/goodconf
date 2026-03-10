@@ -7,6 +7,7 @@ import json
 import logging
 import os
 import sys
+from collections.abc import Callable
 from functools import partial
 from io import StringIO
 from pathlib import Path
@@ -14,8 +15,6 @@ from types import GenericAlias
 from typing import TYPE_CHECKING, Any, cast, get_args
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
-
     from tomlkit.items import Item
 
 from pydantic._internal._config import config_keys
@@ -35,11 +34,11 @@ log = logging.getLogger(__name__)
 
 
 def Field(
-    *args,
-    initial=None,
-    json_schema_extra=None,
-    **kwargs,
-):
+    *args: Any,
+    initial: Callable[[], Any] | None = None,
+    json_schema_extra: dict[str, Any] | None = None,
+    **kwargs: Any,
+) -> FieldInfo:
     if initial:
         json_schema_extra = json_schema_extra or {}
         json_schema_extra["initial"] = initial
@@ -147,7 +146,7 @@ class FileConfigSettingsSource(PydanticBaseSettingsSource):
     Source class for loading values provided during settings class initialization.
     """
 
-    def __init__(self, settings_cls: type[BaseSettings]):
+    def __init__(self, settings_cls: type[BaseSettings]) -> None:
         super().__init__(settings_cls)
 
     def get_field_value(
@@ -184,7 +183,7 @@ class FileConfigSettingsSource(PydanticBaseSettingsSource):
 
 class GoodConf(BaseSettings):
     def __init__(
-        self, load: bool = False, config_file: str | None = None, **kwargs
+        self, load: bool = False, config_file: str | None = None, **kwargs: Any
     ) -> None:
         """
         :param load: load config file on instantiation [default: False].
@@ -236,8 +235,8 @@ class GoodConf(BaseSettings):
         self,
         _config_file: str | None = None,
         _init_config_file: str | None = None,
-        **kwargs,
-    ):
+        **kwargs: Any,
+    ) -> None:
         if config_file := _config_file or _init_config_file:
             kwargs["_config_file"] = config_file
         super().__init__(**kwargs)
@@ -246,14 +245,14 @@ class GoodConf(BaseSettings):
         self._load(_config_file=filename)
 
     @classmethod
-    def get_initial(cls, **override) -> dict:
+    def get_initial(cls, **override: Any) -> dict[str, Any]:
         return {
             k: override.get(k, initial_for_field(k, v))
             for k, v in cls.model_fields.items()
         }
 
     @classmethod
-    def generate_yaml(cls, **override) -> str:
+    def generate_yaml(cls, **override: Any) -> str:
         """
         Dumps initial config in YAML
         """
@@ -282,14 +281,14 @@ class GoodConf(BaseSettings):
         return yaml_str.read()
 
     @classmethod
-    def generate_json(cls, **override) -> str:
+    def generate_json(cls, **override: Any) -> str:
         """
         Dumps initial config in JSON
         """
         return json.dumps(cls.get_initial(**override), indent=2)
 
     @classmethod
-    def generate_toml(cls, **override) -> str:
+    def generate_toml(cls, **override: Any) -> str:
         """
         Dumps initial config in TOML
         """
@@ -332,7 +331,7 @@ class GoodConf(BaseSettings):
                 lines.append(f"  * default: `{field_info.default}`")
         return "\n".join(lines)
 
-    def django_manage(self, args: list[str] | None = None):
+    def django_manage(self, args: list[str] | None = None) -> None:
         args = args or sys.argv
         from .contrib.django import execute_from_command_line_with_config
 

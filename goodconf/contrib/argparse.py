@@ -3,7 +3,7 @@ import argparse
 from goodconf import GoodConf
 
 
-def argparser_add_argument(parser: argparse.ArgumentParser, config: GoodConf):
+def argparser_add_argument(parser: argparse.ArgumentParser, config: GoodConf) -> None:
     """Adds argument for config to existing argparser"""
     help = "Config file."
     cfg = config.model_config

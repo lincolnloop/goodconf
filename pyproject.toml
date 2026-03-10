@@ -101,8 +101,6 @@ ignore = [
   "N802",  # Function name should be lowercase (Field is a public API name)
   "PLC0415",  # Import not at top level (intentional: lazy imports for optional deps)
   "RUF012",  # Mutable class attributes https://github.com/astral-sh/ruff/issues/5243
-  # Temporary — see docs/plans/ruff-cleanup.md
-  "ANN",  # Missing type annotations (annotation work deferred)
 ]
 select = ["ALL"]
 
