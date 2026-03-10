@@ -1,0 +1,38 @@
+---
+name: Renovate
+
+"on":
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "0 12 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  renovate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get GitHub App Token
+        id: get_token
+        # yamllint disable-line rule:line-length
+        uses: actions/create-github-app-token@29824e69f54612133e76f7eaac726eef6c875baf # v2
+        with:
+          app-id: ${{ vars.RENOVATE_BOT_APP_ID }}
+          private-key: ${{ secrets.RENOVATE_BOT_PRIVATE_KEY }}
+
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Self-hosted Renovate
+        # yamllint disable-line rule:line-length
+        uses: renovatebot/github-action@0b17c4eb901eca44d018fb25744a50a74b2042df # v46.1.4
+        env:
+          LOG_LEVEL: debug
+          RENOVATE_TOKEN: ${{ steps.get_token.outputs.token }}
+          RENOVATE_REPOSITORIES: '["${{ github.repository }}"]'

@@ -4,7 +4,8 @@ requires = ["hatchling", "hatch-vcs"]
 
 [dependency-groups]
 dev = [
-  "django>=3.2.0",
+  "django-stubs>=5.2.9",
+  "django>=5.2",
   "mypy>=1.19.1",
   "pytest-cov==7.0.*",
   "pytest-mock==3.15.*",

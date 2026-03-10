@@ -16,6 +16,12 @@ jobs:
     strategy:
       matrix:
         python: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        include:
+          # Test minimum supported versions of key dependencies
+          - python: "3.10"
+            pydantic: "2.7.*"
+            pydantic_settings: "2.13.*"
+            django: "5.2.*"
     env:
       PYTHON: ${{ matrix.python }}
     steps:
@@ -29,6 +35,14 @@ jobs:
 
       - name: Install dependencies
         run: uv sync --group dev --python ${{ matrix.python }}
+
+      - name: Pin minimum dependency versions
+        if: matrix.pydantic != ''
+        run: >-
+          uv pip install
+          "pydantic==${{ matrix.pydantic }}"
+          "pydantic-settings==${{ matrix.pydantic_settings }}"
+          "django==${{ matrix.django }}"
 
       - name: Test
         run: uv run pytest --cov-report=xml --cov-report=term --junitxml=junit.xml

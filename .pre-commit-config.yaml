@@ -52,6 +52,12 @@ repos:
         exclude_types: [python]
         pass_filenames: true
 
+  - repo: https://github.com/renovatebot/pre-commit-hooks
+    rev: 43.60.5
+    hooks:
+      - id: renovate-config-validator
+        args: [--strict]
+
   - repo: local
     hooks:
       - id: mypy
