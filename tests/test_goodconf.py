@@ -170,7 +170,7 @@ def test_generate_markdown_required():
 def test_undefined():
     c = GoodConf()
     with pytest.raises(AttributeError):
-        c.UNDEFINED  # type: ignore[attr-defined]  # noqa: B018
+        getattr(c, "UNDEFINED")  # noqa: B009
 
 
 def test_required_missing():
