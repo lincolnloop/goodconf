@@ -57,7 +57,7 @@ repos:
       - id: mypy
         name: mypy
         language: system
-        entry: uv run mypy goodconf tests
+        pass_filenames: true
+        entry: uv run mypy
         types: [python]
         require_serial: true
-        pass_filenames: false
