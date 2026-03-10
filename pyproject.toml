@@ -81,7 +81,7 @@ source = "vcs"
 ignore_errors = true
 
 [tool.pytest.ini_options]
-addopts = ["--cov", "--strict-markers"]
+addopts = ["--cov", "--strict-markers", "--junitxml=junit.xml"]
 
 [tool.ruff.lint]
 ignore = [
