@@ -1,6 +1,7 @@
 import json
 import os
 import re
+from pathlib import Path
 from textwrap import dedent
 from typing import Any, Literal
 
@@ -238,11 +239,11 @@ def test_env_prefix() -> None:
     assert c.a
 
 
-def test_precedence(tmpdir: Any) -> None:
-    path = tmpdir.join("myapp.json")
-    path.write(json.dumps({"init": "file", "env": "file", "file": "file"}))
+def test_precedence(tmp_path: Path) -> None:
+    path = tmp_path / "myapp.json"
+    path.write_text(json.dumps({"init": "file", "env": "file", "file": "file"}))
 
-    class TestConf(GoodConf, default_files=[path]):
+    class TestConf(GoodConf, default_files=[str(path)]):
         init: str = ""
         env: str = ""
         file: str = ""
