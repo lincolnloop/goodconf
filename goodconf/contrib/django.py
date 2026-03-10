@@ -1,7 +1,7 @@
 import argparse
+import typing as t
 from collections.abc import Generator
 from contextlib import contextmanager
-from typing import Any
 
 from goodconf import GoodConf
 from goodconf.contrib.argparse import argparser_add_argument
@@ -22,7 +22,7 @@ def load_config_from_cli(
         self: BaseCommand,
         prog_name: str,
         subcommand: str,
-        **kwargs: Any,  # noqa: ANN401, ARG001
+        **kwargs: t.Any,  # noqa: ANN401, ARG001
     ) -> CommandParser:
         parser = original_parser(self, prog_name, subcommand)
         argparser_add_argument(parser, config)

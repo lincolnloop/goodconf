@@ -53,6 +53,7 @@ homepage = "https://github.com/lincolnloop/goodconf/"
 [tool.coverage.report]
 exclude_lines = [
   "if TYPE_CHECKING:",
+  "if t.TYPE_CHECKING:",
   "pragma: no cover",
   "raise NotImplementedError",
 ]

@@ -1,9 +1,9 @@
 import json
 import os
 import re
+import typing as t
 from pathlib import Path
 from textwrap import dedent
-from typing import Any, Literal
 
 import pytest
 from pydantic import ValidationError
@@ -150,7 +150,7 @@ def test_generate_markdown_default_false() -> None:
 
 def test_generate_markdown_types() -> None:
     class TestConf(GoodConf):
-        a: Literal["a", "b"] = Field(default="a")
+        a: t.Literal["a", "b"] = Field(default="a")
         b: list[str] = Field()
         c: None
 
@@ -262,7 +262,7 @@ def test_precedence(tmp_path: Path) -> None:
 
 def test_fileconfigsettingssource_repr() -> None:
     class SettingsClass:
-        model_config: dict[str, Any] = {}
+        model_config: dict[str, t.Any] = {}
 
     fileconfigsettingssource = FileConfigSettingsSource(SettingsClass)  # type: ignore[arg-type]
 
@@ -271,7 +271,7 @@ def test_fileconfigsettingssource_repr() -> None:
 
 def test_fileconfigsettingssource_get_field_value() -> None:
     class SettingsClass:
-        model_config: dict[str, Any] = {}
+        model_config: dict[str, t.Any] = {}
 
     fileconfigsettingssource = FileConfigSettingsSource(SettingsClass)  # type: ignore[arg-type]
     field = FieldInfo(title="testfield")
