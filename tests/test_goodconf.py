@@ -2,7 +2,7 @@ import json
 import os
 import re
 from textwrap import dedent
-from typing import Literal
+from typing import Any, Literal
 
 import pytest
 from pydantic import ValidationError
@@ -12,7 +12,7 @@ from goodconf import Field, FileConfigSettingsSource, GoodConf
 from tests.utils import env_var
 
 
-def test_initial():
+def test_initial() -> None:
     class TestConf(GoodConf):
         a: bool = Field(initial=lambda: True)
         b: bool = Field(default=False)
@@ -23,7 +23,7 @@ def test_initial():
     assert initial["b"] is False
 
 
-def test_dump_json():
+def test_dump_json() -> None:
     class TestConf(GoodConf):
         a: bool = Field(initial=lambda: True)
 
@@ -32,7 +32,7 @@ def test_dump_json():
     assert TestConf.generate_json(a=False) == '{\n  "a": false\n}'
 
 
-def test_dump_toml():
+def test_dump_toml() -> None:
     pytest.importorskip("tomlkit")
 
     class TestConf(GoodConf):
@@ -56,7 +56,7 @@ def test_dump_toml():
     assert 'b = ""' in output
 
 
-def test_dump_yaml():
+def test_dump_yaml() -> None:
     pytest.importorskip("ruamel.yaml")
 
     class TestConf(GoodConf):
@@ -84,7 +84,7 @@ def test_dump_yaml():
     assert "b: yes" in output_override
 
 
-def test_dump_yaml_no_docstring():
+def test_dump_yaml_no_docstring() -> None:
     pytest.importorskip("ruamel.yaml")
 
     class TestConf(GoodConf):
@@ -100,7 +100,7 @@ def test_dump_yaml_no_docstring():
     )
 
 
-def test_dump_yaml_none():
+def test_dump_yaml_none() -> None:
     pytest.importorskip("ruamel.yaml")
 
     class TestConf(GoodConf):
@@ -110,7 +110,7 @@ def test_dump_yaml_none():
     assert output.strip() == "a: ~"
 
 
-def test_generate_markdown():
+def test_generate_markdown() -> None:
     help_ = "this is a"
 
     class TestConf(GoodConf):
@@ -126,7 +126,7 @@ def test_generate_markdown():
     assert help_ in mkdn
 
 
-def test_generate_markdown_no_docstring():
+def test_generate_markdown_no_docstring() -> None:
     help_ = "this is a"
 
     class TestConf(GoodConf):
@@ -138,7 +138,7 @@ def test_generate_markdown_no_docstring():
     assert f"  * description: {help_}" in mkdn.splitlines()
 
 
-def test_generate_markdown_default_false():
+def test_generate_markdown_default_false() -> None:
     class TestConf(GoodConf):
         a: bool = Field(default=False)
 
@@ -147,7 +147,7 @@ def test_generate_markdown_default_false():
     assert "  * default: `False`" in lines
 
 
-def test_generate_markdown_types():
+def test_generate_markdown_types() -> None:
     class TestConf(GoodConf):
         a: Literal["a", "b"] = Field(default="a")
         b: list[str] = Field()
@@ -159,7 +159,7 @@ def test_generate_markdown_types():
     assert "default: `PydanticUndefined`" not in str(lines)
 
 
-def test_generate_markdown_required():
+def test_generate_markdown_required() -> None:
     class TestConf(GoodConf):
         a: str
 
@@ -167,7 +167,7 @@ def test_generate_markdown_required():
     assert "* **a** _REQUIRED_" in lines
 
 
-def test_undefined():
+def test_undefined() -> None:
     """Undefined attributes are not accessible.
 
     GoodConf originally implemented __getattr__ (a573dcb) to auto-load config
@@ -181,7 +181,7 @@ def test_undefined():
     assert not hasattr(c, "UNDEFINED")
 
 
-def test_required_missing():
+def test_required_missing() -> None:
     class TestConf(GoodConf):
         a: str = Field()
 
@@ -194,7 +194,7 @@ def test_required_missing():
         TestConf(load=True)
 
 
-def test_default_values_are_used(monkeypatch):
+def test_default_values_are_used(monkeypatch: pytest.MonkeyPatch) -> None:
     """
     Covers regression in: https://github.com/lincolnloop/goodconf/pull/51
 
@@ -217,7 +217,7 @@ def test_default_values_are_used(monkeypatch):
     assert c.c == "default_for_c"
 
 
-def test_set_on_init():
+def test_set_on_init() -> None:
     class TestConf(GoodConf):
         a: str = Field()
 
@@ -226,7 +226,7 @@ def test_set_on_init():
     assert c.a == val
 
 
-def test_env_prefix():
+def test_env_prefix() -> None:
     class TestConf(GoodConf):
         a: bool = False
 
@@ -238,7 +238,7 @@ def test_env_prefix():
     assert c.a
 
 
-def test_precedence(tmpdir):
+def test_precedence(tmpdir: Any) -> None:
     path = tmpdir.join("myapp.json")
     path.write(json.dumps({"init": "file", "env": "file", "file": "file"}))
 
@@ -259,18 +259,18 @@ def test_precedence(tmpdir):
         del os.environ["ENV"]
 
 
-def test_fileconfigsettingssource_repr():
+def test_fileconfigsettingssource_repr() -> None:
     class SettingsClass:
-        model_config = {}
+        model_config: dict[str, Any] = {}
 
     fileconfigsettingssource = FileConfigSettingsSource(SettingsClass)  # type: ignore[arg-type]
 
     assert repr(fileconfigsettingssource) == "FileConfigSettingsSource()"
 
 
-def test_fileconfigsettingssource_get_field_value():
+def test_fileconfigsettingssource_get_field_value() -> None:
     class SettingsClass:
-        model_config = {}
+        model_config: dict[str, Any] = {}
 
     fileconfigsettingssource = FileConfigSettingsSource(SettingsClass)  # type: ignore[arg-type]
     field = FieldInfo(title="testfield")
