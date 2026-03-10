@@ -102,7 +102,6 @@ ignore = [
   "COM812",  # (ruff format) Checks for the absence of trailing commas
   "D",  # Missing or badly formatted docstrings
   "FBT",  # Flake Boolean Trap (don't use arg=True in functions)
-  "ISC001",  # (ruff format) Checks for implicitly concatenated strings on a single line
   "PLC0415",  # Import not at top level (intentional: lazy imports for optional deps)
   "RUF012",  # Mutable class attributes https://github.com/astral-sh/ruff/issues/5243
 ]
