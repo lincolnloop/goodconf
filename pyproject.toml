@@ -101,7 +101,6 @@ ignore = [
   "ANN401",  # Dynamically typed expressions (typing.Any) are disallowed in `**kwargs`
   "COM812",  # (ruff format) Checks for the absence of trailing commas
   "D",  # Missing or badly formatted docstrings
-  "E501",  # Let the formatter handle long lines
   "FBT",  # Flake Boolean Trap (don't use arg=True in functions)
   "ISC001",  # (ruff format) Checks for implicitly concatenated strings on a single line
   "PLC0415",  # Import not at top level (intentional: lazy imports for optional deps)
