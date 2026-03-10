@@ -19,7 +19,10 @@ def load_config_from_cli(
     original_parser = BaseCommand.create_parser
 
     def patched_parser(
-        self: BaseCommand, prog_name: str, subcommand: str, **kwargs: Any
+        self: BaseCommand,
+        prog_name: str,
+        subcommand: str,
+        **kwargs: Any,  # noqa: ARG001
     ) -> CommandParser:
         parser = original_parser(self, prog_name, subcommand)
         argparser_add_argument(parser, config)

@@ -83,12 +83,12 @@ def _load_config(path: str) -> dict[str, Any]:
         try:
             import tomllib
 
-            def load(stream: Any) -> Any:
+            def load(stream: Any) -> Any:  # noqa: ARG001
                 return tomllib.loads(f.read())
         except ImportError:  # Fallback for Python < 3.11
             import tomlkit
 
-            def load(stream: Any) -> Any:
+            def load(stream: Any) -> Any:  # noqa: ARG001
                 return tomlkit.load(f).unwrap()
 
         loader = load
