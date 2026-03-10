@@ -1,0 +1,53 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["helpers:pinGitHubActionDigests", ":configMigration"],
+  "automerge": true,
+  "automergeType": "pr",
+  "dependencyDashboard": true,
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["at any time"]
+  },
+  "schedule": ["on monday"],
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["lockFileMaintenance"],
+      "prPriority": -1
+    },
+    {
+      "description": "pydantic — stay on minimum supported version (2.7.x), bump manually",
+      "matchDepNames": ["pydantic"],
+      "allowedVersions": "2.7.*"
+    },
+    {
+      "description": "pydantic-settings — stay on minimum supported version (2.13.x), bump manually",
+      "matchDepNames": ["pydantic-settings"],
+      "allowedVersions": "2.13.*"
+    },
+    {
+      "description": "Django dev dep — stay on LTS floor (5.2.x), bump manually",
+      "matchDepNames": ["django"],
+      "allowedVersions": "5.2.*"
+    },
+    {
+      "description": "Group pytest, mypy, and stubs into one PR",
+      "matchDepNames": ["pytest", "pytest-cov", "pytest-mock", "mypy", "django-stubs"],
+      "groupName": "testing tools"
+    },
+    {
+      "description": "Group pre-commit hooks into one PR",
+      "matchManagers": ["pre-commit"],
+      "groupName": "pre-commit hooks"
+    }
+  ],
+  "platformAutomerge": true,
+  "poetry": {
+    "enabled": false
+  },
+  "prConcurrentLimit": 1,
+  "prHourlyLimit": 0,
+  "pre-commit": {
+    "enabled": true
+  },
+  "rangeStrategy": "bump"
+}
