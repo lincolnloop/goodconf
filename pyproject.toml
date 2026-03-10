@@ -79,6 +79,7 @@ exclude = [
 source = "vcs"
 
 [tool.mypy]
+strict = true
 
 [tool.pytest.ini_options]
 addopts = ["--cov", "--strict-markers"]

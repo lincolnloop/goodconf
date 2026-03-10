@@ -25,7 +25,7 @@ def load_config_from_cli(
         argparser_add_argument(parser, config)
         return parser
 
-    BaseCommand.create_parser = patched_parser  # type: ignore[assignment]
+    BaseCommand.create_parser = patched_parser  # type: ignore[method-assign]
 
     try:
         parser = argparse.ArgumentParser(add_help=False)

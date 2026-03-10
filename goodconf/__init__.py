@@ -19,8 +19,9 @@ if TYPE_CHECKING:
 
 from pydantic._internal._config import config_keys
 from pydantic.fields import Field as PydanticField
-from pydantic.fields import FieldInfo, PydanticUndefined
+from pydantic.fields import FieldInfo
 from pydantic.main import _object_setattr
+from pydantic_core import PydanticUndefined
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
@@ -43,7 +44,9 @@ def Field(
         json_schema_extra = json_schema_extra or {}
         json_schema_extra["initial"] = initial
 
-    return PydanticField(*args, json_schema_extra=json_schema_extra, **kwargs)
+    return cast(
+        "FieldInfo", PydanticField(*args, json_schema_extra=json_schema_extra, **kwargs)
+    )
 
 
 class GoodConfConfigDict(SettingsConfigDict):
