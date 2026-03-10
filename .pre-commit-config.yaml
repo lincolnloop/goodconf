@@ -56,9 +56,8 @@ repos:
     hooks:
       - id: mypy
         name: mypy
-        language: python
-        entry: mypy goodconf
+        language: system
+        entry: uv run mypy goodconf
         types: [python]
         require_serial: true
         pass_filenames: false
-        additional_dependencies: [mypy]

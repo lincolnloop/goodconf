@@ -14,6 +14,8 @@ from types import GenericAlias
 from typing import TYPE_CHECKING, Any, cast, get_args
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from tomlkit.items import Item
 
 from pydantic._internal._config import config_keys
@@ -25,6 +27,7 @@ from pydantic_settings import (
     PydanticBaseSettingsSource,
     SettingsConfigDict,
 )
+from typing_extensions import NotRequired
 
 __all__ = ["Field", "GoodConf", "GoodConfConfigDict"]
 
@@ -46,9 +49,9 @@ def Field(
 
 class GoodConfConfigDict(SettingsConfigDict):
     # configuration file to load
-    file_env_var: str | None
+    file_env_var: NotRequired[str | None]
     # if no file is given, try to load a configuration from these files in order
-    default_files: list[str] | None
+    default_files: NotRequired[list[str] | None]
 
 
 # Note: code from pydantic-settings/pydantic_settings/main.py:
@@ -67,6 +70,7 @@ def _load_config(path: str) -> dict[str, Any]:
     and return the values as a Python dictionary. JSON is the default if an
     extension can't be determined.
     """
+    loader: Callable[..., Any]
     ext = Path(path).suffix
     if ext in [".yaml", ".yml"]:
         import ruamel.yaml
@@ -77,12 +81,12 @@ def _load_config(path: str) -> dict[str, Any]:
         try:
             import tomllib
 
-            def load(stream):
+            def load(stream: Any) -> Any:
                 return tomllib.loads(f.read())
         except ImportError:  # Fallback for Python < 3.11
             import tomlkit
 
-            def load(stream):
+            def load(stream: Any) -> Any:
                 return tomlkit.load(f).unwrap()
 
         loader = load
@@ -118,25 +122,21 @@ def _fieldinfo_to_str(field_info: FieldInfo) -> str:
     else:
         # For annotation like list[str], we use its string
         # representation ("list[str]").
-        field_type = field_info.annotation
+        field_type = str(field_info.annotation)
     return field_type
 
 
 def initial_for_field(name: str, field_info: FieldInfo) -> Any:
-    try:
-        json_schema_extra = field_info.json_schema_extra or {}
+    json_schema_extra = field_info.json_schema_extra
+    if isinstance(json_schema_extra, dict) and "initial" in json_schema_extra:
         if not callable(json_schema_extra["initial"]):
             msg = f"Initial value for `{name}` must be a callable."
             raise TypeError(msg)
-        return field_info.json_schema_extra["initial"]()
-    except KeyError:
-        if (
-            field_info.default is not PydanticUndefined
-            and field_info.default is not ...
-        ):
-            return field_info.default
-        if field_info.default_factory is not None:
-            return field_info.default_factory()
+        return json_schema_extra["initial"]()
+    if field_info.default is not PydanticUndefined and field_info.default is not ...:
+        return field_info.default
+    if field_info.default_factory is not None:
+        return field_info.default_factory()  # type: ignore[call-arg]
     if type(None) in get_args(field_info.annotation):
         return None
     return ""

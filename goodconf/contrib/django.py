@@ -22,7 +22,7 @@ def load_config_from_cli(
         argparser_add_argument(parser, config)
         return parser
 
-    BaseCommand.create_parser = patched_parser
+    BaseCommand.create_parser = patched_parser  # type: ignore[assignment]
 
     try:
         parser = argparse.ArgumentParser(add_help=False)
@@ -33,7 +33,7 @@ def load_config_from_cli(
         yield default_args
     finally:
         # Put that create_parser back where it came from or so help me!
-        BaseCommand.create_parser = original_parser
+        BaseCommand.create_parser = original_parser  # type: ignore[method-assign]
 
 
 def execute_from_command_line_with_config(config: GoodConf, argv: list[str]):

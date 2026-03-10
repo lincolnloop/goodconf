@@ -4,6 +4,7 @@ requires = ["hatchling", "hatch-vcs"]
 
 [dependency-groups]
 dev = [
+  "django-stubs>=5.2.9",
   "django>=3.2.0",
   "mypy>=1.19.1",
   "pytest-cov==7.0.*",
@@ -78,7 +79,6 @@ exclude = [
 source = "vcs"
 
 [tool.mypy]
-ignore_errors = true
 
 [tool.pytest.ini_options]
 addopts = ["--cov", "--strict-markers"]
