@@ -1,6 +1,6 @@
 import argparse
 
-from .. import GoodConf
+from goodconf import GoodConf
 
 
 def argparser_add_argument(parser: argparse.ArgumentParser, config: GoodConf):

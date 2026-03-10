@@ -2,8 +2,8 @@ import argparse
 from collections.abc import Generator
 from contextlib import contextmanager
 
-from .. import GoodConf
-from .argparse import argparser_add_argument
+from goodconf import GoodConf
+from goodconf.contrib.argparse import argparser_add_argument
 
 
 @contextmanager

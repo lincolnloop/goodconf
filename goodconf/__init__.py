@@ -9,8 +9,12 @@ import os
 import sys
 from functools import partial
 from io import StringIO
+from pathlib import Path
 from types import GenericAlias
-from typing import Any, cast, get_args
+from typing import TYPE_CHECKING, Any, cast, get_args
+
+if TYPE_CHECKING:
+    from tomlkit.items import Item
 
 from pydantic._internal._config import config_keys
 from pydantic.fields import Field as PydanticField
@@ -63,7 +67,7 @@ def _load_config(path: str) -> dict[str, Any]:
     and return the values as a Python dictionary. JSON is the default if an
     extension can't be determined.
     """
-    __, ext = os.path.splitext(path)
+    ext = Path(path).suffix
     if ext in [".yaml", ".yml"]:
         import ruamel.yaml
 
@@ -85,17 +89,17 @@ def _load_config(path: str) -> dict[str, Any]:
 
     else:
         loader = json.load
-    with open(path) as f:
+    with Path(path).open() as f:
         config = loader(f)
     return config or {}
 
 
 def _find_file(filename: str, require: bool = True) -> str | None:
-    if not os.path.exists(filename):
+    if not Path(filename).exists():
         if not require:
             return None
         raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), filename)
-    return os.path.abspath(filename)
+    return str(Path(filename).resolve())
 
 
 def _fieldinfo_to_str(field_info: FieldInfo) -> str:
@@ -122,7 +126,8 @@ def initial_for_field(name: str, field_info: FieldInfo) -> Any:
     try:
         json_schema_extra = field_info.json_schema_extra or {}
         if not callable(json_schema_extra["initial"]):
-            raise ValueError(f"Initial value for `{name}` must be a callable.")
+            msg = f"Initial value for `{name}` must be a callable."
+            raise TypeError(msg)
         return field_info.json_schema_extra["initial"]()
     except KeyError:
         if (
@@ -289,7 +294,6 @@ class GoodConf(BaseSettings):
         Dumps initial config in TOML
         """
         import tomlkit
-        from tomlkit.items import Item
 
         toml_str = tomlkit.dumps(cls.get_initial(**override))
         dict_from_toml = tomlkit.loads(toml_str)

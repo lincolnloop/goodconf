@@ -83,6 +83,9 @@ ignore_errors = true
 [tool.pytest.ini_options]
 addopts = ["--cov", "--strict-markers"]
 
+[tool.ruff]
+exclude = ["goodconf/_version.py"]
+
 [tool.ruff.lint]
 ignore = [
   # Permanently suppressed
@@ -100,12 +103,6 @@ ignore = [
   "RUF012",  # Mutable class attributes https://github.com/astral-sh/ruff/issues/5243
   # Temporary — see docs/plans/ruff-cleanup.md
   "ANN",  # Missing type annotations (annotation work deferred)
-  "EM102",  # Exception message in f-string
-  "PTH",  # Use pathlib instead of os.path (refactoring deferred)
-  "TC002",  # Move import to TYPE_CHECKING block
-  "TID252",  # Relative imports
-  "TRY003",  # Long exception messages
-  "TRY004",  # Prefer TypeError over AttributeError
 ]
 select = ["ALL"]
 
