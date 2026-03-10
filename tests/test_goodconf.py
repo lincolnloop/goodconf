@@ -168,7 +168,7 @@ def test_generate_markdown_required():
 
 
 def test_undefined():
-    """Undefined attributes raise AttributeError.
+    """Undefined attributes are not accessible.
 
     GoodConf originally implemented __getattr__ (a573dcb) to auto-load config
     on first access and raise AttributeError with a message listing defined
@@ -176,13 +176,9 @@ def test_undefined():
     pydantic-based models; the AttributeError contract is now fulfilled by
     pydantic's BaseModel.__getattr__:
     https://github.com/pydantic/pydantic/blob/v2.11.3/pydantic/main.py#L964
-
-    TODO: consider whether the helpful "defined values are: ..." message from
-    the original implementation should be restored via a custom __getattr__.
     """
     c = GoodConf()
-    with pytest.raises(AttributeError):
-        getattr(c, "UNDEFINED")  # noqa: B009
+    assert not hasattr(c, "UNDEFINED")
 
 
 def test_required_missing():
