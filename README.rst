@@ -182,18 +182,18 @@ minimal fuss.
 Contribute
 ----------
 
-Create virtual environment and install package and dependencies.
+Install dependencies.
 
 .. code:: shell
 
-    pip install -e ".[tests]"
+    uv sync
 
 
 Run tests
 
 .. code:: shell
 
-    pytest
+    uv run pytest
 
 Releases are done with GitHub Actions whenever a new tag is created. For more information,
 see `<./.github/workflows/build.yml>`_
