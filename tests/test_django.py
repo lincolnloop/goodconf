@@ -1,9 +1,8 @@
 import sys
 
 import pytest
-from pydantic import ConfigDict
 
-from goodconf import GoodConf
+from goodconf import GoodConf, GoodConfConfigDict
 
 pytest.importorskip("django")
 
@@ -15,7 +14,7 @@ def test_mgmt_command(mocker, tmpdir):
     temp_config.write("")
 
     class G(GoodConf):
-        model_config = ConfigDict()
+        model_config = GoodConfConfigDict()
 
     c = G()
     dj_args = ["manage.py", "diffsettings", "-v", "2"]
@@ -31,7 +30,7 @@ def test_help(mocker, tmpdir, capsys):
     temp_config.write("")
 
     class G(GoodConf):
-        model_config = ConfigDict(
+        model_config = GoodConfConfigDict(
             file_env_var="MYAPP_CONF",
             default_files=["/etc/myapp.json"],
         )

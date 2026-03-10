@@ -79,7 +79,15 @@ exclude = [
 source = "vcs"
 
 [tool.mypy]
+plugins = ["pydantic.mypy"]
 strict = true
+
+[[tool.mypy.overrides]]
+# pydantic-settings fields require values at __init__ per mypy, but
+# are loaded from env/files at runtime; suppress these false positives
+disable_error_code = ["assignment", "call-arg"]
+disallow_untyped_defs = false
+module = "tests.*"
 
 [tool.pytest.ini_options]
 addopts = ["--cov", "--strict-markers"]

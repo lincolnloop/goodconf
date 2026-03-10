@@ -43,7 +43,7 @@ def test_dump_toml():
     assert "a = false" in output
     assert 'b = "Happy"' in output
 
-    class TestConf(GoodConf):
+    class TestConf(GoodConf):  # type: ignore[no-redef]
         "Configuration for My App"
 
         a: str = Field(description="this is a")
@@ -122,7 +122,7 @@ def test_generate_markdown():
 
     mkdn = TestConf.generate_markdown()
     # Not sure on final format, just do some basic smoke tests
-    assert TestConf.__doc__ in mkdn
+    assert (TestConf.__doc__ or "") in mkdn
     assert help_ in mkdn
 
 
@@ -170,7 +170,7 @@ def test_generate_markdown_required():
 def test_undefined():
     c = GoodConf()
     with pytest.raises(AttributeError):
-        c.UNDEFINED  # noqa: B018
+        c.UNDEFINED  # type: ignore[attr-defined]  # noqa: B018
 
 
 def test_required_missing():
@@ -255,7 +255,7 @@ def test_fileconfigsettingssource_repr():
     class SettingsClass:
         model_config = {}
 
-    fileconfigsettingssource = FileConfigSettingsSource(SettingsClass)
+    fileconfigsettingssource = FileConfigSettingsSource(SettingsClass)  # type: ignore[arg-type]
 
     assert repr(fileconfigsettingssource) == "FileConfigSettingsSource()"
 
@@ -264,11 +264,11 @@ def test_fileconfigsettingssource_get_field_value():
     class SettingsClass:
         model_config = {}
 
-    fileconfigsettingssource = FileConfigSettingsSource(SettingsClass)
+    fileconfigsettingssource = FileConfigSettingsSource(SettingsClass)  # type: ignore[arg-type]
     field = FieldInfo(title="testfield")
     assert fileconfigsettingssource.get_field_value(field, "testfield") == (
         None,
         "",
         False,
     )
-    assert fileconfigsettingssource.get_field_value(None, "a") == (None, "", False)
+    assert fileconfigsettingssource.get_field_value(None, "a") == (None, "", False)  # type: ignore[arg-type]

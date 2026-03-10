@@ -14,7 +14,7 @@ def test_initial():
 
 def test_initial_bad():
     class C(GoodConf):
-        f: str = Field(initial="x")
+        f: str = Field(initial="x")  # type: ignore[arg-type]
 
     with pytest.raises(TypeError, match="callable"):
         initial_for_field(KEY, C.model_fields["f"])
@@ -55,5 +55,5 @@ def test_optional_initial():
     class G(GoodConf):
         a: str | None
 
-    initial = G().get_initial()
+    initial = G.get_initial()
     assert initial["a"] is None
