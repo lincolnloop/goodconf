@@ -1,4 +1,7 @@
 ---
+ci:
+  skip: [mypy]
+
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
@@ -56,9 +59,7 @@ repos:
     hooks:
       - id: mypy
         name: mypy
-        language: python
-        entry: mypy goodconf
+        language: system
+        entry: uv run mypy
         types: [python]
         require_serial: true
-        pass_filenames: false
-        additional_dependencies: [mypy]

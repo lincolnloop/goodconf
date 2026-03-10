@@ -1,21 +1,22 @@
 import sys
+from pathlib import Path
 
 import pytest
-from pydantic import ConfigDict
+from pytest_mock import MockerFixture
 
-from goodconf import GoodConf
+from goodconf import GoodConf, GoodConfConfigDict
 
 pytest.importorskip("django")
 
 
-def test_mgmt_command(mocker, tmpdir):
+def test_mgmt_command(mocker: MockerFixture, tmp_path: Path) -> None:
     mocked_load_config = mocker.patch("goodconf._load_config")
     mocked_dj_execute = mocker.patch("django.core.management.execute_from_command_line")
-    temp_config = tmpdir.join("config.yml")
-    temp_config.write("")
+    temp_config = tmp_path / "config.yml"
+    temp_config.write_text("")
 
     class G(GoodConf):
-        model_config = ConfigDict()
+        model_config = GoodConfConfigDict()
 
     c = G()
     dj_args = ["manage.py", "diffsettings", "-v", "2"]
@@ -24,14 +25,16 @@ def test_mgmt_command(mocker, tmpdir):
     mocked_dj_execute.assert_called_once_with(dj_args)
 
 
-def test_help(mocker, tmpdir, capsys):
+def test_help(
+    mocker: MockerFixture, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
     mocker.patch("sys.exit")
     mocked_load_config = mocker.patch("goodconf._load_config")
-    temp_config = tmpdir.join("config.yml")
-    temp_config.write("")
+    temp_config = tmp_path / "config.yml"
+    temp_config.write_text("")
 
     class G(GoodConf):
-        model_config = ConfigDict(
+        model_config = GoodConfConfigDict(
             file_env_var="MYAPP_CONF",
             default_files=["/etc/myapp.json"],
         )

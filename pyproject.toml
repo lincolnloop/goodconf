@@ -4,6 +4,7 @@ requires = ["hatchling", "hatch-vcs"]
 
 [dependency-groups]
 dev = [
+  "django-stubs>=5.2.9",
   "django>=3.2.0",
   "mypy>=1.19.1",
   "pytest-cov==7.0.*",
@@ -52,6 +53,7 @@ homepage = "https://github.com/lincolnloop/goodconf/"
 [tool.coverage.report]
 exclude_lines = [
   "if TYPE_CHECKING:",
+  "if t.TYPE_CHECKING:",
   "pragma: no cover",
   "raise NotImplementedError",
 ]
@@ -78,34 +80,29 @@ exclude = [
 source = "vcs"
 
 [tool.mypy]
-ignore_errors = true
+plugins = ["pydantic.mypy"]
+strict = true
+
+[[tool.mypy.overrides]]
+# pydantic-settings fields require values at __init__ per mypy, but
+# are loaded from env/files at runtime; suppress these false positives
+disable_error_code = ["assignment", "call-arg"]
+disallow_untyped_defs = false
+module = "tests.*"
 
 [tool.pytest.ini_options]
 addopts = ["--cov", "--strict-markers"]
 
+[tool.ruff]
+exclude = ["goodconf/_version.py"]
+
 [tool.ruff.lint]
 ignore = [
   # Permanently suppressed
-  "A001",  # Variable shadowing builtin (intentional: `help` in argparse)
-  "ANN401",  # Dynamically typed expressions (typing.Any) are disallowed in `**kwargs`
-  "ARG001",  # Unused function argument
-  "ARG002",  # Unused method argument
   "COM812",  # (ruff format) Checks for the absence of trailing commas
   "D",  # Missing or badly formatted docstrings
-  "E501",  # Let the formatter handle long lines
   "FBT",  # Flake Boolean Trap (don't use arg=True in functions)
-  "ISC001",  # (ruff format) Checks for implicitly concatenated strings on a single line
-  "N802",  # Function name should be lowercase (Field is a public API name)
-  "PLC0415",  # Import not at top level (intentional: lazy imports for optional deps)
   "RUF012",  # Mutable class attributes https://github.com/astral-sh/ruff/issues/5243
-  # Temporary — see docs/plans/ruff-cleanup.md
-  "ANN",  # Missing type annotations (annotation work deferred)
-  "EM102",  # Exception message in f-string
-  "PTH",  # Use pathlib instead of os.path (refactoring deferred)
-  "TC002",  # Move import to TYPE_CHECKING block
-  "TID252",  # Relative imports
-  "TRY003",  # Long exception messages
-  "TRY004",  # Prefer TypeError over AttributeError
 ]
 select = ["ALL"]
 

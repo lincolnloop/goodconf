@@ -7,44 +7,53 @@ import json
 import logging
 import os
 import sys
+import typing as t
+from collections.abc import Callable
 from functools import partial
 from io import StringIO
+from pathlib import Path
 from types import GenericAlias
-from typing import Any, cast, get_args
+
+if t.TYPE_CHECKING:
+    from tomlkit.items import Item
 
 from pydantic._internal._config import config_keys
 from pydantic.fields import Field as PydanticField
-from pydantic.fields import FieldInfo, PydanticUndefined
+from pydantic.fields import FieldInfo
 from pydantic.main import _object_setattr
+from pydantic_core import PydanticUndefined
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,
     SettingsConfigDict,
 )
+from typing_extensions import NotRequired
 
 __all__ = ["Field", "GoodConf", "GoodConfConfigDict"]
 
 log = logging.getLogger(__name__)
 
 
-def Field(
-    *args,
-    initial=None,
-    json_schema_extra=None,
-    **kwargs,
-):
+def Field(  # noqa: N802
+    *args: t.Any,  # noqa: ANN401
+    initial: Callable[[], t.Any] | None = None,
+    json_schema_extra: dict[str, t.Any] | None = None,
+    **kwargs: t.Any,  # noqa: ANN401
+) -> FieldInfo:
     if initial:
         json_schema_extra = json_schema_extra or {}
         json_schema_extra["initial"] = initial
 
-    return PydanticField(*args, json_schema_extra=json_schema_extra, **kwargs)
+    return t.cast(
+        "FieldInfo", PydanticField(*args, json_schema_extra=json_schema_extra, **kwargs)
+    )
 
 
 class GoodConfConfigDict(SettingsConfigDict):
     # configuration file to load
-    file_env_var: str | None
+    file_env_var: NotRequired[str | None]
     # if no file is given, try to load a configuration from these files in order
-    default_files: list[str] | None
+    default_files: NotRequired[list[str] | None]
 
 
 # Note: code from pydantic-settings/pydantic_settings/main.py:
@@ -57,45 +66,46 @@ class GoodConfConfigDict(SettingsConfigDict):
 config_keys |= set(GoodConfConfigDict.__annotations__.keys())
 
 
-def _load_config(path: str) -> dict[str, Any]:
+def _load_config(path: str) -> dict[str, t.Any]:
     """
     Given a file path, parse it based on its extension (YAML, TOML or JSON)
     and return the values as a Python dictionary. JSON is the default if an
     extension can't be determined.
     """
-    __, ext = os.path.splitext(path)
+    loader: Callable[..., t.Any]
+    ext = Path(path).suffix
     if ext in [".yaml", ".yml"]:
-        import ruamel.yaml
+        import ruamel.yaml  # noqa: PLC0415
 
         yaml = ruamel.yaml.YAML(typ="safe", pure=True)
         loader = yaml.load
     elif ext == ".toml":
         try:
-            import tomllib
+            import tomllib  # noqa: PLC0415
 
-            def load(stream):
+            def load(stream: object) -> dict[str, t.Any]:  # noqa: ARG001
                 return tomllib.loads(f.read())
         except ImportError:  # Fallback for Python < 3.11
-            import tomlkit
+            import tomlkit  # noqa: PLC0415
 
-            def load(stream):
+            def load(stream: object) -> dict[str, t.Any]:  # noqa: ARG001
                 return tomlkit.load(f).unwrap()
 
         loader = load
 
     else:
         loader = json.load
-    with open(path) as f:
+    with Path(path).open() as f:
         config = loader(f)
     return config or {}
 
 
 def _find_file(filename: str, require: bool = True) -> str | None:
-    if not os.path.exists(filename):
+    if not Path(filename).exists():
         if not require:
             return None
         raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), filename)
-    return os.path.abspath(filename)
+    return str(Path(filename).resolve())
 
 
 def _fieldinfo_to_str(field_info: FieldInfo) -> str:
@@ -114,25 +124,22 @@ def _fieldinfo_to_str(field_info: FieldInfo) -> str:
     else:
         # For annotation like list[str], we use its string
         # representation ("list[str]").
-        field_type = field_info.annotation
+        field_type = str(field_info.annotation)
     return field_type
 
 
-def initial_for_field(name: str, field_info: FieldInfo) -> Any:
-    try:
-        json_schema_extra = field_info.json_schema_extra or {}
+def initial_for_field(name: str, field_info: FieldInfo) -> t.Any:  # noqa: ANN401
+    json_schema_extra = field_info.json_schema_extra
+    if isinstance(json_schema_extra, dict) and "initial" in json_schema_extra:
         if not callable(json_schema_extra["initial"]):
-            raise ValueError(f"Initial value for `{name}` must be a callable.")
-        return field_info.json_schema_extra["initial"]()
-    except KeyError:
-        if (
-            field_info.default is not PydanticUndefined
-            and field_info.default is not ...
-        ):
-            return field_info.default
-        if field_info.default_factory is not None:
-            return field_info.default_factory()
-    if type(None) in get_args(field_info.annotation):
+            msg = f"Initial value for `{name}` must be a callable."
+            raise TypeError(msg)
+        return json_schema_extra["initial"]()
+    if field_info.default is not PydanticUndefined and field_info.default is not ...:
+        return field_info.default
+    if field_info.default_factory is not None:
+        return field_info.default_factory()  # type: ignore[call-arg]
+    if type(None) in t.get_args(field_info.annotation):
         return None
     return ""
 
@@ -142,17 +149,19 @@ class FileConfigSettingsSource(PydanticBaseSettingsSource):
     Source class for loading values provided during settings class initialization.
     """
 
-    def __init__(self, settings_cls: type[BaseSettings]):
+    def __init__(self, settings_cls: type[BaseSettings]) -> None:
         super().__init__(settings_cls)
 
     def get_field_value(
-        self, field: FieldInfo, field_name: str
-    ) -> tuple[Any, str, bool]:
+        self,
+        field: FieldInfo,  # noqa: ARG002
+        field_name: str,  # noqa: ARG002
+    ) -> tuple[t.Any, str, bool]:
         # Nothing to do here. Only implement the return statement to make mypy happy
         return None, "", False
 
-    def __call__(self) -> dict[str, Any]:
-        settings = cast("GoodConf", self.settings_cls)
+    def __call__(self) -> dict[str, t.Any]:
+        settings = t.cast("GoodConf", self.settings_cls)
         selected_config_file = None
         if cfg_file := self.current_state.get("_config_file"):
             selected_config_file = cfg_file
@@ -179,7 +188,10 @@ class FileConfigSettingsSource(PydanticBaseSettingsSource):
 
 class GoodConf(BaseSettings):
     def __init__(
-        self, load: bool = False, config_file: str | None = None, **kwargs
+        self,
+        load: bool = False,
+        config_file: str | None = None,
+        **kwargs: t.Any,  # noqa: ANN401
     ) -> None:
         """
         :param load: load config file on instantiation [default: False].
@@ -218,8 +230,8 @@ class GoodConf(BaseSettings):
     def _settings_build_values(
         cls,
         sources: tuple[PydanticBaseSettingsSource, ...],
-        init_kwargs: dict[str, Any],
-    ) -> dict[str, Any]:
+        init_kwargs: dict[str, t.Any],
+    ) -> dict[str, t.Any]:
         state = super()._settings_build_values(
             sources,
             init_kwargs,
@@ -231,8 +243,8 @@ class GoodConf(BaseSettings):
         self,
         _config_file: str | None = None,
         _init_config_file: str | None = None,
-        **kwargs,
-    ):
+        **kwargs: t.Any,  # noqa: ANN401
+    ) -> None:
         if config_file := _config_file or _init_config_file:
             kwargs["_config_file"] = config_file
         super().__init__(**kwargs)
@@ -241,18 +253,18 @@ class GoodConf(BaseSettings):
         self._load(_config_file=filename)
 
     @classmethod
-    def get_initial(cls, **override) -> dict:
+    def get_initial(cls, **override: t.Any) -> dict[str, t.Any]:  # noqa: ANN401
         return {
             k: override.get(k, initial_for_field(k, v))
             for k, v in cls.model_fields.items()
         }
 
     @classmethod
-    def generate_yaml(cls, **override) -> str:
+    def generate_yaml(cls, **override: t.Any) -> str:  # noqa: ANN401
         """
         Dumps initial config in YAML
         """
-        import ruamel.yaml
+        import ruamel.yaml  # noqa: PLC0415
 
         yaml = ruamel.yaml.YAML()
         yaml.representer.add_representer(
@@ -267,7 +279,7 @@ class GoodConf(BaseSettings):
             dict_from_yaml.yaml_set_start_comment("\n" + cls.__doc__ + "\n\n")
         for k in dict_from_yaml:
             if cls.model_fields[k].description:
-                description = cast("str", cls.model_fields[k].description)
+                description = t.cast("str", cls.model_fields[k].description)
                 dict_from_yaml.yaml_set_comment_before_after_key(
                     k, before="\n" + description
                 )
@@ -277,19 +289,18 @@ class GoodConf(BaseSettings):
         return yaml_str.read()
 
     @classmethod
-    def generate_json(cls, **override) -> str:
+    def generate_json(cls, **override: t.Any) -> str:  # noqa: ANN401
         """
         Dumps initial config in JSON
         """
         return json.dumps(cls.get_initial(**override), indent=2)
 
     @classmethod
-    def generate_toml(cls, **override) -> str:
+    def generate_toml(cls, **override: t.Any) -> str:  # noqa: ANN401
         """
         Dumps initial config in TOML
         """
-        import tomlkit
-        from tomlkit.items import Item
+        import tomlkit  # noqa: PLC0415
 
         toml_str = tomlkit.dumps(cls.get_initial(**override))
         dict_from_toml = tomlkit.loads(toml_str)
@@ -299,8 +310,8 @@ class GoodConf(BaseSettings):
         for k, v in dict_from_toml.unwrap().items():
             document.add(k, v)
             if cls.model_fields[k].description:
-                description = cast("str", cls.model_fields[k].description)
-                cast("Item", document[k]).comment(description)
+                description = t.cast("str", cls.model_fields[k].description)
+                t.cast("Item", document[k]).comment(description)
         return tomlkit.dumps(document)
 
     @classmethod
@@ -328,8 +339,10 @@ class GoodConf(BaseSettings):
                 lines.append(f"  * default: `{field_info.default}`")
         return "\n".join(lines)
 
-    def django_manage(self, args: list[str] | None = None):
+    def django_manage(self, args: list[str] | None = None) -> None:
         args = args or sys.argv
-        from .contrib.django import execute_from_command_line_with_config
+        from .contrib.django import (  # noqa: PLC0415
+            execute_from_command_line_with_config,
+        )
 
         execute_from_command_line_with_config(self, args)
