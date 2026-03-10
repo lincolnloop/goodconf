@@ -38,9 +38,3 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
-
-      - uses: codecov/test-results-action@v1
-        if: ${{ matrix.python == '3.14' }}
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
