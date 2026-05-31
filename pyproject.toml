@@ -4,10 +4,9 @@ requires = ["hatchling", "hatch-vcs"]
 
 [dependency-groups]
 dev = [
-  "django-stubs>=5.2.9",
   "django>=3.2.0",
-  "mypy>=1.19.1",
-  "pytest-cov==7.0.*",
+  "mypy>=2.1",
+  "pytest-cov==7.1.*",
   "pytest-mock==3.15.*",
   "pytest==9.0.*",
   "ruamel.yaml>=0.17.0",
@@ -90,6 +89,12 @@ strict = true
 disable_error_code = ["call-arg"]
 disallow_untyped_defs = false
 module = "tests.*"
+
+[[tool.mypy.overrides]]
+# Django ships no py.typed and we don't depend on django-stubs; the contrib
+# shim only touches a couple of management-command symbols.
+ignore_missing_imports = true
+module = "django.*"
 
 [tool.pytest.ini_options]
 addopts = ["--cov", "--strict-markers"]
