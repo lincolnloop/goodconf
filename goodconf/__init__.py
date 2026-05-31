@@ -100,7 +100,7 @@ def _load_config(path: str) -> dict[str, t.Any]:
     return config or {}
 
 
-def _find_file(filename: str, require: bool = True) -> str | None:
+def _find_file(filename: str, require: bool = True) -> str | None:  # noqa: FBT001, FBT002
     if not Path(filename).exists():
         if not require:
             return None
@@ -189,7 +189,7 @@ class FileConfigSettingsSource(PydanticBaseSettingsSource):
 class GoodConf(BaseSettings):
     def __init__(
         self,
-        load: bool = False,
+        load: bool = False,  # noqa: FBT001, FBT002 — documented public-API positional
         config_file: str | None = None,
         **kwargs: t.Any,  # noqa: ANN401
     ) -> None:

@@ -101,15 +101,12 @@ ignore = [
   # Permanently suppressed
   "COM812",  # (ruff format) Checks for the absence of trailing commas
   "D",  # Missing or badly formatted docstrings
-  "FBT",  # Flake Boolean Trap (don't use arg=True in functions)
   "RUF012",  # Mutable class attributes https://github.com/astral-sh/ruff/issues/5243
 ]
 select = ["ALL"]
 
 [tool.ruff.lint.extend-per-file-ignores]
-"test_*.py" = [
-  "ANN001",  # Missing type annotation for function argument
-  "ANN201",  # Missing return type annotation
+"**/tests/**/*" = [
   "PLR2004",  # Magic value used in comparison
   "S101",  # Use of `assert` detected
   "S105",  # Hardcoded password (test fixtures)
