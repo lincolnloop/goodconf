@@ -1,6 +1,9 @@
+import json
+import typing as t
+
 import pytest
 
-from goodconf import Field, GoodConf, initial_for_field
+from goodconf import Field, GoodConf, Initial, initial_for_field
 
 from .utils import KEY
 
@@ -10,6 +13,25 @@ def test_initial() -> None:
         f: str = Field(initial=lambda: "x")
 
     assert initial_for_field(KEY, C.model_fields["f"]) == "x"
+
+
+def test_initial_annotated() -> None:
+    """initial can be attached via typing.Annotated metadata"""
+
+    class C(GoodConf):
+        f: t.Annotated[str, Initial(lambda: "x")] = "d"
+
+    assert initial_for_field(KEY, C.model_fields["f"]) == "x"
+
+
+def test_initial_does_not_break_json_schema() -> None:
+    """The initial callable lives in metadata, not json_schema_extra, so
+    schema generation stays serialisable."""
+
+    class C(GoodConf):
+        f: str = Field(initial=lambda: "x", default="d")
+
+    assert json.dumps(C.model_json_schema())
 
 
 def test_initial_bad() -> None:

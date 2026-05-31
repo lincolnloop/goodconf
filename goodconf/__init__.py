@@ -9,6 +9,7 @@ import os
 import sys
 import typing as t
 from collections.abc import Callable
+from dataclasses import dataclass
 from functools import partial
 from io import StringIO
 from pathlib import Path
@@ -29,22 +30,38 @@ from pydantic_settings import (
 )
 from typing_extensions import NotRequired
 
-__all__ = ["Field", "GoodConf", "GoodConfConfigDict"]
+__all__ = ["Field", "GoodConf", "GoodConfConfigDict", "Initial"]
 
 log = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class Initial:
+    """
+    Field metadata holding a callable that produces the placeholder value used
+    when generating a config template (see ``GoodConf.generate_*``).
+
+    Attach it via ``typing.Annotated`` for a fully typed field::
+
+        key: Annotated[str, Initial(generate_secret)] = pydantic.Field(default=...)
+
+    or via the :func:`Field` helper's ``initial=`` argument.
+    """
+
+    factory: Callable[[], t.Any]
 
 
 def Field(  # noqa: N802
     *args: t.Any,  # noqa: ANN401
     initial: Callable[[], t.Any] | None = None,
-    json_schema_extra: dict[str, t.Any] | None = None,
     **kwargs: t.Any,  # noqa: ANN401
 ) -> t.Any:  # noqa: ANN401
-    if initial:
-        json_schema_extra = json_schema_extra or {}
-        json_schema_extra["initial"] = initial
-
-    return PydanticField(*args, json_schema_extra=json_schema_extra, **kwargs)
+    field_info = PydanticField(*args, **kwargs)
+    if initial is not None:
+        # Store as field metadata rather than json_schema_extra so the callable
+        # never leaks into (and breaks) JSON schema generation.
+        field_info.metadata.append(Initial(initial))
+    return field_info
 
 
 class GoodConfConfigDict(SettingsConfigDict):
@@ -127,12 +144,12 @@ def _fieldinfo_to_str(field_info: FieldInfo) -> str:
 
 
 def initial_for_field(name: str, field_info: FieldInfo) -> t.Any:  # noqa: ANN401
-    json_schema_extra = field_info.json_schema_extra
-    if isinstance(json_schema_extra, dict) and "initial" in json_schema_extra:
-        if not callable(json_schema_extra["initial"]):
-            msg = f"Initial value for `{name}` must be a callable."
-            raise TypeError(msg)
-        return json_schema_extra["initial"]()
+    for meta in field_info.metadata:
+        if isinstance(meta, Initial):
+            if not callable(meta.factory):
+                msg = f"Initial value for `{name}` must be a callable."
+                raise TypeError(msg)
+            return meta.factory()
     if field_info.default is not PydanticUndefined and field_info.default is not ...:
         return field_info.default
     if field_info.default_factory is not None:
