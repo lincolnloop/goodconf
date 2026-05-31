@@ -105,6 +105,7 @@ exclude = ["goodconf/_version.py"]
 [tool.ruff.lint]
 ignore = [
   # Permanently suppressed
+  "ANN401",  # Dynamically typed expressions (typing.Any) — used deliberately
   "COM812",  # (ruff format) Checks for the absence of trailing commas
   "D",  # Missing or badly formatted docstrings
   "RUF012",  # Mutable class attributes https://github.com/astral-sh/ruff/issues/5243

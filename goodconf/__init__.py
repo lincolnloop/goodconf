@@ -46,11 +46,11 @@ class _Initial:
 
 
 def Field(  # noqa: N802
-    default: t.Any = PydanticUndefined,  # noqa: ANN401
+    default: t.Any = PydanticUndefined,
     *,
     initial: Callable[[], t.Any] | None = None,
     **kwargs: "Unpack[_FromFieldInfoInputs]",
-) -> t.Any:  # noqa: ANN401
+) -> t.Any:
     # default + **kwargs mirror pydantic.Field so its full, type-checked
     # signature carries through; we only add the goodconf-specific `initial`.
     # FieldInfo.from_field (what Field delegates to) shares the exact
@@ -142,7 +142,7 @@ def _fieldinfo_to_str(field_info: FieldInfo) -> str:
     return field_type
 
 
-def initial_for_field(name: str, field_info: FieldInfo) -> t.Any:  # noqa: ANN401
+def initial_for_field(name: str, field_info: FieldInfo) -> t.Any:
     for meta in field_info.metadata:
         if isinstance(meta, _Initial):
             if not callable(meta.factory):
@@ -205,7 +205,7 @@ class GoodConf(BaseSettings):
         self,
         load: bool = False,  # noqa: FBT001, FBT002 — documented public-API positional
         config_file: str | None = None,
-        **kwargs: t.Any,  # noqa: ANN401
+        **kwargs: t.Any,
     ) -> None:
         """
         :param load: load config file on instantiation [default: False].
@@ -257,7 +257,7 @@ class GoodConf(BaseSettings):
         self,
         _config_file: str | None = None,
         _init_config_file: str | None = None,
-        **kwargs: t.Any,  # noqa: ANN401
+        **kwargs: t.Any,
     ) -> None:
         if config_file := _config_file or _init_config_file:
             kwargs["_config_file"] = config_file
@@ -267,14 +267,14 @@ class GoodConf(BaseSettings):
         self._load(_config_file=filename)
 
     @classmethod
-    def get_initial(cls, **override: t.Any) -> dict[str, t.Any]:  # noqa: ANN401
+    def get_initial(cls, **override: t.Any) -> dict[str, t.Any]:
         return {
             k: override.get(k, initial_for_field(k, v))
             for k, v in cls.model_fields.items()
         }
 
     @classmethod
-    def generate_yaml(cls, **override: t.Any) -> str:  # noqa: ANN401
+    def generate_yaml(cls, **override: t.Any) -> str:
         """
         Dumps initial config in YAML
         """
@@ -303,14 +303,14 @@ class GoodConf(BaseSettings):
         return yaml_str.read()
 
     @classmethod
-    def generate_json(cls, **override: t.Any) -> str:  # noqa: ANN401
+    def generate_json(cls, **override: t.Any) -> str:
         """
         Dumps initial config in JSON
         """
         return json.dumps(cls.get_initial(**override), indent=2)
 
     @classmethod
-    def generate_toml(cls, **override: t.Any) -> str:  # noqa: ANN401
+    def generate_toml(cls, **override: t.Any) -> str:
         """
         Dumps initial config in TOML
         """
