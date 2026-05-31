@@ -16,10 +16,11 @@ from pathlib import Path
 from types import GenericAlias
 
 if t.TYPE_CHECKING:
+    from pydantic.fields import _FromFieldInfoInputs
     from tomlkit.items import Item
+    from typing_extensions import Unpack
 
 from pydantic._internal._config import config_keys
-from pydantic.fields import Field as PydanticField
 from pydantic.fields import FieldInfo
 from pydantic.main import _object_setattr
 from pydantic_core import PydanticUndefined
@@ -30,37 +31,35 @@ from pydantic_settings import (
 )
 from typing_extensions import NotRequired
 
-__all__ = ["Field", "GoodConf", "GoodConfConfigDict", "Initial"]
+__all__ = ["Field", "GoodConf", "GoodConfConfigDict"]
 
 log = logging.getLogger(__name__)
 
 
-@dataclass(frozen=True)
-class Initial:
-    """
-    Field metadata holding a callable that produces the placeholder value used
-    when generating a config template (see ``GoodConf.generate_*``).
-
-    Attach it via ``typing.Annotated`` for a fully typed field::
-
-        key: Annotated[str, Initial(generate_secret)] = pydantic.Field(default=...)
-
-    or via the :func:`Field` helper's ``initial=`` argument.
-    """
+@dataclass(frozen=True, slots=True)
+class _Initial:
+    """Field metadata: a callable producing the placeholder value used when
+    generating a config template. Set via :func:`Field`'s ``initial=`` argument
+    and stored in ``FieldInfo.metadata`` so it never leaks into JSON schema."""
 
     factory: Callable[[], t.Any]
 
 
 def Field(  # noqa: N802
-    *args: t.Any,  # noqa: ANN401
+    default: t.Any = PydanticUndefined,  # noqa: ANN401
+    *,
     initial: Callable[[], t.Any] | None = None,
-    **kwargs: t.Any,  # noqa: ANN401
+    **kwargs: "Unpack[_FromFieldInfoInputs]",
 ) -> t.Any:  # noqa: ANN401
-    field_info = PydanticField(*args, **kwargs)
+    # default + **kwargs mirror pydantic.Field so its full, type-checked
+    # signature carries through; we only add the goodconf-specific `initial`.
+    # FieldInfo.from_field (what Field delegates to) shares the exact
+    # _FromFieldInfoInputs kwargs, so forwarding stays type-checked.
+    field_info = FieldInfo.from_field(default, **kwargs)
     if initial is not None:
         # Store as field metadata rather than json_schema_extra so the callable
         # never leaks into (and breaks) JSON schema generation.
-        field_info.metadata.append(Initial(initial))
+        field_info.metadata.append(_Initial(initial))
     return field_info
 
 
@@ -145,7 +144,7 @@ def _fieldinfo_to_str(field_info: FieldInfo) -> str:
 
 def initial_for_field(name: str, field_info: FieldInfo) -> t.Any:  # noqa: ANN401
     for meta in field_info.metadata:
-        if isinstance(meta, Initial):
+        if isinstance(meta, _Initial):
             if not callable(meta.factory):
                 msg = f"Initial value for `{name}` must be a callable."
                 raise TypeError(msg)

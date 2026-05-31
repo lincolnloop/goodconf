@@ -130,21 +130,6 @@ which can generate an initial value for the field:
 ``initial``
   Callable to use for initial value when generating a config
 
-Alternatively, attach the initial callable as typed metadata with
-``typing.Annotated`` and use Pydantic's own ``Field`` directly. This keeps the
-full, type-checked ``Field`` signature:
-
-.. code:: python
-
-    from typing import Annotated
-
-    from goodconf import GoodConf, Initial
-    from pydantic import Field
-
-    class AppConfig(GoodConf):
-        SECRET_KEY: Annotated[str, Initial(lambda: generate_secret())] = Field(
-            description="Used for cryptographic signing.")
-
 
 Django Usage
 ------------

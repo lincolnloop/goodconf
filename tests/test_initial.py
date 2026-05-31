@@ -1,9 +1,8 @@
 import json
-import typing as t
 
 import pytest
 
-from goodconf import Field, GoodConf, Initial, initial_for_field
+from goodconf import Field, GoodConf, initial_for_field
 
 from .utils import KEY
 
@@ -11,15 +10,6 @@ from .utils import KEY
 def test_initial() -> None:
     class C(GoodConf):
         f: str = Field(initial=lambda: "x")
-
-    assert initial_for_field(KEY, C.model_fields["f"]) == "x"
-
-
-def test_initial_annotated() -> None:
-    """initial can be attached via typing.Annotated metadata"""
-
-    class C(GoodConf):
-        f: t.Annotated[str, Initial(lambda: "x")] = "d"
 
     assert initial_for_field(KEY, C.model_fields["f"]) == "x"
 
