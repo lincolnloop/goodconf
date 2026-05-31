@@ -84,9 +84,10 @@ plugins = ["pydantic.mypy"]
 strict = true
 
 [[tool.mypy.overrides]]
-# pydantic-settings fields require values at __init__ per mypy, but
-# are loaded from env/files at runtime; suppress these false positives
-disable_error_code = ["assignment", "call-arg"]
+# The pydantic.mypy plugin synthesises __init__ from model fields and ignores
+# GoodConf's explicit __init__, so it flags load=/config_file= kwargs as
+# unexpected. Suppress that here; it is a plugin limitation, not a real error.
+disable_error_code = ["call-arg"]
 disallow_untyped_defs = false
 module = "tests.*"
 

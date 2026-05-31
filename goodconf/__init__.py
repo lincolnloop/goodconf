@@ -39,14 +39,12 @@ def Field(  # noqa: N802
     initial: Callable[[], t.Any] | None = None,
     json_schema_extra: dict[str, t.Any] | None = None,
     **kwargs: t.Any,  # noqa: ANN401
-) -> FieldInfo:
+) -> t.Any:  # noqa: ANN401
     if initial:
         json_schema_extra = json_schema_extra or {}
         json_schema_extra["initial"] = initial
 
-    return t.cast(
-        "FieldInfo", PydanticField(*args, json_schema_extra=json_schema_extra, **kwargs)
-    )
+    return PydanticField(*args, json_schema_extra=json_schema_extra, **kwargs)
 
 
 class GoodConfConfigDict(SettingsConfigDict):
