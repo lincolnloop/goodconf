@@ -2,6 +2,20 @@
 Change Log
 ==========
 
+Unreleased
+========================
+
+- ``initial_for_field`` now raises ``TypeError`` instead of ``ValueError`` when
+  a field's ``initial`` is not callable (it is a type check, so ``TypeError``
+  is correct).
+- The ``initial`` callable passed to ``Field`` is now stored as field metadata
+  rather than in ``json_schema_extra``. This fixes ``model_json_schema()``
+  raising ``PydanticSerializationError`` for models that define an ``initial``.
+  Code that read ``json_schema_extra["initial"]`` directly should call
+  ``initial_for_field`` instead.
+- ``Field`` now mirrors pydantic's typed signature, so its keyword arguments are
+  type-checked and autocompleted.
+
 7.0.0 (3 March 2026)
 ========================
 
