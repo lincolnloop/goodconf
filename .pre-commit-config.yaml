@@ -17,12 +17,12 @@ repos:
         args: [--strict]
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.37.0
+    rev: 0.37.2
     hooks:
       - id: check-github-workflows
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.5
+    rev: v0.15.15
     hooks:
       - id: ruff-check
         args: [--fix]
