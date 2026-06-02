@@ -1,0 +1,70 @@
+---
+# Triggers lock file maintenance by checking the approval checkbox on
+# the Renovate Dependency Dashboard issue, then dispatches a Renovate
+# run to pick it up. Runs weekly on a cron schedule and can be manually
+# dispatched at any time.
+name: Renovate (Lock File Maintenance)
+
+"on":
+  schedule:
+    - cron: "0 6 * * 4" # 6am UTC on Thursday
+  workflow_dispatch:
+
+# Least-privilege workflow token. All gh CLI operations use the App token
+# (GH_TOKEN), not the workflow's GITHUB_TOKEN.
+permissions:
+  contents: read
+
+jobs:
+  approve-lockfile-maintenance:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get GitHub App Token
+        id: get_token
+        # yamllint disable-line rule:line-length
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
+        with:
+          client-id: ${{ vars.RENOVATE_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.RENOVATE_BOT_PRIVATE_KEY }}
+
+      - name: Approve lock file maintenance
+        env:
+          GH_TOKEN: ${{ steps.get_token.outputs.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          ISSUE_NUM=$(gh issue list \
+            --search "Dependency Dashboard" \
+            --state open \
+            --json number \
+            --jq '.[0].number')
+
+          if [ -z "$ISSUE_NUM" ]; then
+            echo "No Dependency Dashboard issue found"
+            exit 0
+          fi
+
+          BODY=$(gh issue view "$ISSUE_NUM" \
+            --json body --jq '.body')
+
+          BRANCH="renovate/lock-file-maintenance"
+
+          PATTERN="<!-- [a-zA-Z]*-branch=$BRANCH -->"
+
+          # yamllint disable-line rule:line-length
+          if echo "$BODY" | grep -q "\- \[ \] $PATTERN"; then
+            NEW_BODY=$(echo "$BODY" | sed -E \
+              "s|- \[ \] ($PATTERN)|- [x] \1|")
+            gh issue edit "$ISSUE_NUM" --body "$NEW_BODY"
+            echo "Checked lockfile maintenance checkbox"
+          # yamllint disable-line rule:line-length
+          elif echo "$BODY" | grep -q "\- \[x\] $PATTERN"; then
+            echo "Checkbox already checked"
+          else
+            echo "Checkbox not found"
+            exit 0
+          fi
+
+          # yamllint disable-line rule:line-length
+          gh api repos/${{ github.repository }}/dispatches \
+            -f event_type=renovate

@@ -4,13 +4,11 @@ requires = ["hatchling", "hatch-vcs"]
 
 [dependency-groups]
 dev = [
-  "django>=3.2.0",
-  "mypy>=2.1",
+  "goodconf[django,toml,yaml]",
+  "mypy==2.1.*",
   "pytest-cov==7.1.*",
   "pytest-mock==3.15.*",
   "pytest==9.0.*",
-  "ruamel.yaml>=0.17.0",
-  "tomlkit>=0.11.6",
 ]
 
 [project]
@@ -42,6 +40,7 @@ readme = "README.rst"
 requires-python = ">=3.10"
 
 [project.optional-dependencies]
+django = ["django>=5.2"]
 toml = ["tomlkit>=0.11.6"]
 yaml = ["ruamel.yaml>=0.17.0"]
 
@@ -97,7 +96,13 @@ ignore_missing_imports = true
 module = "django.*"
 
 [tool.pytest.ini_options]
-addopts = ["--cov", "--strict-markers"]
+addopts = [
+  "--cov",
+  "--cov-report=term",
+  "--cov-report=xml",
+  "--junitxml=junit.xml",
+  "--strict-markers",
+]
 
 [tool.ruff]
 exclude = ["goodconf/_version.py"]
@@ -118,3 +123,7 @@ select = ["ALL"]
   "S101",  # Use of `assert` detected
   "S105",  # Hardcoded password (test fixtures)
 ]
+
+[tool.uv]
+# Mirror Renovate's minimumReleaseAge cooloff for local/CI resolution.
+exclude-newer = "7 days"

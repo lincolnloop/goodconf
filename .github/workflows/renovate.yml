@@ -1,0 +1,56 @@
+---
+# Runs Renovate to open dependency update PRs. Configured to open at most
+# 1 PR at a time (via prConcurrentLimit in renovate.json) to avoid burning
+# through CI usage. Triggers on push to main (so merging a Renovate PR
+# immediately queues the next one), on a weekly cron, and via manual or
+# repository dispatch. Adjust the cron frequency to suit your needs (e.g.
+# daily or every few hours for busier repos).
+#
+# Lock file maintenance requires manual approval on the Dependency Dashboard
+# issue, or is automatically dispatched by renovate-lockfile.yml.
+name: Renovate
+
+"on":
+  push:
+    branches:
+      - main
+  repository_dispatch:
+    types: [renovate]
+  schedule:
+    - cron: "0 0 * * 4" # Midnight UTC on Thursday
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+# Least-privilege workflow token. Renovate authenticates via the GitHub App
+# (RENOVATE_TOKEN), so the workflow's GITHUB_TOKEN only needs read access for
+# actions/checkout. Write operations (PRs, branches, comments) go through the
+# App's own permissions, configured at install time.
+permissions:
+  contents: read
+
+jobs:
+  renovate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get GitHub App Token
+        id: get_token
+        # yamllint disable-line rule:line-length
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
+        with:
+          client-id: ${{ vars.RENOVATE_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.RENOVATE_BOT_PRIVATE_KEY }}
+
+      - name: Checkout repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Self-hosted Renovate
+        # yamllint disable-line rule:line-length
+        uses: renovatebot/github-action@693b9ef15eec82123529a37c782242f091365961 # v46.1.14
+        env:
+          LOG_LEVEL: debug
+          RENOVATE_TOKEN: ${{ steps.get_token.outputs.token }}
+          RENOVATE_REPOSITORIES: '["${{ github.repository }}"]'
