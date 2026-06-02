@@ -1,9 +1,10 @@
 import argparse
+import typing as t
 from collections.abc import Generator
 from contextlib import contextmanager
 
-from .. import GoodConf
-from .argparse import argparser_add_argument
+from goodconf import GoodConf
+from goodconf.contrib.argparse import argparser_add_argument
 
 
 @contextmanager
@@ -13,17 +14,21 @@ def load_config_from_cli(
     """Loads config, checking CLI arguments for a config file"""
 
     # Monkey patch Django's command parser
-    from django.core.management.base import BaseCommand
+    from django.core.management.base import BaseCommand, CommandParser  # noqa: PLC0415
 
     original_parser = BaseCommand.create_parser
 
-    def patched_parser(self, prog_name, subcommand):
+    def patched_parser(
+        self: BaseCommand,
+        prog_name: str,
+        subcommand: str,
+        **kwargs: t.Any,  # noqa: ARG001
+    ) -> CommandParser:
         parser = original_parser(self, prog_name, subcommand)
         argparser_add_argument(parser, config)
         return parser
 
     BaseCommand.create_parser = patched_parser
-
     try:
         parser = argparse.ArgumentParser(add_help=False)
         argparser_add_argument(parser, config)
@@ -36,9 +41,9 @@ def load_config_from_cli(
         BaseCommand.create_parser = original_parser
 
 
-def execute_from_command_line_with_config(config: GoodConf, argv: list[str]):
+def execute_from_command_line_with_config(config: GoodConf, argv: list[str]) -> None:
     """Load's config then runs Django's execute_from_command_line"""
     with load_config_from_cli(config, argv) as args:
-        from django.core.management import execute_from_command_line
+        from django.core.management import execute_from_command_line  # noqa: PLC0415
 
         execute_from_command_line(args)
