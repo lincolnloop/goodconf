@@ -1,0 +1,40 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["helpers:pinGitHubActionDigests", ":configMigration"],
+  "automerge": true,
+  "automergeType": "pr",
+  "platformAutomerge": true,
+  "dependencyDashboard": true,
+  "dependencyDashboardOSVVulnerabilitySummary": "all",
+  "osvVulnerabilityAlerts": true,
+  "minimumReleaseAge": "7 days",
+  "rangeStrategy": "update-lockfile",
+  "lockFileMaintenance": {
+    "enabled": true,
+    "dependencyDashboardApproval": true,
+    "schedule": ["at any time"]
+  },
+  "poetry": {
+    "enabled": false
+  },
+  "pre-commit": {
+    "enabled": true
+  },
+  "prConcurrentLimit": 1,
+  "prHourlyLimit": 0,
+  "packageRules": [
+    {
+      "matchDepNames": ["pytest", "pytest-cov", "pytest-mock", "mypy"],
+      "rangeStrategy": "bump",
+      "groupName": "testing tools"
+    },
+    {
+      "matchManagers": ["pre-commit"],
+      "groupName": "pre-commit hooks"
+    },
+    {
+      "matchUpdateTypes": ["lockFileMaintenance"],
+      "prPriority": -1
+    }
+  ]
+}

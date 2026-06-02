@@ -134,6 +134,10 @@ which can generate an initial value for the field:
 Django Usage
 ------------
 
+Install with the ``django`` extra to pull in Django for the helper below::
+
+    pip install goodconf[django]
+
 A helper is provided which monkey-patches Django's management commands to
 accept a ``--config`` argument. Replace your ``manage.py`` with the following:
 
@@ -189,11 +193,37 @@ Install dependencies.
     uv sync
 
 
-Run tests
+Run the tests against your environment:
 
 .. code:: shell
 
     uv run pytest
+
+Or run the full matrix with tox (installed with the tox-uv plugin):
+
+.. code:: shell
+
+    uv tool install tox --with tox-uv
+    tox
+
+Tested versions
+^^^^^^^^^^^^^^^^
+
+CI runs two dependency stacks (see ``tox.ini``): the **minimum** supported
+versions (pydantic 2.7, pydantic-settings 2.13, ruamel.yaml 0.17, tomlkit 0.11,
+Django 5.2) on the older Pythons, and the **latest** releases on the newer ones.
+
+========  ======  =======
+Python    Django  deps
+========  ======  =======
+3.10      5.2     minimum
+3.11      5.2     minimum
+3.12      6.0     latest
+3.13      6.0     latest
+3.14      6.0     latest
+========  ======  =======
+
+``dev`` also runs the exact versions pinned in ``uv.lock``; ``mypy`` type-checks.
 
 Releases are done with GitHub Actions whenever a new tag is created. For more information,
 see `<./.github/workflows/build.yml>`_

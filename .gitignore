@@ -1,12 +1,13 @@
 *.egg-info
 .coverage
 .pytest_cache
+.tox
 /build
 /dist
 /goodconf/_version.py
 __pycache__
+coverage.xml
 env
 htmlcov
 junit.xml
-uv.lock
 venv
