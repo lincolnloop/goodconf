@@ -22,7 +22,7 @@ repos:
       - id: check-github-workflows
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.17
+    rev: v0.15.19
     hooks:
       - id: ruff-check
         args: [--fix]
@@ -53,7 +53,7 @@ repos:
         pass_filenames: true
 
   - repo: https://github.com/renovatebot/pre-commit-hooks
-    rev: 43.227.0
+    rev: 43.242.0
     hooks:
       - id: renovate-config-validator
         args: [--strict]
