@@ -5,7 +5,7 @@ requires = ["hatchling", "hatch-vcs"]
 [dependency-groups]
 dev = [
   "goodconf[django,toml,yaml]",
-  "mypy==2.1.*",
+  "mypy==2.2.*",
   "pytest-cov==7.1.*",
   "pytest-mock==3.15.*",
   "pytest==9.1.*",
