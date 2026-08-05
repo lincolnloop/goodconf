@@ -61,6 +61,7 @@ First, create a ``conf.py`` file in your project's directory, next to
         model_config = {"default_files": ["/etc/myproject/myproject.yaml", "myproject.yaml"]}
 
     config = AppConfig()
+    config.is_loaded  # False at this point, till `config.load()` is executed (see below)
 
 Next, use the config in your ``settings.py`` file:
 

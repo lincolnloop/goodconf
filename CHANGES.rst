@@ -15,6 +15,7 @@ Unreleased
   ``initial_for_field`` instead.
 - ``Field`` now mirrors pydantic's typed signature, so its keyword arguments are
   type-checked and autocompleted.
+- ``GoodConf.is_loaded`` allows to check whether the configuration got loaded.
 
 7.0.0 (3 March 2026)
 ========================
