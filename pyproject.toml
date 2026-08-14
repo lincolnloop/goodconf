@@ -29,7 +29,7 @@ classifiers = [
 ]
 dependencies = [
   "pydantic-settings>=2.13",
-  "pydantic>=2.7",
+  "pydantic>=2.12",
 ]
 description = "Load configuration variables from a file or environment"
 dynamic = ["version"]
