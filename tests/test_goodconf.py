@@ -281,3 +281,17 @@ def test_fileconfigsettingssource_get_field_value() -> None:
         False,
     )
     assert fileconfigsettingssource.get_field_value(None, "a") == (None, "", False)  # type: ignore[arg-type]
+
+
+def test_config_is_loaded() -> None:
+
+    class TestConf(GoodConf):
+        a: bool = False
+
+    cfg = TestConf()
+    assert cfg.is_loaded is False
+    cfg.load()
+    assert cfg.is_loaded is True
+
+    cfg = TestConf(load=True)
+    assert cfg.is_loaded is True
