@@ -4,8 +4,10 @@
   "automerge": true,
   "automergeType": "pr",
   "platformAutomerge": true,
-  "dependencyDashboard": true,
-  "dependencyDashboardOSVVulnerabilitySummary": "all",
+  "dependencyDashboard": {
+    "enabled": true,
+    "osvVulnerabilitySummary": "all"
+  },
   "osvVulnerabilityAlerts": true,
   "minimumReleaseAge": "7 days",
   "rangeStrategy": "update-lockfile",
