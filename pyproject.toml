@@ -1,6 +1,6 @@
 [build-system]
 build-backend = "hatchling.build"
-requires = ["hatchling", "hatch-vcs"]
+requires = ["hatch-vcs", "hatchling"]
 
 [dependency-groups]
 dev = [
@@ -13,7 +13,7 @@ dev = [
 
 [project]
 authors = [
-  {name = "Peter Baumgartner", email = "brett@python.org"},
+  { name = "Peter Baumgartner", email = "brett@python.org" },
 ]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
@@ -34,7 +34,7 @@ dependencies = [
 description = "Load configuration variables from a file or environment"
 dynamic = ["version"]
 keywords = ["env", "config", "json", "yaml", "toml"]
-license = {file = "LICENSE"}
+license = { file = "LICENSE" }
 name = "goodconf"
 readme = "README.rst"
 requires-python = ">=3.10"
@@ -112,6 +112,7 @@ ignore = [
   # Permanently suppressed
   "ANN401",  # Dynamically typed expressions (typing.Any) — used deliberately
   "COM812",  # (ruff format) Checks for the absence of trailing commas
+  "CPY001",  # Missing copyright notice. This project doesn't use file headers.
   "D",  # Missing or badly formatted docstrings
   "RUF012",  # Mutable class attributes https://github.com/astral-sh/ruff/issues/5243
 ]
