@@ -25,7 +25,7 @@ def run_manage(cwd: Path, *args: str, **env: str) -> subprocess.CompletedProcess
     base_env = {
         key: value
         for key, value in os.environ.items()
-        if key not in {"DJANGO_SETTINGS_MODULE", "EXAMPLEPROJECT_CONF"}
+        if key not in {"DJANGO_SETTINGS_MODULE", "PROJECT_CONF"}
     }
     return subprocess.run(
         [sys.executable, str(MANAGE_PY), *args],

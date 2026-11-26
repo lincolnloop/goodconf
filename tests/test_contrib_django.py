@@ -45,7 +45,7 @@ def test_manage_config_file_env_var(tmp_path: Path) -> None:
         "--no-imports",
         "-c",
         PRINT_APP_NAME,
-        EXAMPLEPROJECT_CONF="app.json",
+        PROJECT_CONF="app.json",
     )
 
     assert result.stderr == ""
@@ -54,7 +54,7 @@ def test_manage_config_file_env_var(tmp_path: Path) -> None:
 
 
 def test_manage_default_file(tmp_path: Path) -> None:
-    (tmp_path / "exampleproject.json").write_text('{"APP_NAME": "from-default-file"}')
+    (tmp_path / "project.json").write_text('{"APP_NAME": "from-default-file"}')
 
     result = utils.run_manage(tmp_path, "shell", "--no-imports", "-c", PRINT_APP_NAME)
 
@@ -85,6 +85,6 @@ def test_manage_help_lists_config_option(tmp_path: Path) -> None:
     assert match is not None
     assert match.group(1) == (
         "Config file. Can also be configured via the environment variable: "
-        "EXAMPLEPROJECT_CONF. Defaults to the first file that exists from "
-        "[exampleproject.json]."
+        "PROJECT_CONF. Defaults to the first file that exists from "
+        "[project.json]."
     )

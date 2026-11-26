@@ -1,4 +1,4 @@
-from tests.contrib.django.project.exampleproject.conf import config
+from tests.contrib.django.project.conf import config
 
 config.load()
 
