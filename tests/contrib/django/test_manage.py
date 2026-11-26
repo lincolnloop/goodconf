@@ -28,12 +28,12 @@ PRINT_APP_NAME = "from django.conf import settings; print(settings.APP_NAME)"
 )
 def test_manage_config_option(
     argv: list[str],
-    manage: Callable[..., subprocess.CompletedProcess[str]],
+    manage_py: Callable[..., subprocess.CompletedProcess[str]],
     tmp_path: Path,
 ) -> None:
     (tmp_path / "app.json").write_text('{"APP_NAME": "from-option"}')
 
-    result = manage(*argv)
+    result = manage_py(*argv)
 
     assert result.stderr == ""
     assert result.stdout == "from-option\n"
@@ -41,12 +41,12 @@ def test_manage_config_option(
 
 
 def test_manage_config_file_env_var(
-    manage: Callable[..., subprocess.CompletedProcess[str]],
+    manage_py: Callable[..., subprocess.CompletedProcess[str]],
     tmp_path: Path,
 ) -> None:
     (tmp_path / "app.json").write_text('{"APP_NAME": "from-env-var"}')
 
-    result = manage(
+    result = manage_py(
         "shell",
         "--no-imports",
         "-c",
@@ -60,12 +60,12 @@ def test_manage_config_file_env_var(
 
 
 def test_manage_default_file(
-    manage: Callable[..., subprocess.CompletedProcess[str]],
+    manage_py: Callable[..., subprocess.CompletedProcess[str]],
     tmp_path: Path,
 ) -> None:
     (tmp_path / "project.json").write_text('{"APP_NAME": "from-default-file"}')
 
-    result = manage("shell", "--no-imports", "-c", PRINT_APP_NAME)
+    result = manage_py("shell", "--no-imports", "-c", PRINT_APP_NAME)
 
     assert result.stderr == ""
     assert result.stdout == "from-default-file\n"
@@ -73,9 +73,9 @@ def test_manage_default_file(
 
 
 def test_manage_without_config_file(
-    manage: Callable[..., subprocess.CompletedProcess[str]],
+    manage_py: Callable[..., subprocess.CompletedProcess[str]],
 ) -> None:
-    result = manage("shell", "--no-imports", "-c", PRINT_APP_NAME)
+    result = manage_py("shell", "--no-imports", "-c", PRINT_APP_NAME)
 
     assert result.stderr == ""
     assert result.stdout == "default\n"
@@ -88,10 +88,10 @@ def test_manage_without_config_file(
     strict=True,
 )
 def test_manage_help_lists_config_option(
-    manage: Callable[..., subprocess.CompletedProcess[str]],
+    manage_py: Callable[..., subprocess.CompletedProcess[str]],
 ) -> None:
     # Wide enough that argparse keeps the option's help on one line.
-    result = manage("check", "-h", COLUMNS="200")
+    result = manage_py("check", "-h", COLUMNS="200")
     match = re.search(r"--config FILE\s+(.+)", result.stdout)
 
     assert result.returncode == 0

@@ -11,7 +11,7 @@ REPO_DIR = Path(__file__).parents[3]
 
 
 @pytest.fixture
-def manage(tmp_path: Path) -> Callable[..., subprocess.CompletedProcess[str]]:
+def manage_py(tmp_path: Path) -> Callable[..., subprocess.CompletedProcess[str]]:
     """Run the fixture project's manage.py with ``tmp_path`` as the cwd."""
     base_env = {
         key: value
