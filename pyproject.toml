@@ -13,7 +13,7 @@ dev = [
 
 [project]
 authors = [
-  { name = "Peter Baumgartner", email = "brett@python.org" },
+  { name = "Peter Baumgartner", email = "pete@lincolnloop.com" },
 ]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
