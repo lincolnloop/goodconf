@@ -157,8 +157,11 @@ def test_generate_toml_bool_description() -> None:
 
 
 def test_generate_toml_none() -> None:
-    # TOML has no null, so None fields are listed in a comment, not written:
-    # https://github.com/lincolnloop/goodconf/issues/148
+    """TOML has no null, so None fields are listed in a comment, not written.
+
+    https://github.com/lincolnloop/goodconf/issues/148
+    """
+
     class AppConfig(GoodConf):
         """Configuration for My App"""
 

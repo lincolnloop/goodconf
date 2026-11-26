@@ -197,8 +197,10 @@ class FileConfigSettingsSource(PydanticBaseSettingsSource):
 def add_toml_nulls(
     settings_cls: type[BaseSettings], values: dict[str, t.Any]
 ) -> dict[str, t.Any]:
-    # TOML has no null; absence is how it says None for a required nullable field.
-    # https://github.com/lincolnloop/goodconf/issues/148
+    """TOML has no null; absence is how it says None for a required nullable field.
+
+    https://github.com/lincolnloop/goodconf/issues/148
+    """
     nulls = {
         field_info.alias or name: None
         for name, field_info in settings_cls.model_fields.items()

@@ -404,8 +404,11 @@ def test_load_again_replaces_values(tmp_path: Path) -> None:
 
 
 def test_load_toml_missing_required_field(tmp_path: Path) -> None:
-    # Only fields that accept None are filled in when absent from TOML:
-    # https://github.com/lincolnloop/goodconf/issues/148
+    """Only fields that accept None are filled in when absent from TOML.
+
+    https://github.com/lincolnloop/goodconf/issues/148
+    """
+
     path = tmp_path / "app.toml"
     path.write_text('app_name = "file"\n')
 
@@ -428,8 +431,11 @@ def test_load_toml_missing_required_field(tmp_path: Path) -> None:
 
 
 def test_load_toml_missing_nullable_field_is_none(tmp_path: Path) -> None:
-    # TOML has no null, so a missing key is how a TOML file says None:
-    # https://github.com/lincolnloop/goodconf/issues/148
+    """TOML has no null, so a missing key is how a TOML file says None.
+
+    https://github.com/lincolnloop/goodconf/issues/148
+    """
+
     path = tmp_path / "app.toml"
     path.write_text('app_name = "file"\n')
 
@@ -446,8 +452,11 @@ def test_load_toml_missing_nullable_field_is_none(tmp_path: Path) -> None:
 def test_load_toml_missing_nullable_field_from_env(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
-    # TOML has no null, so a missing key is how a TOML file says None:
-    # https://github.com/lincolnloop/goodconf/issues/148
+    """TOML has no null, so a missing key is how a TOML file says None.
+
+    https://github.com/lincolnloop/goodconf/issues/148
+    """
+
     path = tmp_path / "app.toml"
     path.write_text('app_name = "file"\n')
     monkeypatch.setenv("STATSD_HOST", "env")
