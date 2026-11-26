@@ -18,7 +18,6 @@ authors = [
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Developers",
-  "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3.11",
@@ -34,7 +33,8 @@ dependencies = [
 description = "Load configuration variables from a file or environment"
 dynamic = ["version"]
 keywords = ["env", "config", "json", "yaml", "toml"]
-license = { file = "LICENSE" }
+license = "MIT"
+license-files = ["LICENSE"]
 name = "goodconf"
 readme = "README.rst"
 requires-python = ">=3.11"
