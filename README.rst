@@ -101,10 +101,13 @@ attributes:
   If no file is passed to the ``load`` method, try to load a
   configuration from these files in order.
 
-It also has one method:
+It also has these methods:
 
 ``load``
   Trigger the load method during instantiation. Defaults to False.
+``set_config_file``
+  Use this file for every later ``load()`` called without one, the same as
+  passing ``config_file`` to the constructor.
 
 Use plain-text docstring for use as a header when generating a configuration
 file.

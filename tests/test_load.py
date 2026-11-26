@@ -81,6 +81,20 @@ def test_load_config_file_from_init(
     ]
 
 
+def test_load_config_file_from_init_twice(tmp_path: Path) -> None:
+    path = tmp_path / "app.json"
+    path.write_text('{"app_name": "file"}')
+
+    class AppConfig(GoodConf):
+        app_name: str = "default"
+
+    config = AppConfig(config_file=str(path))
+    config.load()
+    config.load()
+
+    assert config.model_dump() == {"app_name": "file"}
+
+
 def test_load_config_file_from_init_with_load(tmp_path: Path) -> None:
     path = tmp_path / "app.json"
     path.write_text('{"app_name": "file"}')
@@ -89,6 +103,25 @@ def test_load_config_file_from_init_with_load(tmp_path: Path) -> None:
         app_name: str
 
     config = AppConfig(load=True, config_file=str(path))
+
+    assert config.model_dump() == {"app_name": "file"}
+
+
+def test_load_set_config_file(tmp_path: Path) -> None:
+    default_path = tmp_path / "default.json"
+    default_path.write_text('{"app_name": "default-file"}')
+    path = tmp_path / "app.json"
+    path.write_text('{"app_name": "file"}')
+
+    class AppConfig(GoodConf):
+        model_config = GoodConfConfigDict(default_files=[str(default_path)])
+
+        app_name: str
+
+    config = AppConfig()
+    config.set_config_file(str(path))
+    config.load()
+    config.load()
 
     assert config.model_dump() == {"app_name": "file"}
 
