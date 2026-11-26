@@ -183,7 +183,7 @@ def test_generate_toml_override() -> None:
 
 @pytest.mark.xfail(
     raises=AttributeError,
-    reason="generate_toml crashes on bool descriptions",
+    reason="https://github.com/lincolnloop/goodconf/issues/149",
     strict=True,
 )
 def test_generate_toml_bool_description() -> None:
@@ -195,7 +195,7 @@ def test_generate_toml_bool_description() -> None:
 
 @pytest.mark.xfail(
     raises=tomlkit.exceptions.ConvertError,
-    reason="generate_toml crashes on None values",
+    reason="https://github.com/lincolnloop/goodconf/issues/148",
     strict=True,
 )
 def test_generate_toml_none_loads(tmp_path: Path) -> None:

@@ -29,7 +29,7 @@ def wide_terminal(monkeypatch: pytest.MonkeyPatch) -> None:
             id="file-env-var",
             marks=pytest.mark.xfail(
                 raises=AssertionError,
-                reason="help text sentences run together",
+                reason="https://github.com/lincolnloop/goodconf/issues/147",
                 strict=True,
             ),
         ),
@@ -44,7 +44,7 @@ def wide_terminal(monkeypatch: pytest.MonkeyPatch) -> None:
             id="file-env-var-and-default-files",
             marks=pytest.mark.xfail(
                 raises=AssertionError,
-                reason="help text sentences run together",
+                reason="https://github.com/lincolnloop/goodconf/issues/147",
                 strict=True,
             ),
         ),
