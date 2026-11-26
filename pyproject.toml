@@ -63,6 +63,7 @@ disable_warnings = [
   "module-not-measured",
   "no-data-collected",
 ]
+patch = ["subprocess"]
 source = ["goodconf", "tests"]
 
 [tool.hatch.build.hooks.vcs]
@@ -125,6 +126,7 @@ select = ["ALL"]
   "PLR2004",  # Magic value used in comparison
   "S101",  # Use of `assert` detected
   "S105",  # Hardcoded password (test fixtures)
+  "S603",  # subprocess call (tests run fixture scripts)
 ]
 
 [tool.ruff.lint.flake8-import-conventions]
