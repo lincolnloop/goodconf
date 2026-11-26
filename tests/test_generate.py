@@ -151,11 +151,6 @@ def test_generate_toml_override() -> None:
     )
 
 
-@pytest.mark.xfail(
-    raises=AttributeError,
-    reason="https://github.com/lincolnloop/goodconf/issues/149",
-    strict=True,
-)
 def test_generate_toml_bool_description() -> None:
     class AppConfig(GoodConf):
         debug: bool = Field(default=False, description="Enable debug mode")

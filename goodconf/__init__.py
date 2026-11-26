@@ -18,7 +18,6 @@ from types import GenericAlias
 
 if t.TYPE_CHECKING:
     from pydantic.fields import _FromFieldInfoInputs
-    from tomlkit.items import Item
 
 from pydantic._internal._config import config_keys
 from pydantic.fields import FieldInfo
@@ -315,10 +314,11 @@ class GoodConf(BaseSettings):
         if cls.__doc__:
             document.add(tomlkit.comment(cls.__doc__))
         for k, v in dict_from_toml.unwrap().items():
-            document.add(k, v)
+            item = tomlkit.item(v)
             if cls.model_fields[k].description:
                 description = t.cast("str", cls.model_fields[k].description)
-                t.cast("Item", document[k]).comment(description)
+                item.comment(description)
+            document.add(k, item)
         return tomlkit.dumps(document)
 
     @classmethod
