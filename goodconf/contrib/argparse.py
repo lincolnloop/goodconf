@@ -9,8 +9,8 @@ def argparser_add_argument(parser: argparse.ArgumentParser, config: GoodConf) ->
     cfg = config.model_config
     if cfg.get("file_env_var"):
         help_text += (
-            "Can also be configured via the environment variable: "
-            f"{cfg['file_env_var']}"
+            " Can also be configured via the environment variable: "
+            f"{cfg['file_env_var']}."
         )
     if default_files := cfg.get("default_files"):
         files_str = ", ".join(default_files)
