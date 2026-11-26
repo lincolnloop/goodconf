@@ -308,7 +308,8 @@ class GoodConf(BaseSettings):
         """
         import tomlkit  # noqa: PLC0415
 
-        toml_str = tomlkit.dumps(cls.get_initial(**override))
+        initial = cls.get_initial(**override)
+        toml_str = tomlkit.dumps({k: v for k, v in initial.items() if v is not None})
         dict_from_toml = tomlkit.loads(toml_str)
         document = tomlkit.document()
         if cls.__doc__:
@@ -319,6 +320,14 @@ class GoodConf(BaseSettings):
                 description = t.cast("str", cls.model_fields[k].description)
                 item.comment(description)
             document.add(k, item)
+        # TOML has no null, so None fields are listed rather than written.
+        if null_keys := [k for k, v in initial.items() if v is None]:
+            document.add(tomlkit.nl())
+            document.add(tomlkit.comment("Not set, defaults to None:"))
+            for k in null_keys:
+                null_description = cls.model_fields[k].description
+                entry = f"- {k}: {null_description}" if null_description else f"- {k}"
+                document.add(tomlkit.comment(entry))
         return tomlkit.dumps(document)
 
     @classmethod
