@@ -133,6 +133,9 @@ banned-from = [
 datetime = "dt"
 typing = "t"
 
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
 [tool.uv]
 # Mirror Renovate's minimumReleaseAge cooloff for local/CI resolution.
 exclude-newer = "7 days"

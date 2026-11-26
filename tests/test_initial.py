@@ -3,15 +3,14 @@ import json
 import pytest
 
 from goodconf import Field, GoodConf, initial_for_field
-
-from .utils import KEY
+from tests import utils
 
 
 def test_initial() -> None:
     class C(GoodConf):
         f: str = Field(initial=lambda: "x")
 
-    assert initial_for_field(KEY, C.model_fields["f"]) == "x"
+    assert initial_for_field(utils.KEY, C.model_fields["f"]) == "x"
 
 
 def test_initial_does_not_break_json_schema() -> None:
@@ -29,28 +28,28 @@ def test_initial_bad() -> None:
         f: str = Field(initial="x")  # type: ignore[arg-type]
 
     with pytest.raises(TypeError, match="callable"):
-        initial_for_field(KEY, C.model_fields["f"])
+        initial_for_field(utils.KEY, C.model_fields["f"])
 
 
 def test_initial_default() -> None:
     class C(GoodConf):
         f: str = Field("x")
 
-    assert initial_for_field(KEY, C.model_fields["f"]) == "x"
+    assert initial_for_field(utils.KEY, C.model_fields["f"]) == "x"
 
 
 def test_initial_default_factory() -> None:
     class C(GoodConf):
         f: str = Field(default_factory=lambda: "y")
 
-    assert initial_for_field(KEY, C.model_fields["f"]) == "y"
+    assert initial_for_field(utils.KEY, C.model_fields["f"]) == "y"
 
 
 def test_no_initial() -> None:
     class C(GoodConf):
         f: str = Field()
 
-    assert initial_for_field(KEY, C.model_fields["f"]) == ""
+    assert initial_for_field(utils.KEY, C.model_fields["f"]) == ""
 
 
 def test_default_initial() -> None:
