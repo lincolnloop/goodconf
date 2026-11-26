@@ -28,6 +28,6 @@ jobs:
           key: pre-commit-${{ runner.os }}-${{ hashFiles('.pre-commit-config.yaml') }}
       - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
         env:
-          # mypy runs in tox (tox -e type); skip here to avoid a full uv sync
+          # mypy runs in tox (tox -e mypy); skip here to avoid a full uv sync
           # that breaks pre-commit's hook caching.
           SKIP: mypy
