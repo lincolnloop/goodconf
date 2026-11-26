@@ -23,6 +23,7 @@ def test_conf_env_var(mocker: MockerFixture, tmp_path: Path) -> None:
     mocked_load_config.assert_called_once_with(str(path))
 
 
+@pytest.mark.legacy
 def test_conflict(tmp_path: Path) -> None:
     path = tmp_path / "myapp.json"
     path.write_text(json.dumps({"A": 1, "B": 2}))

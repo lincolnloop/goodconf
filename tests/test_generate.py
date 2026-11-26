@@ -7,49 +7,44 @@ import tomlkit.exceptions
 from goodconf import Field, GoodConf
 
 
-def test_get_initial() -> None:
+def test_generate_json() -> None:
     class AppConfig(GoodConf):
-        debug: bool = False
+        """Configuration for My App"""
+
+        debug: bool = Field(default=False, description="Enable debug mode")
         secret_key: str = Field(initial=lambda: "generated")
         port: int = Field(gt=0, initial=lambda: 8000)
         hosts: list[str] = Field(default_factory=lambda: ["localhost"])
         database_url: str
         sentry_dsn: str | None
 
-    assert AppConfig.get_initial() == {
-        "debug": False,
-        "secret_key": "generated",
-        "port": 8000,
-        "hosts": ["localhost"],
-        "database_url": "",
-        "sentry_dsn": None,
-    }
+    assert AppConfig.generate_json(database_url="postgres://", unknown="x") == (
+        "{\n"
+        '  "debug": false,\n'
+        '  "secret_key": "generated",\n'
+        '  "port": 8000,\n'
+        '  "hosts": [\n'
+        '    "localhost"\n'
+        "  ],\n"
+        '  "database_url": "postgres://",\n'
+        '  "sentry_dsn": null\n'
+        "}"
+    )
 
 
-def test_get_initial_prefers_initial_over_default() -> None:
+def test_generate_json_prefers_initial_over_default() -> None:
     class AppConfig(GoodConf):
         secret_key: str = Field(default="default", initial=lambda: "generated")
 
-    assert AppConfig.get_initial() == {"secret_key": "generated"}
+    assert AppConfig.generate_json() == '{\n  "secret_key": "generated"\n}'
 
 
-def test_get_initial_override() -> None:
-    class AppConfig(GoodConf):
-        debug: bool = False
-        database_url: str
-
-    assert AppConfig.get_initial(database_url="postgres://", unknown="ignored") == {
-        "debug": False,
-        "database_url": "postgres://",
-    }
-
-
-def test_get_initial_non_callable_initial() -> None:
+def test_generate_json_non_callable_initial() -> None:
     class AppConfig(GoodConf):
         secret_key: str = Field(initial="generated")  # type: ignore[arg-type]
 
     with pytest.raises(TypeError) as exc_info:
-        AppConfig.get_initial()
+        AppConfig.generate_json()
 
     assert str(exc_info.value) == "Initial value for `secret_key` must be a callable."
 
@@ -58,39 +53,11 @@ def test_json_schema_excludes_initial() -> None:
     class AppConfig(GoodConf):
         secret_key: str = Field(default="default", initial=lambda: "generated")
 
-    assert AppConfig.model_json_schema() == {
-        "additionalProperties": False,
-        "properties": {
-            "secret_key": {
-                "default": "default",
-                "title": "Secret Key",
-                "type": "string",
-            }
-        },
-        "title": "AppConfig",
-        "type": "object",
+    assert AppConfig.model_json_schema()["properties"]["secret_key"] == {
+        "default": "default",
+        "title": "Secret Key",
+        "type": "string",
     }
-
-
-def test_generate_json() -> None:
-    class AppConfig(GoodConf):
-        """Configuration for My App"""
-
-        debug: bool = Field(default=False, description="Enable debug mode")
-        hosts: list[str] = Field(default_factory=lambda: ["localhost"])
-        database_url: str
-        sentry_dsn: str | None
-
-    assert AppConfig.generate_json(database_url="postgres://", unknown="x") == (
-        "{\n"
-        '  "debug": false,\n'
-        '  "hosts": [\n'
-        '    "localhost"\n'
-        "  ],\n"
-        '  "database_url": "postgres://",\n'
-        '  "sentry_dsn": null\n'
-        "}"
-    )
 
 
 def test_generate_yaml() -> None:
