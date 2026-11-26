@@ -102,6 +102,9 @@ addopts = [
   "--junitxml=junit.xml",
   "--strict-markers",
 ]
+markers = [
+  "legacy: superseded by an end-to-end test; delete once the replacement lands",
+]
 
 [tool.ruff]
 extend-exclude = ["goodconf/_version.py"]

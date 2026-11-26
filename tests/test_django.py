@@ -10,6 +10,7 @@ from goodconf.contrib.django import load_config_from_cli
 management_base = pytest.importorskip("django.core.management.base")
 
 
+@pytest.mark.legacy
 def test_mgmt_command(mocker: MockerFixture, tmp_path: Path) -> None:
     mocked_load_config = mocker.patch("goodconf._load_config")
     mocked_dj_execute = mocker.patch("django.core.management.execute_from_command_line")
@@ -26,6 +27,7 @@ def test_mgmt_command(mocker: MockerFixture, tmp_path: Path) -> None:
     mocked_dj_execute.assert_called_once_with(dj_args)
 
 
+@pytest.mark.legacy
 def test_help(
     mocker: MockerFixture, tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -64,6 +66,7 @@ def test_help(
     assert "/etc/myapp.json" in output.out
 
 
+@pytest.mark.legacy
 def test_create_parser_forwards_kwargs() -> None:
     class G(GoodConf):
         model_config = GoodConfConfigDict()

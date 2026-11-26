@@ -13,6 +13,7 @@ from goodconf import Field, FileConfigSettingsSource, GoodConf
 from tests.utils import env_var
 
 
+@pytest.mark.legacy
 def test_initial() -> None:
     class TestConf(GoodConf):
         a: bool = Field(initial=lambda: True)
@@ -33,6 +34,7 @@ def test_dump_json() -> None:
     assert TestConf.generate_json(a=False) == '{\n  "a": false\n}'
 
 
+@pytest.mark.legacy
 def test_dump_toml() -> None:
     pytest.importorskip("tomlkit")
 
@@ -57,6 +59,7 @@ def test_dump_toml() -> None:
     assert 'b = ""' in output
 
 
+@pytest.mark.legacy
 def test_dump_yaml() -> None:
     pytest.importorskip("ruamel.yaml")
 
@@ -111,6 +114,7 @@ def test_dump_yaml_none() -> None:
     assert output.strip() == "a: ~"
 
 
+@pytest.mark.legacy
 def test_generate_markdown() -> None:
     help_ = "this is a"
 
@@ -127,6 +131,7 @@ def test_generate_markdown() -> None:
     assert help_ in mkdn
 
 
+@pytest.mark.legacy
 def test_generate_markdown_no_docstring() -> None:
     help_ = "this is a"
 
@@ -139,6 +144,7 @@ def test_generate_markdown_no_docstring() -> None:
     assert f"  * description: {help_}" in mkdn.splitlines()
 
 
+@pytest.mark.legacy
 def test_generate_markdown_default_false() -> None:
     class TestConf(GoodConf):
         a: bool = Field(default=False)
@@ -148,6 +154,7 @@ def test_generate_markdown_default_false() -> None:
     assert "  * default: `False`" in lines
 
 
+@pytest.mark.legacy
 def test_generate_markdown_types() -> None:
     class TestConf(GoodConf):
         a: t.Literal["a", "b"] = Field(default="a")
@@ -160,6 +167,7 @@ def test_generate_markdown_types() -> None:
     assert "default: `PydanticUndefined`" not in str(lines)
 
 
+@pytest.mark.legacy
 def test_generate_markdown_required() -> None:
     class TestConf(GoodConf):
         a: str
@@ -168,6 +176,7 @@ def test_generate_markdown_required() -> None:
     assert "* **a** _REQUIRED_" in lines
 
 
+@pytest.mark.legacy
 def test_undefined() -> None:
     """Undefined attributes are not accessible.
 
@@ -182,6 +191,7 @@ def test_undefined() -> None:
     assert not hasattr(c, "UNDEFINED")
 
 
+@pytest.mark.legacy
 def test_required_missing() -> None:
     class TestConf(GoodConf):
         a: str = Field()
@@ -227,6 +237,7 @@ def test_set_on_init() -> None:
     assert c.a == val
 
 
+@pytest.mark.legacy
 def test_env_prefix() -> None:
     class TestConf(GoodConf):
         a: bool = False
@@ -260,6 +271,7 @@ def test_precedence(tmp_path: Path) -> None:
         del os.environ["ENV"]
 
 
+@pytest.mark.legacy
 def test_fileconfigsettingssource_repr() -> None:
     class SettingsClass:
         model_config: dict[str, t.Any] = {}
@@ -269,6 +281,7 @@ def test_fileconfigsettingssource_repr() -> None:
     assert repr(fileconfigsettingssource) == "FileConfigSettingsSource()"
 
 
+@pytest.mark.legacy
 def test_fileconfigsettingssource_get_field_value() -> None:
     class SettingsClass:
         model_config: dict[str, t.Any] = {}
