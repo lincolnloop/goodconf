@@ -12,12 +12,12 @@ from goodconf import GoodConf, GoodConfConfigDict
     ("filename", "content"),
     [
         pytest.param("app.json", '{"app_name": "file", "app_port": 8000}', id="json"),
-        pytest.param("app.yaml", "app_name: file\napp_port: 8000\n", id="yaml"),
-        pytest.param("app.yml", "app_name: file\napp_port: 8000\n", id="yml"),
         pytest.param("app.toml", 'app_name = "file"\napp_port = 8000\n', id="toml"),
         pytest.param(
             "app.conf", '{"app_name": "file", "app_port": 8000}', id="unknown-as-json"
         ),
+        pytest.param("app.yaml", "app_name: file\napp_port: 8000\n", id="yaml"),
+        pytest.param("app.yml", "app_name: file\napp_port: 8000\n", id="yml"),
     ],
 )
 def test_load_file_by_extension(
@@ -43,8 +43,8 @@ def test_load_file_by_extension(
 @pytest.mark.parametrize(
     "filename",
     [
-        pytest.param("app.yaml", id="yaml"),
         pytest.param("app.toml", id="toml"),
+        pytest.param("app.yaml", id="yaml"),
     ],
 )
 def test_load_empty_file_uses_defaults(filename: str, tmp_path: Path) -> None:
@@ -302,7 +302,6 @@ def test_load_precedence(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Non
 
 def test_init_without_load_defers_validation(tmp_path: Path) -> None:
     path = tmp_path / "app.json"
-    path.write_text('{"app_name": "file"}')
 
     class AppConfig(GoodConf):
         model_config = GoodConfConfigDict(default_files=[str(path)])
@@ -310,10 +309,23 @@ def test_init_without_load_defers_validation(tmp_path: Path) -> None:
         app_name: str
 
     config = AppConfig()
-    path.write_text('{"app_name": "rewritten"}')
+    path.write_text('{"app_name": "file"}')
     config.load()
 
-    assert config.model_dump() == {"app_name": "rewritten"}
+    assert config.model_dump() == {"app_name": "file"}
+
+
+def test_load_class_keyword_config(tmp_path: Path) -> None:
+    path = tmp_path / "app.json"
+    path.write_text('{"app_name": "file"}')
+
+    class AppConfig(GoodConf, default_files=[str(path)]):
+        app_name: str
+
+    config = AppConfig()
+    config.load()
+
+    assert config.model_dump() == {"app_name": "file"}
 
 
 def test_load_required_missing() -> None:

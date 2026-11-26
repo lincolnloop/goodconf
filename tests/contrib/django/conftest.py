@@ -13,11 +13,6 @@ REPO_DIR = Path(__file__).parents[3]
 @pytest.fixture
 def manage_py(tmp_path: Path) -> Callable[..., subprocess.CompletedProcess[str]]:
     """Run the fixture project's manage.py with ``tmp_path`` as the cwd."""
-    base_env = {
-        key: value
-        for key, value in os.environ.items()
-        if key not in {"DJANGO_SETTINGS_MODULE", "PROJECT_CONF"}
-    }
 
     def run_manage(*args: str, **env: str) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
@@ -25,8 +20,10 @@ def manage_py(tmp_path: Path) -> Callable[..., subprocess.CompletedProcess[str]]
             capture_output=True,
             check=False,
             cwd=tmp_path,
-            env={**base_env, "PYTHONPATH": str(REPO_DIR), **env},
+            env={**os.environ, "PYTHONPATH": str(REPO_DIR), **env},
+            stdin=subprocess.DEVNULL,
             text=True,
+            timeout=60,
         )
 
     return run_manage

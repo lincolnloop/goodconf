@@ -1,3 +1,4 @@
+import tomllib
 import typing as t
 from pathlib import Path
 
@@ -15,6 +16,7 @@ def test_generate_json() -> None:
         secret_key: str = Field(initial=lambda: "generated")
         port: int = Field(gt=0, initial=lambda: 8000)
         hosts: list[str] = Field(default_factory=lambda: ["localhost"])
+        api_key: str = Field(...)
         database_url: str
         sentry_dsn: str | None
 
@@ -26,6 +28,7 @@ def test_generate_json() -> None:
         '  "hosts": [\n'
         '    "localhost"\n'
         "  ],\n"
+        '  "api_key": "",\n'
         '  "database_url": "postgres://",\n'
         '  "sentry_dsn": null\n'
         "}"
@@ -165,17 +168,15 @@ def test_generate_toml_bool_description() -> None:
     reason="https://github.com/lincolnloop/goodconf/issues/148",
     strict=True,
 )
-def test_generate_toml_none_loads(tmp_path: Path) -> None:
+def test_generate_toml_none() -> None:
     class AppConfig(GoodConf):
         sentry_dsn: str | None = None
         database_url: str
 
-    path = tmp_path / "app.toml"
-    path.write_text(AppConfig.generate_toml(database_url="postgres://"))
-    config = AppConfig()
-    config.load(str(path))
-
-    assert config.model_dump() == {"sentry_dsn": None, "database_url": "postgres://"}
+    # TOML has no null; however the fix spells it, the key must parse as absent.
+    assert tomllib.loads(AppConfig.generate_toml(database_url="postgres://")) == {
+        "database_url": "postgres://"
+    }
 
 
 @pytest.mark.parametrize(
