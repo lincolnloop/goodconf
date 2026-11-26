@@ -1,5 +1,4 @@
 import os
-import sys
 from pathlib import Path
 
 import pytest
@@ -14,16 +13,12 @@ def test_json(tmp_path: Path) -> None:
 
 
 def test_load_toml(tmp_path: Path) -> None:
-    if sys.version_info < (3, 11):
-        pytest.importorskip("tomlkit")
     conf = tmp_path / "conf.toml"
     conf.write_text('a = "b"\nc = 3')
     assert _load_config(str(conf)) == {"a": "b", "c": 3}
 
 
 def test_load_empty_toml(tmp_path: Path) -> None:
-    if sys.version_info < (3, 11):
-        pytest.importorskip("tomlkit")
     conf = tmp_path / "conf.toml"
     conf.write_text("")
     assert _load_config(str(conf)) == {}

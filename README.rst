@@ -216,7 +216,6 @@ Django 5.2) on the older Pythons, and the **latest** releases on the newer ones.
 ========  ======  =======
 Python    Django  deps
 ========  ======  =======
-3.10      5.2     minimum
 3.11      5.2     minimum
 3.12      6.0     latest
 3.13      6.0     latest
