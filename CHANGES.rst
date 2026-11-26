@@ -14,7 +14,7 @@ Unreleased
 - Fix: the file passed to ``manage.py`` with ``-C`` is now read by
   ``config.load()`` in ``settings.py``. ``django_manage`` selects the file and
   ``settings.py`` loads it once, instead of ``settings.py`` reloading without
-  it.
+  it. (`#150 <https://github.com/lincolnloop/goodconf/issues/150>`_)
 
 8.0.0 (26 November 2026)
 ========================
