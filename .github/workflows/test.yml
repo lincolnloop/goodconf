@@ -22,6 +22,7 @@ jobs:
           - py312-django60
           - py313-django60
           - py314-django60
+          - py315-django61
           - dev
           - mypy
     steps:

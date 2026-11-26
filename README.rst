@@ -220,6 +220,7 @@ Python    Django  deps
 3.12      6.0     latest
 3.13      6.0     latest
 3.14      6.0     latest
+3.15      6.1     latest
 ========  ======  =======
 
 ``dev`` also runs the exact versions pinned in ``uv.lock``; ``mypy`` type-checks.
