@@ -105,7 +105,7 @@ addopts = [
 ]
 
 [tool.ruff]
-exclude = ["goodconf/_version.py"]
+extend-exclude = ["goodconf/_version.py"]
 
 [tool.ruff.lint]
 ignore = [
