@@ -182,6 +182,8 @@ class FileConfigSettingsSource(PydanticBaseSettingsSource):
                     break
         if selected_config_file:
             values = _load_config(selected_config_file)
+            if Path(selected_config_file).suffix == ".toml":
+                values = add_toml_nulls(self.settings_cls, values)
             log.info("Loading config from %s", selected_config_file)
         else:
             values = {}
@@ -190,6 +192,21 @@ class FileConfigSettingsSource(PydanticBaseSettingsSource):
 
     def __repr__(self) -> str:
         return "FileConfigSettingsSource()"
+
+
+def add_toml_nulls(
+    settings_cls: type[BaseSettings], values: dict[str, t.Any]
+) -> dict[str, t.Any]:
+    # TOML has no null; absence is how it says None for a required nullable field.
+    # https://github.com/lincolnloop/goodconf/issues/148
+    nulls = {
+        field_info.alias or name: None
+        for name, field_info in settings_cls.model_fields.items()
+        if field_info.is_required()
+        and type(None) in t.get_args(field_info.annotation)
+        and (field_info.alias or name) not in values
+    }
+    return {**values, **nulls}
 
 
 class GoodConf(BaseSettings):
@@ -321,6 +338,7 @@ class GoodConf(BaseSettings):
                 item.comment(description)
             document.add(k, item)
         # TOML has no null, so None fields are listed rather than written.
+        # https://github.com/lincolnloop/goodconf/issues/148
         if null_keys := [k for k, v in initial.items() if v is None]:
             document.add(tomlkit.nl())
             document.add(tomlkit.comment("Not set, defaults to None:"))

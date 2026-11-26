@@ -401,3 +401,62 @@ def test_load_again_replaces_values(tmp_path: Path) -> None:
     config.load(str(second_path))
 
     assert config.model_dump() == {"app_name": "second", "app_port": 8000}
+
+
+def test_load_toml_missing_required_field(tmp_path: Path) -> None:
+    # Only fields that accept None are filled in when absent from TOML:
+    # https://github.com/lincolnloop/goodconf/issues/148
+    path = tmp_path / "app.toml"
+    path.write_text('app_name = "file"\n')
+
+    class AppConfig(GoodConf):
+        app_name: str
+        app_port: int
+
+    config = AppConfig()
+    with pytest.raises(ValidationError) as exc_info:
+        config.load(str(path))
+
+    assert exc_info.value.errors(include_url=False) == [
+        {
+            "type": "missing",
+            "loc": ("app_port",),
+            "msg": "Field required",
+            "input": {"app_name": "file"},
+        }
+    ]
+
+
+def test_load_toml_missing_nullable_field_is_none(tmp_path: Path) -> None:
+    # TOML has no null, so a missing key is how a TOML file says None:
+    # https://github.com/lincolnloop/goodconf/issues/148
+    path = tmp_path / "app.toml"
+    path.write_text('app_name = "file"\n')
+
+    class AppConfig(GoodConf):
+        app_name: str
+        statsd_host: str | None
+
+    config = AppConfig()
+    config.load(str(path))
+
+    assert config.model_dump() == {"app_name": "file", "statsd_host": None}
+
+
+def test_load_toml_missing_nullable_field_from_env(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    # TOML has no null, so a missing key is how a TOML file says None:
+    # https://github.com/lincolnloop/goodconf/issues/148
+    path = tmp_path / "app.toml"
+    path.write_text('app_name = "file"\n')
+    monkeypatch.setenv("STATSD_HOST", "env")
+
+    class AppConfig(GoodConf):
+        app_name: str
+        statsd_host: str | None
+
+    config = AppConfig()
+    config.load(str(path))
+
+    assert config.model_dump() == {"app_name": "file", "statsd_host": "env"}

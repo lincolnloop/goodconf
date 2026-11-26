@@ -157,6 +157,8 @@ def test_generate_toml_bool_description() -> None:
 
 
 def test_generate_toml_none() -> None:
+    # TOML has no null, so None fields are listed in a comment, not written:
+    # https://github.com/lincolnloop/goodconf/issues/148
     class AppConfig(GoodConf):
         """Configuration for My App"""
 
@@ -194,6 +196,7 @@ def test_generated_file_loads(filename: str, method_name: str, tmp_path: Path) -
         hosts: list[str] = Field(default_factory=lambda: ["localhost"])
         database_url: str
         sentry_dsn: str | None = None
+        statsd_host: str | None
 
     path = tmp_path / filename
     path.write_text(getattr(AppConfig, method_name)(database_url="postgres://"))
@@ -207,6 +210,7 @@ def test_generated_file_loads(filename: str, method_name: str, tmp_path: Path) -
         "hosts": ["localhost"],
         "database_url": "postgres://",
         "sentry_dsn": None,
+        "statsd_host": None,
     }
 
 
