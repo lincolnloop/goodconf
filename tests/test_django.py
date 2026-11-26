@@ -5,8 +5,9 @@ import pytest
 from pytest_mock import MockerFixture
 
 from goodconf import GoodConf, GoodConfConfigDict
+from goodconf.contrib.django import load_config_from_cli
 
-pytest.importorskip("django")
+management_base = pytest.importorskip("django.core.management.base")
 
 
 def test_mgmt_command(mocker: MockerFixture, tmp_path: Path) -> None:
@@ -61,6 +62,18 @@ def test_help(
 
     assert "MYAPP_CONF" in output.out
     assert "/etc/myapp.json" in output.out
+
+
+def test_create_parser_forwards_kwargs() -> None:
+    class G(GoodConf):
+        model_config = GoodConfConfigDict()
+
+    with load_config_from_cli(G(), ["manage.py"]):
+        parser = management_base.BaseCommand().create_parser(
+            "manage.py", "check", usage="custom usage"
+        )
+
+    assert parser.format_usage() == "usage: custom usage\n"
 
 
 # This doubles as a Django settings file for the tests

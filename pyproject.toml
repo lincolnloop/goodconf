@@ -13,12 +13,11 @@ dev = [
 
 [project]
 authors = [
-  { name = "Peter Baumgartner", email = "brett@python.org" },
+  { name = "Peter Baumgartner", email = "pete@lincolnloop.com" },
 ]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Intended Audience :: Developers",
-  "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3.11",
@@ -30,11 +29,13 @@ classifiers = [
 dependencies = [
   "pydantic-settings>=2.13",
   "pydantic>=2.7",
+  "typing-extensions>=4.4",
 ]
 description = "Load configuration variables from a file or environment"
 dynamic = ["version"]
 keywords = ["env", "config", "json", "yaml", "toml"]
-license = { file = "LICENSE" }
+license = "MIT"
+license-files = ["LICENSE"]
 name = "goodconf"
 readme = "README.rst"
 requires-python = ">=3.11"
@@ -49,10 +50,8 @@ changelog = "https://github.com/lincolnloop/goodconf/blob/main/CHANGES.rst"
 homepage = "https://github.com/lincolnloop/goodconf/"
 
 [tool.coverage.report]
-exclude_lines = [
-  "if TYPE_CHECKING:",
+exclude_also = [
   "if t.TYPE_CHECKING:",
-  "pragma: no cover",
   "raise NotImplementedError",
 ]
 skip_covered = true
@@ -105,7 +104,7 @@ addopts = [
 ]
 
 [tool.ruff]
-exclude = ["goodconf/_version.py"]
+extend-exclude = ["goodconf/_version.py"]
 
 [tool.ruff.lint]
 ignore = [
@@ -124,6 +123,19 @@ select = ["ALL"]
   "S101",  # Use of `assert` detected
   "S105",  # Hardcoded password (test fixtures)
 ]
+
+[tool.ruff.lint.flake8-import-conventions]
+banned-from = [
+  "datetime",  # Use `import datetime as dt`, not `from datetime import ...`
+  "typing",  # Use `import typing as t`, not `from typing import ...`
+]
+
+[tool.ruff.lint.flake8-import-conventions.extend-aliases]
+datetime = "dt"
+typing = "t"
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
 
 [tool.uv]
 # Mirror Renovate's minimumReleaseAge cooloff for local/CI resolution.

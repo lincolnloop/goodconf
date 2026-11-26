@@ -26,17 +26,17 @@ jobs:
           - dev
           - mypy
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/checkout@v7.0.1
 
       - name: Install uv
-        uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        uses: astral-sh/setup-uv@v10.3.3
 
       - name: Run tox
         run: uvx --with tox-uv tox -e "${{ matrix.env }}"
 
       - name: Upload coverage to Codecov
         if: ${{ (success() || failure()) && matrix.env != 'mypy' }}
-        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        uses: codecov/codecov-action@v7.1.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           flags: ${{ matrix.env }}
@@ -44,7 +44,7 @@ jobs:
 
       - name: Upload test results to Codecov
         if: ${{ (success() || failure()) && matrix.env != 'mypy' }}
-        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        uses: codecov/codecov-action@v7.1.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           report_type: test_results

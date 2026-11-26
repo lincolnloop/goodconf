@@ -269,6 +269,7 @@ source = { editable = "." }
 dependencies = [
     { name = "pydantic" },
     { name = "pydantic-settings" },
+    { name = "typing-extensions" },
 ]
 
 [package.optional-dependencies]
@@ -299,6 +300,7 @@ requires-dist = [
     { name = "pydantic-settings", specifier = ">=2.13" },
     { name = "ruamel-yaml", marker = "extra == 'yaml'", specifier = ">=0.17.0" },
     { name = "tomlkit", marker = "extra == 'toml'", specifier = ">=0.11.6" },
+    { name = "typing-extensions", specifier = ">=4.4" },
 ]
 provides-extras = ["django", "toml", "yaml"]
 
