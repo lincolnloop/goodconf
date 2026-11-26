@@ -6,6 +6,7 @@ from goodconf import Field, GoodConf, initial_for_field
 from tests import utils
 
 
+@pytest.mark.legacy
 def test_initial() -> None:
     class C(GoodConf):
         f: str = Field(initial=lambda: "x")
@@ -13,6 +14,7 @@ def test_initial() -> None:
     assert initial_for_field(utils.KEY, C.model_fields["f"]) == "x"
 
 
+@pytest.mark.legacy
 def test_initial_does_not_break_json_schema() -> None:
     """The initial callable lives in metadata, not json_schema_extra, so
     schema generation stays serialisable."""
@@ -23,6 +25,7 @@ def test_initial_does_not_break_json_schema() -> None:
     assert json.dumps(C.model_json_schema())
 
 
+@pytest.mark.legacy
 def test_initial_bad() -> None:
     class C(GoodConf):
         f: str = Field(initial="x")  # type: ignore[arg-type]
@@ -31,6 +34,7 @@ def test_initial_bad() -> None:
         initial_for_field(utils.KEY, C.model_fields["f"])
 
 
+@pytest.mark.legacy
 def test_initial_default() -> None:
     class C(GoodConf):
         f: str = Field("x")
@@ -38,6 +42,7 @@ def test_initial_default() -> None:
     assert initial_for_field(utils.KEY, C.model_fields["f"]) == "x"
 
 
+@pytest.mark.legacy
 def test_initial_default_factory() -> None:
     class C(GoodConf):
         f: str = Field(default_factory=lambda: "y")
@@ -45,6 +50,7 @@ def test_initial_default_factory() -> None:
     assert initial_for_field(utils.KEY, C.model_fields["f"]) == "y"
 
 
+@pytest.mark.legacy
 def test_no_initial() -> None:
     class C(GoodConf):
         f: str = Field()
@@ -52,6 +58,7 @@ def test_no_initial() -> None:
     assert initial_for_field(utils.KEY, C.model_fields["f"]) == ""
 
 
+@pytest.mark.legacy
 def test_default_initial() -> None:
     """Can get initial when Field is not used"""
 
@@ -62,6 +69,7 @@ def test_default_initial() -> None:
     assert initial["a"] == "test"
 
 
+@pytest.mark.legacy
 def test_optional_initial() -> None:
     class G(GoodConf):
         a: str | None

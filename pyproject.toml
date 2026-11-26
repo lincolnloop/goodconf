@@ -42,7 +42,7 @@ requires-python = ">=3.11"
 
 [project.optional-dependencies]
 django = ["django>=5.2"]
-toml = ["tomlkit>=0.11.6"]
+toml = ["tomlkit>=0.13"]
 yaml = ["ruamel.yaml>=0.17.0"]
 
 [project.urls]
@@ -63,6 +63,7 @@ disable_warnings = [
   "module-not-measured",
   "no-data-collected",
 ]
+patch = ["subprocess"]
 source = ["goodconf", "tests"]
 
 [tool.hatch.build.hooks.vcs]
@@ -102,6 +103,9 @@ addopts = [
   "--junitxml=junit.xml",
   "--strict-markers",
 ]
+markers = [
+  "legacy: superseded by an end-to-end test; delete once the replacement lands",
+]
 
 [tool.ruff]
 extend-exclude = ["goodconf/_version.py"]
@@ -122,6 +126,7 @@ select = ["ALL"]
   "PLR2004",  # Magic value used in comparison
   "S101",  # Use of `assert` detected
   "S105",  # Hardcoded password (test fixtures)
+  "S603",  # subprocess call (tests run fixture scripts)
 ]
 
 [tool.ruff.lint.flake8-import-conventions]

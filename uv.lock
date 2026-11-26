@@ -299,7 +299,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.7" },
     { name = "pydantic-settings", specifier = ">=2.13" },
     { name = "ruamel-yaml", marker = "extra == 'yaml'", specifier = ">=0.17.0" },
-    { name = "tomlkit", marker = "extra == 'toml'", specifier = ">=0.11.6" },
+    { name = "tomlkit", marker = "extra == 'toml'", specifier = ">=0.13" },
     { name = "typing-extensions", specifier = ">=4.4" },
 ]
 provides-extras = ["django", "toml", "yaml"]

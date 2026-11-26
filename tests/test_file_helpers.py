@@ -5,6 +5,8 @@ import pytest
 
 from goodconf import _find_file, _load_config
 
+pytestmark = pytest.mark.legacy
+
 
 def test_json(tmp_path: Path) -> None:
     conf = tmp_path / "conf.json"
