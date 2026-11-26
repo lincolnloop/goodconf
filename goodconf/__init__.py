@@ -19,6 +19,7 @@ from types import GenericAlias
 if t.TYPE_CHECKING:
     from pydantic.fields import _FromFieldInfoInputs
 
+from pydantic import AliasChoices
 from pydantic._internal._config import config_keys
 from pydantic.fields import FieldInfo
 from pydantic.main import _object_setattr
@@ -201,14 +202,30 @@ def add_toml_nulls(
 
     https://github.com/lincolnloop/goodconf/issues/148
     """
-    nulls = {
-        field_info.alias or name: None
-        for name, field_info in settings_cls.model_fields.items()
-        if field_info.is_required()
-        and type(None) in t.get_args(field_info.annotation)
-        and (field_info.alias or name) not in values
-    }
+    nulls: dict[str, None] = {}
+    for name, field_info in settings_cls.model_fields.items():
+        if not field_info.is_required():
+            continue
+        if type(None) not in t.get_args(field_info.annotation):
+            continue
+        keys = get_validation_keys(name, field_info)
+        if keys and not any(key in values for key in keys):
+            nulls[keys[0]] = None
     return {**values, **nulls}
+
+
+def get_validation_keys(name: str, field_info: FieldInfo) -> list[str]:
+    validation_alias = field_info.validation_alias
+    if validation_alias is None:
+        return [name]
+    if isinstance(validation_alias, str):
+        return [validation_alias]
+    if isinstance(validation_alias, AliasChoices):
+        return [
+            choice for choice in validation_alias.choices if isinstance(choice, str)
+        ]
+    # An AliasPath reaches into nested data, which a missing key can't express.
+    return []
 
 
 class GoodConf(BaseSettings):

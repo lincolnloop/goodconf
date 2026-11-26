@@ -1,9 +1,11 @@
 import json
 import logging
+import typing as t
 from pathlib import Path
 
+import pydantic
 import pytest
-from pydantic import ValidationError
+from pydantic import AliasChoices, AliasPath, ValidationError
 
 from goodconf import GoodConf, GoodConfConfigDict
 
@@ -469,3 +471,67 @@ def test_load_toml_missing_nullable_field_from_env(
     config.load(str(path))
 
     assert config.model_dump() == {"app_name": "file", "statsd_host": "env"}
+
+
+@pytest.mark.parametrize(
+    "field_kwargs",
+    [
+        pytest.param({"alias": "STATSD"}, id="alias"),
+        pytest.param(
+            {"validation_alias": AliasChoices("STATSD", "statsd")},
+            id="alias-choices",
+        ),
+        pytest.param({"validation_alias": "STATSD"}, id="validation-alias"),
+    ],
+)
+def test_load_toml_aliased_nullable_field(
+    field_kwargs: dict[str, t.Any], tmp_path: Path
+) -> None:
+    """Aliased nullable fields load from TOML whether or not the key is present.
+
+    https://github.com/lincolnloop/goodconf/issues/148
+    """
+    missing_path = tmp_path / "missing.toml"
+    missing_path.write_text('app_name = "file"\n')
+    present_path = tmp_path / "present.toml"
+    present_path.write_text('app_name = "file"\nSTATSD = "toml"\n')
+
+    class AppConfig(GoodConf):
+        app_name: str
+        statsd_host: str | None = pydantic.Field(**field_kwargs)
+
+    missing_config = AppConfig()
+    missing_config.load(str(missing_path))
+    present_config = AppConfig()
+    present_config.load(str(present_path))
+
+    assert missing_config.model_dump() == {"app_name": "file", "statsd_host": None}
+    assert present_config.model_dump() == {"app_name": "file", "statsd_host": "toml"}
+
+
+def test_load_toml_alias_path_nullable_field_required(tmp_path: Path) -> None:
+    """An AliasPath points into nested data, so a missing key isn't read as None.
+
+    https://github.com/lincolnloop/goodconf/issues/148
+    """
+    path = tmp_path / "app.toml"
+    path.write_text('app_name = "file"\n')
+
+    class AppConfig(GoodConf):
+        app_name: str
+        statsd_host: str | None = pydantic.Field(
+            validation_alias=AliasPath("statsd", "host")
+        )
+
+    config = AppConfig()
+    with pytest.raises(ValidationError) as exc_info:
+        config.load(str(path))
+
+    assert exc_info.value.errors(include_url=False) == [
+        {
+            "type": "missing",
+            "loc": ("statsd", "host"),
+            "msg": "Field required",
+            "input": {"app_name": "file"},
+        }
+    ]
