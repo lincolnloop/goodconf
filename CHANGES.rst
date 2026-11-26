@@ -2,6 +2,20 @@
 Change Log
 ==========
 
+Unreleased
+==========
+
+- **Backwards Incompatible**
+
+  - Undocumented internals of ``goodconf.contrib.django`` changed:
+    ``load_config_from_cli`` is renamed ``parse_config_option`` and no longer
+    loads the config, and ``execute_from_command_line_with_config`` is removed.
+    Neither was part of the documented API.
+- Fix: the file passed to ``manage.py`` with ``-C`` is now read by
+  ``config.load()`` in ``settings.py``. ``django_manage`` selects the file and
+  ``settings.py`` loads it once, instead of ``settings.py`` reloading without
+  it.
+
 8.0.0 (26 November 2026)
 ========================
 

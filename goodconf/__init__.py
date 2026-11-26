@@ -244,9 +244,7 @@ class GoodConf(BaseSettings):
         if kwargs or load:  # Emulate Pydantic behavior, load immediately
             self._load(_init_config_file=config_file, **kwargs)
         elif config_file:
-            _object_setattr(
-                self, "_load", partial(self._load, _init_config_file=config_file)
-            )
+            self._select_config_file(config_file)
 
     @classmethod
     def settings_customise_sources(
@@ -293,6 +291,12 @@ class GoodConf(BaseSettings):
 
     def load(self, filename: str | None = None) -> None:
         self._load(_config_file=filename)
+
+    def _select_config_file(self, config_file: str) -> None:
+        """Make the next ``load()`` without a file read ``config_file``."""
+        _object_setattr(
+            self, "_load", partial(self._load, _init_config_file=config_file)
+        )
 
     @classmethod
     def get_initial(cls, **override: t.Any) -> dict[str, t.Any]:
@@ -394,8 +398,12 @@ class GoodConf(BaseSettings):
 
     def django_manage(self, args: list[str] | None = None) -> None:
         args = args or sys.argv
-        from goodconf.contrib.django import (  # noqa: PLC0415
-            execute_from_command_line_with_config,
-        )
+        from goodconf.contrib import django as goodconf_django  # noqa: PLC0415
 
-        execute_from_command_line_with_config(self, args)
+        with goodconf_django.parse_config_option(self, args) as (
+            config_file,
+            django_args,
+        ):
+            if config_file:
+                self._select_config_file(config_file)
+            goodconf_django.execute_from_command_line(django_args)

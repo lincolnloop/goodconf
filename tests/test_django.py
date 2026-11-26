@@ -1,7 +1,7 @@
 import pytest
 
 from goodconf import GoodConf, GoodConfConfigDict
-from goodconf.contrib.django import load_config_from_cli
+from goodconf.contrib.django import parse_config_option
 
 management_base = pytest.importorskip("django.core.management.base")
 
@@ -11,7 +11,7 @@ def test_create_parser_forwards_kwargs() -> None:
     class G(GoodConf):
         model_config = GoodConfConfigDict()
 
-    with load_config_from_cli(G(), ["manage.py"]):
+    with parse_config_option(G(), ["manage.py"]):
         parser = management_base.BaseCommand().create_parser(
             "manage.py", "check", usage="custom usage"
         )

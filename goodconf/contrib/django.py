@@ -3,19 +3,20 @@ import typing as t
 from collections.abc import Generator
 from contextlib import contextmanager
 
+from django.core.management import execute_from_command_line
+from django.core.management.base import BaseCommand, CommandParser
+
 from goodconf import GoodConf
 from goodconf.contrib.argparse import argparser_add_argument
 
+__all__ = ["execute_from_command_line", "parse_config_option"]
+
 
 @contextmanager
-def load_config_from_cli(
+def parse_config_option(
     config: GoodConf, argv: list[str]
-) -> Generator[list[str], None, None]:
-    """Loads config, checking CLI arguments for a config file"""
-
-    # Monkey patch Django's command parser
-    from django.core.management.base import BaseCommand, CommandParser  # noqa: PLC0415
-
+) -> Generator[tuple[str | None, list[str]], None, None]:
+    """Split ``-C/--config`` from ``argv``; Django's commands list it in --help."""
     original_parser = BaseCommand.create_parser
 
     def patched_parser(
@@ -33,17 +34,8 @@ def load_config_from_cli(
         parser = argparse.ArgumentParser(add_help=False)
         argparser_add_argument(parser, config)
 
-        config_arg, default_args = parser.parse_known_args(argv)
-        config.load(config_arg.config)
-        yield default_args
+        config_arg, django_args = parser.parse_known_args(argv)
+        yield config_arg.config, django_args
     finally:
         # Put that create_parser back where it came from or so help me!
         BaseCommand.create_parser = original_parser
-
-
-def execute_from_command_line_with_config(config: GoodConf, argv: list[str]) -> None:
-    """Load's config then runs Django's execute_from_command_line"""
-    with load_config_from_cli(config, argv) as args:
-        from django.core.management import execute_from_command_line  # noqa: PLC0415
-
-        execute_from_command_line(args)

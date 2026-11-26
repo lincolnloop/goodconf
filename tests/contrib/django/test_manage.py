@@ -24,11 +24,6 @@ PRINT_APP_NAME = "from django.conf import settings; print(settings.APP_NAME)"
         ),
     ],
 )
-@pytest.mark.xfail(
-    raises=AssertionError,
-    reason="https://github.com/lincolnloop/goodconf/issues/150",
-    strict=True,
-)
 def test_manage_config_option(
     argv: list[str],
     manage_py: Callable[..., subprocess.CompletedProcess[str]],
@@ -143,6 +138,7 @@ def test_django_manage_args(capsys: pytest.CaptureFixture[str], tmp_path: Path) 
 
     config = AppConfig()
     config.django_manage(["manage.py", "-C", str(path), "version"])
+    config.load()
 
     assert capsys.readouterr().out == f"{django.get_version()}\n"
     assert config.model_dump() == {"app_name": "from-option"}
