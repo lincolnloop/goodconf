@@ -1,9 +1,7 @@
-import tomllib
 import typing as t
 from pathlib import Path
 
 import pytest
-import tomlkit.exceptions
 
 from goodconf import Field, GoodConf
 
@@ -151,11 +149,6 @@ def test_generate_toml_override() -> None:
     )
 
 
-@pytest.mark.xfail(
-    raises=AttributeError,
-    reason="https://github.com/lincolnloop/goodconf/issues/149",
-    strict=True,
-)
 def test_generate_toml_bool_description() -> None:
     class AppConfig(GoodConf):
         debug: bool = Field(default=False, description="Enable debug mode")
@@ -163,20 +156,29 @@ def test_generate_toml_bool_description() -> None:
     assert AppConfig.generate_toml() == "debug = false # Enable debug mode\n"
 
 
-@pytest.mark.xfail(
-    raises=tomlkit.exceptions.ConvertError,
-    reason="https://github.com/lincolnloop/goodconf/issues/148",
-    strict=True,
-)
 def test_generate_toml_none() -> None:
-    class AppConfig(GoodConf):
-        sentry_dsn: str | None = None
-        database_url: str
+    """TOML has no null, so None fields are listed in a comment, not written.
 
-    # TOML has no null; however the fix spells it, the key must parse as absent.
-    assert tomllib.loads(AppConfig.generate_toml(database_url="postgres://")) == {
-        "database_url": "postgres://"
-    }
+    https://github.com/lincolnloop/goodconf/issues/148
+    """
+
+    class AppConfig(GoodConf):
+        """Configuration for My App"""
+
+        debug: bool = False
+        database_url: str
+        sentry_dsn: str | None = Field(default=None, description="Error reporting DSN")
+        timeout: int | None = None
+
+    assert AppConfig.generate_toml() == (
+        "# Configuration for My App\n"
+        "debug = false\n"
+        'database_url = ""\n'
+        "\n"
+        "# Not set, defaults to None:\n"
+        "# - sentry_dsn: Error reporting DSN\n"
+        "# - timeout\n"
+    )
 
 
 @pytest.mark.parametrize(
@@ -196,6 +198,8 @@ def test_generated_file_loads(filename: str, method_name: str, tmp_path: Path) -
         port: int = Field(default=8000, description="Listen port")
         hosts: list[str] = Field(default_factory=lambda: ["localhost"])
         database_url: str
+        sentry_dsn: str | None = None
+        statsd_host: str | None
 
     path = tmp_path / filename
     path.write_text(getattr(AppConfig, method_name)(database_url="postgres://"))
@@ -208,6 +212,8 @@ def test_generated_file_loads(filename: str, method_name: str, tmp_path: Path) -
         "port": 8000,
         "hosts": ["localhost"],
         "database_url": "postgres://",
+        "sentry_dsn": None,
+        "statsd_host": None,
     }
 
 

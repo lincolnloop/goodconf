@@ -18,8 +18,8 @@ from types import GenericAlias
 
 if t.TYPE_CHECKING:
     from pydantic.fields import _FromFieldInfoInputs
-    from tomlkit.items import Item
 
+from pydantic import AliasChoices
 from pydantic._internal._config import config_keys
 from pydantic.fields import FieldInfo
 from pydantic.main import _object_setattr
@@ -183,6 +183,8 @@ class FileConfigSettingsSource(PydanticBaseSettingsSource):
                     break
         if selected_config_file:
             values = _load_config(selected_config_file)
+            if Path(selected_config_file).suffix == ".toml":
+                values = add_toml_nulls(self.settings_cls, values)
             log.info("Loading config from %s", selected_config_file)
         else:
             values = {}
@@ -191,6 +193,39 @@ class FileConfigSettingsSource(PydanticBaseSettingsSource):
 
     def __repr__(self) -> str:
         return "FileConfigSettingsSource()"
+
+
+def add_toml_nulls(
+    settings_cls: type[BaseSettings], values: dict[str, t.Any]
+) -> dict[str, t.Any]:
+    """TOML has no null; absence is how it says None for a required nullable field.
+
+    https://github.com/lincolnloop/goodconf/issues/148
+    """
+    nulls: dict[str, None] = {}
+    for name, field_info in settings_cls.model_fields.items():
+        if not field_info.is_required():
+            continue
+        if type(None) not in t.get_args(field_info.annotation):
+            continue
+        keys = get_validation_keys(name, field_info)
+        if keys and not any(key in values for key in keys):
+            nulls[keys[0]] = None
+    return {**values, **nulls}
+
+
+def get_validation_keys(name: str, field_info: FieldInfo) -> list[str]:
+    validation_alias = field_info.validation_alias
+    if validation_alias is None:
+        return [name]
+    if isinstance(validation_alias, str):
+        return [validation_alias]
+    if isinstance(validation_alias, AliasChoices):
+        return [
+            choice for choice in validation_alias.choices if isinstance(choice, str)
+        ]
+    # An AliasPath reaches into nested data, which a missing key can't express.
+    return []
 
 
 class GoodConf(BaseSettings):
@@ -309,16 +344,27 @@ class GoodConf(BaseSettings):
         """
         import tomlkit  # noqa: PLC0415
 
-        toml_str = tomlkit.dumps(cls.get_initial(**override))
+        initial = cls.get_initial(**override)
+        toml_str = tomlkit.dumps({k: v for k, v in initial.items() if v is not None})
         dict_from_toml = tomlkit.loads(toml_str)
         document = tomlkit.document()
         if cls.__doc__:
             document.add(tomlkit.comment(cls.__doc__))
         for k, v in dict_from_toml.unwrap().items():
-            document.add(k, v)
+            item = tomlkit.item(v)
             if cls.model_fields[k].description:
                 description = t.cast("str", cls.model_fields[k].description)
-                t.cast("Item", document[k]).comment(description)
+                item.comment(description)
+            document.add(k, item)
+        # TOML has no null, so None fields are listed rather than written.
+        # https://github.com/lincolnloop/goodconf/issues/148
+        if null_keys := [k for k, v in initial.items() if v is None]:
+            document.add(tomlkit.nl())
+            document.add(tomlkit.comment("Not set, defaults to None:"))
+            for k in null_keys:
+                null_description = cls.model_fields[k].description
+                entry = f"- {k}: {null_description}" if null_description else f"- {k}"
+                document.add(tomlkit.comment(entry))
         return tomlkit.dumps(document)
 
     @classmethod
