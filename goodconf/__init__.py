@@ -348,7 +348,7 @@ class GoodConf(BaseSettings):
 
     def django_manage(self, args: list[str] | None = None) -> None:
         args = args or sys.argv
-        from .contrib.django import (  # noqa: PLC0415
+        from goodconf.contrib.django import (  # noqa: PLC0415
             execute_from_command_line_with_config,
         )
 
