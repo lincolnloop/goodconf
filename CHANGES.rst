@@ -5,6 +5,10 @@ Change Log
 Unreleased
 ========================
 
+- Drop Python 3.10, which reached end of life in October 2026. Python 3.11+
+  is required. Reading TOML no longer needs the ``toml`` extra; it is only
+  used by ``generate_toml``.
+- Python 3.15 is now officially supported.
 - ``initial_for_field`` now raises ``TypeError`` instead of ``ValueError`` when
   a field's ``initial`` is not callable (it is a type check, so ``TypeError``
   is correct).

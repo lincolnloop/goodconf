@@ -7,6 +7,7 @@ import json
 import logging
 import os
 import sys
+import tomllib
 import typing as t
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -18,7 +19,6 @@ from types import GenericAlias
 if t.TYPE_CHECKING:
     from pydantic.fields import _FromFieldInfoInputs
     from tomlkit.items import Item
-    from typing_extensions import Unpack
 
 from pydantic._internal._config import config_keys
 from pydantic.fields import FieldInfo
@@ -29,7 +29,6 @@ from pydantic_settings import (
     PydanticBaseSettingsSource,
     SettingsConfigDict,
 )
-from typing_extensions import NotRequired
 
 __all__ = ["Field", "GoodConf", "GoodConfConfigDict"]
 
@@ -49,7 +48,7 @@ def Field(  # noqa: N802
     default: t.Any = PydanticUndefined,
     *,
     initial: Callable[[], t.Any] | None = None,
-    **kwargs: "Unpack[_FromFieldInfoInputs]",
+    **kwargs: "t.Unpack[_FromFieldInfoInputs]",
 ) -> t.Any:
     # default + **kwargs mirror pydantic.Field so its full, type-checked
     # signature carries through; we only add the goodconf-specific `initial`.
@@ -65,9 +64,9 @@ def Field(  # noqa: N802
 
 class GoodConfConfigDict(SettingsConfigDict):
     # configuration file to load
-    file_env_var: NotRequired[str | None]
+    file_env_var: t.NotRequired[str | None]
     # if no file is given, try to load a configuration from these files in order
-    default_files: NotRequired[list[str] | None]
+    default_files: t.NotRequired[list[str] | None]
 
 
 # Note: code from pydantic-settings/pydantic_settings/main.py:
@@ -94,24 +93,16 @@ def _load_config(path: str) -> dict[str, t.Any]:
         yaml = ruamel.yaml.YAML(typ="safe", pure=True)
         loader = yaml.load
     elif ext == ".toml":
-        try:
-            import tomllib  # noqa: PLC0415
-
-            def load(stream: object) -> dict[str, t.Any]:  # noqa: ARG001
-                return tomllib.loads(f.read())
-        except ImportError:  # Fallback for Python < 3.11
-            import tomlkit  # noqa: PLC0415
-
-            def load(stream: object) -> dict[str, t.Any]:  # noqa: ARG001
-                return tomlkit.load(f).unwrap()
-
-        loader = load
-
+        loader = load_toml
     else:
         loader = json.load
     with Path(path).open() as f:
         config = loader(f)
     return config or {}
+
+
+def load_toml(stream: t.TextIO) -> dict[str, t.Any]:
+    return tomllib.loads(stream.read())
 
 
 def _find_file(filename: str, require: bool = True) -> str | None:  # noqa: FBT001, FBT002
