@@ -1,3 +1,4 @@
+import re
 import sys
 from pathlib import Path
 
@@ -5,7 +6,7 @@ import pytest
 from django.core.management.base import BaseCommand, CommandError
 from pydantic import ValidationError
 
-from goodconf import GoodConf
+from goodconf import GoodConf, GoodConfConfigDict
 from goodconf.contrib import django as goodconf_django
 
 
@@ -67,6 +68,51 @@ def test_django_manage_defaults_to_sys_argv(
 
     assert config.model_dump() == {"app_name": "file"}
     assert capsys.readouterr().out == "ran\n"
+
+
+@pytest.mark.parametrize(
+    ("config_dict", "expected_help"),
+    [
+        pytest.param(
+            GoodConfConfigDict(default_files=["/etc/myapp.json"]),
+            "Config file. Defaults to the first file that exists from "
+            "[/etc/myapp.json].",
+            id="default-files",
+        ),
+        pytest.param(
+            GoodConfConfigDict(
+                file_env_var="MYAPP_CONF", default_files=["/etc/myapp.json"]
+            ),
+            "Config file. Can also be configured via the environment variable: "
+            "MYAPP_CONF. Defaults to the first file that exists from "
+            "[/etc/myapp.json].",
+            id="file-env-var-and-default-files",
+            marks=pytest.mark.xfail(
+                raises=AssertionError,
+                reason="help text sentences run together",
+                strict=True,
+            ),
+        ),
+    ],
+)
+def test_django_manage_help_lists_config_option(
+    capsys: pytest.CaptureFixture[str],
+    config_dict: GoodConfConfigDict,
+    expected_help: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("COLUMNS", "200")
+
+    class AppConfig(GoodConf):
+        model_config = config_dict
+
+    with pytest.raises(SystemExit) as exc_info:
+        AppConfig().django_manage(["manage.py", "check", "-h"])
+    match = re.search(r"--config FILE\s+(.+)", capsys.readouterr().out)
+
+    assert exc_info.value.code == 0
+    assert match is not None
+    assert match.group(1) == expected_help
 
 
 def test_django_manage_restores_command_parser() -> None:

@@ -2,6 +2,7 @@ import typing as t
 from pathlib import Path
 
 import pytest
+import tomlkit.exceptions
 
 from goodconf import Field, GoodConf
 
@@ -178,6 +179,36 @@ def test_generate_toml_override() -> None:
     assert AppConfig.generate_toml(database_url="postgres://", unknown="x") == (
         'debug = false\ndatabase_url = "postgres://"\n'
     )
+
+
+@pytest.mark.xfail(
+    raises=AttributeError,
+    reason="generate_toml crashes on bool descriptions",
+    strict=True,
+)
+def test_generate_toml_bool_description() -> None:
+    class AppConfig(GoodConf):
+        debug: bool = Field(default=False, description="Enable debug mode")
+
+    assert AppConfig.generate_toml() == "debug = false # Enable debug mode\n"
+
+
+@pytest.mark.xfail(
+    raises=tomlkit.exceptions.ConvertError,
+    reason="generate_toml crashes on None values",
+    strict=True,
+)
+def test_generate_toml_none_loads(tmp_path: Path) -> None:
+    class AppConfig(GoodConf):
+        sentry_dsn: str | None = None
+        database_url: str
+
+    path = tmp_path / "app.toml"
+    path.write_text(AppConfig.generate_toml(database_url="postgres://"))
+    config = AppConfig()
+    config.load(str(path))
+
+    assert config.model_dump() == {"sentry_dsn": None, "database_url": "postgres://"}
 
 
 @pytest.mark.parametrize(
