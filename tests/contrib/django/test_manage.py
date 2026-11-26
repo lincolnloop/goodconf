@@ -118,11 +118,6 @@ def test_manage_without_config_file(
     assert result.returncode == 0
 
 
-@pytest.mark.xfail(
-    raises=AssertionError,
-    reason="https://github.com/lincolnloop/goodconf/issues/147",
-    strict=True,
-)
 def test_manage_help_lists_config_option(
     manage_py: Callable[..., subprocess.CompletedProcess[str]],
 ) -> None:
