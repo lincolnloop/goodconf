@@ -2,13 +2,26 @@
 Change Log
 ==========
 
-Unreleased
+8.0.0 (26 November 2026)
 ========================
 
-- Drop Python 3.10, which reached end of life in October 2026. Python 3.11+
-  is required. Reading TOML no longer needs the ``toml`` extra; it is only
-  used by ``generate_toml``.
-- Python 3.15 is now officially supported.
+- **Backwards Incompatible Release**
+
+  - Removed official support for Python 3.10, which reached end of life in
+    October 2026. Python 3.11+ is required.
+- Added official support for Python 3.15
+- Reading TOML no longer needs the ``toml`` extra; it is only used by
+  ``generate_toml``.
+- ``typing-extensions`` is now a declared dependency (it was already installed
+  through pydantic).
+- Fix: ``django_manage`` no longer drops keyword arguments passed to a
+  command's ``create_parser``.
+- Package metadata uses an SPDX license expression (PEP 639) and lists the
+  correct author email.
+
+7.1.0 (17 June 2026)
+========================
+
 - ``initial_for_field`` now raises ``TypeError`` instead of ``ValueError`` when
   a field's ``initial`` is not callable (it is a type check, so ``TypeError``
   is correct).
