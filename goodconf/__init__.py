@@ -244,7 +244,9 @@ class GoodConf(BaseSettings):
         if kwargs or load:  # Emulate Pydantic behavior, load immediately
             self._load(_init_config_file=config_file, **kwargs)
         elif config_file:
-            self.set_config_file(config_file)
+            _object_setattr(
+                self, "_load", partial(self._load, _init_config_file=config_file)
+            )
 
     @classmethod
     def settings_customise_sources(
@@ -288,18 +290,9 @@ class GoodConf(BaseSettings):
         if config_file := _config_file or _init_config_file:
             kwargs["_config_file"] = config_file
         super().__init__(**kwargs)
-        if _init_config_file:
-            # pydantic's __init__ replaces __dict__, dropping the wrapped _load.
-            self.set_config_file(_init_config_file)
 
     def load(self, filename: str | None = None) -> None:
         self._load(_config_file=filename)
-
-    def set_config_file(self, config_file: str) -> None:
-        """Use ``config_file`` for every later ``load()`` called without a file."""
-        _object_setattr(
-            self, "_load", partial(self._load, _init_config_file=config_file)
-        )
 
     @classmethod
     def get_initial(cls, **override: t.Any) -> dict[str, t.Any]:
