@@ -29,6 +29,7 @@ from pydantic_settings import (
     PydanticBaseSettingsSource,
     SettingsConfigDict,
 )
+from typing_extensions import override
 
 __all__ = ["Field", "GoodConf", "GoodConfConfigDict"]
 
@@ -157,10 +158,11 @@ class FileConfigSettingsSource(PydanticBaseSettingsSource):
     def __init__(self, settings_cls: type[BaseSettings]) -> None:
         super().__init__(settings_cls)
 
+    @override
     def get_field_value(
         self,
-        field: FieldInfo,  # noqa: ARG002
-        field_name: str,  # noqa: ARG002
+        field: FieldInfo,
+        field_name: str,
     ) -> tuple[t.Any, str, bool]:
         # Nothing to do here. Only implement the return statement to make mypy happy
         return None, "", False
