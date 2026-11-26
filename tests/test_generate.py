@@ -10,6 +10,7 @@ def test_get_initial() -> None:
     class AppConfig(GoodConf):
         debug: bool = False
         secret_key: str = Field(initial=lambda: "generated")
+        port: int = Field(gt=0, initial=lambda: 8000)
         hosts: list[str] = Field(default_factory=lambda: ["localhost"])
         database_url: str
         sentry_dsn: str | None
@@ -17,6 +18,7 @@ def test_get_initial() -> None:
     assert AppConfig.get_initial() == {
         "debug": False,
         "secret_key": "generated",
+        "port": 8000,
         "hosts": ["localhost"],
         "database_url": "",
         "sentry_dsn": None,
