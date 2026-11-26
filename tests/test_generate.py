@@ -2,6 +2,7 @@ import typing as t
 from pathlib import Path
 
 import pytest
+import tomlkit.exceptions
 
 from goodconf import Field, GoodConf
 
@@ -193,7 +194,7 @@ def test_generate_toml_bool_description() -> None:
 
 
 @pytest.mark.xfail(
-    raises=ValueError,
+    raises=tomlkit.exceptions.ConvertError,
     reason="https://github.com/lincolnloop/goodconf/issues/148",
     strict=True,
 )

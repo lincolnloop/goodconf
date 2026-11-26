@@ -42,7 +42,7 @@ requires-python = ">=3.11"
 
 [project.optional-dependencies]
 django = ["django>=5.2"]
-toml = ["tomlkit>=0.11.6"]
+toml = ["tomlkit>=0.13"]
 yaml = ["ruamel.yaml>=0.17.0"]
 
 [project.urls]
