@@ -23,7 +23,7 @@ PRINT_APP_NAME = "from django.conf import settings; print(settings.APP_NAME)"
 )
 @pytest.mark.xfail(
     raises=AssertionError,
-    reason="settings.py config.load() discards the -C file",
+    reason="https://github.com/lincolnloop/goodconf/issues/150",
     strict=True,
 )
 def test_manage_config_option(argv: list[str], tmp_path: Path) -> None:
