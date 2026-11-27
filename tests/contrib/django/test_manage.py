@@ -143,6 +143,27 @@ def test_manage_settings_without_load_missing_file(
     assert result.returncode == 1
 
 
+def test_manage_config_option_reaches_spawned_process(
+    manage_py: Callable[..., subprocess.CompletedProcess[str]],
+    tmp_path: Path,
+) -> None:
+    """Spawned workers, e.g. ``test --parallel``, re-import settings from scratch."""
+    (tmp_path / "app.json").write_text('{"APP_NAME": "from-option"}')
+    spawn_child = (
+        "import multiprocessing; "
+        "from tests.contrib.django.project import child; "
+        "process = multiprocessing.get_context('spawn').Process("
+        "target=child.print_app_name); "
+        "process.start(); process.join()"
+    )
+
+    result = manage_py("shell", "--no-imports", "-c", spawn_child, "-C", "app.json")
+
+    assert result.stderr == ""
+    assert result.returncode == 0
+    assert result.stdout == "from-option\n"
+
+
 def test_manage_config_file_env_var(
     manage_py: Callable[..., subprocess.CompletedProcess[str]],
     tmp_path: Path,
@@ -212,9 +233,30 @@ def test_django_manage_args(capsys: pytest.CaptureFixture[str], tmp_path: Path) 
     config.django_manage(["manage.py", "-C", str(path), "version"])
     managed_dump = config.model_dump()
     config.load()
+    config.load()
 
     assert capsys.readouterr().out == f"{django.get_version()}\n"
     assert managed_dump == {"app_name": "from-option"}
+    assert config.model_dump() == {"app_name": "from-option"}
+
+
+def test_django_manage_model_copy(
+    capsys: pytest.CaptureFixture[str], tmp_path: Path
+) -> None:
+    path = tmp_path / "app.json"
+    path.write_text('{"app_name": "from-option"}')
+
+    class AppConfig(GoodConf):
+        app_name: str = "default"
+
+    config = AppConfig()
+    config.django_manage(["manage.py", "-C", str(path), "version"])
+    copied_config = config.model_copy()
+    path.write_text('{"app_name": "edited"}')
+    copied_config.load()
+
+    assert capsys.readouterr().out == f"{django.get_version()}\n"
+    assert copied_config.model_dump() == {"app_name": "edited"}
     assert config.model_dump() == {"app_name": "from-option"}
 
 

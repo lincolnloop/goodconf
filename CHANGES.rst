@@ -11,10 +11,15 @@ Unreleased
     ``load_config_from_cli`` is renamed ``parse_config_option`` and no longer
     loads the config, and ``execute_from_command_line_with_config`` is removed.
     Neither was part of the documented API.
-- Fix: the file passed to ``manage.py`` with ``-C`` is now also read by the
-  next ``config.load()`` call, such as the one in ``settings.py``, instead of
-  that call falling back to ``file_env_var`` or ``default_files``.
+- Fix: the file passed to ``manage.py`` with ``-C`` is now read by every
+  later ``config.load()`` call without a file, such as the one in
+  ``settings.py``, instead of falling back to ``file_env_var`` or
+  ``default_files``. ``django_manage`` also exports it as
+  ``GOODCONF_<CLASSNAME>_FILE`` so spawned worker processes, e.g.
+  ``manage.py test --parallel``, use it too.
   (`#150 <https://github.com/lincolnloop/goodconf/issues/150>`_)
+- Fix: a file passed as ``config_file`` to the constructor now applies to every
+  ``load()`` call without a file, not only the first.
 
 8.0.0 (26 November 2026)
 ========================

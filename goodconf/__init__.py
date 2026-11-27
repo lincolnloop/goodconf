@@ -11,7 +11,6 @@ import tomllib
 import typing as t
 from collections.abc import Callable
 from dataclasses import dataclass
-from functools import partial
 from io import StringIO
 from pathlib import Path
 from types import GenericAlias
@@ -241,10 +240,13 @@ class GoodConf(BaseSettings):
         A docstring defined on the class should be a plain-text description
         used as a header when generating a configuration file.
         """
-        if kwargs or load:  # Emulate Pydantic behavior, load immediately
-            self._load(_init_config_file=config_file, **kwargs)
+        # manage.py -C reaches worker processes through the environment.
+        if selected := os.environ.get(get_config_file_env_var(type(self))):
+            self._select_config_file(selected)
         elif config_file:
             self._select_config_file(config_file)
+        if kwargs or load:  # Emulate Pydantic behavior, load immediately
+            self._load(**kwargs)
 
     @classmethod
     def settings_customise_sources(
@@ -279,24 +281,21 @@ class GoodConf(BaseSettings):
         state.pop("_config_file", None)
         return state
 
-    def _load(
-        self,
-        _config_file: str | None = None,
-        _init_config_file: str | None = None,
-        **kwargs: t.Any,
-    ) -> None:
-        if config_file := _config_file or _init_config_file:
+    def _load(self, _config_file: str | None = None, **kwargs: t.Any) -> None:
+        selected = self.__dict__.get("_selected_config_file")
+        if config_file := _config_file or selected:
             kwargs["_config_file"] = config_file
         super().__init__(**kwargs)
+        if selected:
+            # pydantic's __init__ rebuilds __dict__, dropping the selection.
+            self._select_config_file(selected)
 
     def load(self, filename: str | None = None) -> None:
         self._load(_config_file=filename)
 
     def _select_config_file(self, config_file: str) -> None:
-        """Make the next ``load()`` without a file read ``config_file``."""
-        _object_setattr(
-            self, "_load", partial(self._load, _init_config_file=config_file)
-        )
+        """Make every ``load()`` without a file read ``config_file``."""
+        _object_setattr(self, "_selected_config_file", config_file)
 
     @classmethod
     def get_initial(cls, **override: t.Any) -> dict[str, t.Any]:
@@ -404,9 +403,14 @@ class GoodConf(BaseSettings):
             config_file,
             django_args,
         ):
-            self.load(config_file)
             if config_file:
-                # Loading drops the selection; settings.py's config.load() must
-                # still read the -C file.
                 self._select_config_file(config_file)
+                os.environ[get_config_file_env_var(type(self))] = str(
+                    Path(config_file).resolve()
+                )
+            self.load()
             goodconf_django.run_command(django_args)
+
+
+def get_config_file_env_var(config_cls: type[GoodConf]) -> str:
+    return f"GOODCONF_{config_cls.__name__.upper()}_FILE"
