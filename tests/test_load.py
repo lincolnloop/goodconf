@@ -8,7 +8,7 @@ import pydantic
 import pytest
 from pydantic import AliasChoices, AliasPath, ValidationError
 
-from goodconf import GoodConf, GoodConfConfigDict
+from goodconf import Field, GoodConf, GoodConfConfigDict
 
 
 @pytest.mark.parametrize(
@@ -617,3 +617,25 @@ def test_load_toml_alias_path_nullable_field_required(tmp_path: Path) -> None:
             "input": {"app_name": "file"},
         }
     ]
+
+
+@pytest.mark.parametrize(
+    ("filename", "content"),
+    [
+        pytest.param("app.json", '{"STATSD": "file"}', id="json"),
+        pytest.param("app.toml", 'STATSD = "file"\n', id="toml"),
+        pytest.param("app.yaml", "STATSD: file\n", id="yaml"),
+    ],
+)
+def test_load_goodconf_field_alias(content: str, filename: str, tmp_path: Path) -> None:
+    """https://github.com/lincolnloop/goodconf/issues/152"""
+    path = tmp_path / filename
+    path.write_text(content)
+
+    class AppConfig(GoodConf):
+        statsd_host: str | None = Field(alias="STATSD")
+
+    config = AppConfig()
+    config.load(str(path))
+
+    assert config.model_dump() == {"statsd_host": "file"}

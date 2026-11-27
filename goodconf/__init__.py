@@ -21,6 +21,7 @@ from types import GenericAlias
 if t.TYPE_CHECKING:
     from pydantic.fields import _FromFieldInfoInputs
 
+import pydantic
 from pydantic import AliasChoices
 from pydantic._internal._config import config_keys
 from pydantic.fields import FieldInfo
@@ -53,11 +54,10 @@ def Field(  # noqa: N802
     initial: Callable[[], t.Any] | None = None,
     **kwargs: "t.Unpack[_FromFieldInfoInputs]",
 ) -> t.Any:
-    # default + **kwargs mirror pydantic.Field so its full, type-checked
-    # signature carries through; we only add the goodconf-specific `initial`.
-    # FieldInfo.from_field (what Field delegates to) shares the exact
-    # _FromFieldInfoInputs kwargs, so forwarding stays type-checked.
-    field_info = FieldInfo.from_field(default, **kwargs)
+    # pydantic.Field's overloads reject an unpacked TypedDict; a plain dict
+    # still matches them while callers keep the typed signature above.
+    field_kwargs: dict[str, t.Any] = dict(kwargs)
+    field_info = pydantic.Field(default, **field_kwargs)
     if initial is not None:
         # Store as field metadata rather than json_schema_extra so the callable
         # never leaks into (and breaks) JSON schema generation.
