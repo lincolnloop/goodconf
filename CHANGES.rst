@@ -5,6 +5,9 @@ Change Log
 Unreleased
 ==========
 
+- Deprecated: passing ``config_file`` to the constructor. It now warns and
+  will be removed in a future release; list the file in ``default_files`` or
+  pass it to ``load()`` instead.
 - Fix: the file passed to ``manage.py -C`` is now used by ``config.load()``
   in ``settings.py`` and by spawned workers (e.g. ``manage.py test
   --parallel``). Like Django's ``--settings`` with ``DJANGO_SETTINGS_MODULE``,

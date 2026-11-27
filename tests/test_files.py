@@ -1,4 +1,5 @@
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -78,7 +79,13 @@ def test_provided_file_from_init(mocker: MockerFixture, tmp_path: Path) -> None:
     class G(GoodConf):
         pass
 
-    g = G(config_file=str(path))
+    message = (
+        "G(config_file=...) is deprecated and will be removed in a "
+        "future release. List the file in model_config['default_files'] or "
+        "pass it to load() instead."
+    )
+    with pytest.warns(DeprecationWarning, match=f"^{re.escape(message)}$"):
+        g = G(config_file=str(path))
     g.load()
     mocked_load_config.assert_called_once_with(str(path))
 

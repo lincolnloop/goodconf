@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 import typing as t
 from pathlib import Path
 
@@ -71,7 +72,13 @@ def test_load_config_file_from_init(
     class AppConfig(GoodConf):
         app_name: str
 
-    config = AppConfig(config_file=str(path))
+    message = (
+        "AppConfig(config_file=...) is deprecated and will be removed in a "
+        "future release. List the file in model_config['default_files'] or "
+        "pass it to load() instead."
+    )
+    with pytest.warns(DeprecationWarning, match=f"^{re.escape(message)}$"):
+        config = AppConfig(config_file=str(path))
     with caplog.at_level(logging.INFO, logger="goodconf"):
         config.load()
 
@@ -88,9 +95,33 @@ def test_load_config_file_from_init_with_load(tmp_path: Path) -> None:
     class AppConfig(GoodConf):
         app_name: str
 
-    config = AppConfig(load=True, config_file=str(path))
+    message = (
+        "AppConfig(config_file=...) is deprecated and will be removed in a "
+        "future release. List the file in model_config['default_files'] or "
+        "pass it to load() instead."
+    )
+    with pytest.warns(DeprecationWarning, match=f"^{re.escape(message)}$"):
+        config = AppConfig(load=True, config_file=str(path))
 
     assert config.model_dump() == {"app_name": "file"}
+
+
+def test_config_file_is_deprecated(tmp_path: Path) -> None:
+    class AppConfig(GoodConf):
+        pass
+
+    message = (
+        "AppConfig(config_file=...) is deprecated and will be removed in a "
+        "future release. List the file in model_config['default_files'] or "
+        "pass it to load() instead."
+    )
+    with pytest.warns(
+        DeprecationWarning, match=f"^{re.escape(message)}$"
+    ) as deprecation_warnings:
+        AppConfig(config_file=str(tmp_path / "app.json"))
+
+    assert [str(warning.message) for warning in deprecation_warnings] == [message]
+    assert [warning.filename for warning in deprecation_warnings] == [__file__]
 
 
 def test_load_explicit_file_over_init_file(tmp_path: Path) -> None:
@@ -102,7 +133,13 @@ def test_load_explicit_file_over_init_file(tmp_path: Path) -> None:
     class AppConfig(GoodConf):
         app_name: str
 
-    config = AppConfig(config_file=str(init_path))
+    message = (
+        "AppConfig(config_file=...) is deprecated and will be removed in a "
+        "future release. List the file in model_config['default_files'] or "
+        "pass it to load() instead."
+    )
+    with pytest.warns(DeprecationWarning, match=f"^{re.escape(message)}$"):
+        config = AppConfig(config_file=str(init_path))
     config.load(str(explicit_path))
 
     assert config.model_dump() == {"app_name": "explicit-file"}
