@@ -9,6 +9,7 @@ import pytest
 from goodconf import GoodConf, GoodConfConfigDict
 
 PRINT_APP_NAME = "from django.conf import settings; print(settings.APP_NAME)"
+SETTINGS_WITHOUT_LOAD = "tests.contrib.django.project.settings_without_load"
 
 
 @pytest.mark.parametrize(
@@ -111,13 +112,13 @@ def test_manage_config_option_over_file_env_var(
 def test_manage_settings_without_load(
     argv: list[str],
     expected_stdout: str,
-    manage_py_without_load: Callable[..., subprocess.CompletedProcess[str]],
+    manage_py: Callable[..., subprocess.CompletedProcess[str]],
     tmp_path: Path,
 ) -> None:
     """settings.py that only reads ``config`` still sees what django_manage loaded."""
     (tmp_path / "app.json").write_text('{"APP_NAME": "from-option"}')
 
-    result = manage_py_without_load(*argv)
+    result = manage_py(*argv, DJANGO_SETTINGS_MODULE=SETTINGS_WITHOUT_LOAD)
 
     assert result.stderr == ""
     assert result.returncode == 0
@@ -125,9 +126,11 @@ def test_manage_settings_without_load(
 
 
 def test_manage_settings_without_load_missing_file(
-    manage_py_without_load: Callable[..., subprocess.CompletedProcess[str]],
+    manage_py: Callable[..., subprocess.CompletedProcess[str]],
 ) -> None:
-    result = manage_py_without_load("check", "-C", "missing.json")
+    result = manage_py(
+        "check", "-C", "missing.json", DJANGO_SETTINGS_MODULE=SETTINGS_WITHOUT_LOAD
+    )
 
     assert result.stderr.splitlines()[-1] == (
         "FileNotFoundError: [Errno 2] No such file or directory: 'missing.json'"
