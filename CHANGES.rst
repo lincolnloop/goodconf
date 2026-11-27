@@ -11,8 +11,8 @@ Unreleased
     ``load_config_from_cli`` is renamed ``parse_config_option`` and no longer
     loads the config, and ``execute_from_command_line_with_config`` is removed.
     Neither was part of the documented API.
-- Fix: the file passed to ``manage.py`` with ``-C`` is now also read by a
-  later ``config.load()`` call, such as the one in ``settings.py``, instead of
+- Fix: the file passed to ``manage.py`` with ``-C`` is now also read by the
+  next ``config.load()`` call, such as the one in ``settings.py``, instead of
   that call falling back to ``file_env_var`` or ``default_files``.
   (`#150 <https://github.com/lincolnloop/goodconf/issues/150>`_)
 

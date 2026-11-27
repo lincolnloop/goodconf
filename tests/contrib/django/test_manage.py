@@ -9,6 +9,10 @@ import pytest
 from goodconf import GoodConf, GoodConfConfigDict
 
 PRINT_APP_NAME = "from django.conf import settings; print(settings.APP_NAME)"
+PRINT_SETTINGS = (
+    "from django.conf import settings; "
+    "print(settings.SETTINGS_MODULE, settings.APP_NAME)"
+)
 SETTINGS_WITHOUT_LOAD = "tests.contrib.django.project.settings_without_load"
 
 
@@ -98,13 +102,13 @@ def test_manage_config_option_over_file_env_var(
     ("argv", "expected_stdout"),
     [
         pytest.param(
-            ["shell", "--no-imports", "-c", PRINT_APP_NAME, "-C", "app.json"],
-            "from-option\n",
+            ["shell", "--no-imports", "-c", PRINT_SETTINGS, "-C", "app.json"],
+            f"{SETTINGS_WITHOUT_LOAD} from-option\n",
             id="config-option",
         ),
         pytest.param(
-            ["shell", "--no-imports", "-c", PRINT_APP_NAME],
-            "default\n",
+            ["shell", "--no-imports", "-c", PRINT_SETTINGS],
+            f"{SETTINGS_WITHOUT_LOAD} default\n",
             id="no-config-option",
         ),
     ],
