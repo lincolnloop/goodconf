@@ -9,14 +9,15 @@ from django.core.management.base import BaseCommand, CommandParser
 from goodconf import GoodConf
 from goodconf.contrib.argparse import argparser_add_argument
 
-__all__ = ["execute_from_command_line", "parse_config_option"]
-
 
 @contextmanager
 def parse_config_option(
     config: GoodConf, argv: list[str]
 ) -> Generator[tuple[str | None, list[str]], None, None]:
-    """Split ``-C/--config`` from ``argv``; Django's commands list it in --help."""
+    """Split ``-C/--config`` from ``argv``.
+
+    While active, every Django command's parser also lists ``-C`` in --help.
+    """
     original_parser = BaseCommand.create_parser
 
     def patched_parser(
@@ -37,5 +38,8 @@ def parse_config_option(
         config_arg, django_args = parser.parse_known_args(argv)
         yield config_arg.config, django_args
     finally:
-        # Put that create_parser back where it came from or so help me!
         BaseCommand.create_parser = original_parser
+
+
+def run_command(argv: list[str]) -> None:
+    execute_from_command_line(argv)

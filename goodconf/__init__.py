@@ -404,6 +404,9 @@ class GoodConf(BaseSettings):
             config_file,
             django_args,
         ):
+            self.load(config_file)
             if config_file:
+                # Loading drops the selection; settings.py's config.load() must
+                # still read the -C file.
                 self._select_config_file(config_file)
-            goodconf_django.execute_from_command_line(django_args)
+            goodconf_django.run_command(django_args)

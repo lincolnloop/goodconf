@@ -71,6 +71,71 @@ def test_manage_config_option_missing_file(
     assert result.returncode == 1
 
 
+def test_manage_config_option_over_file_env_var(
+    manage_py: Callable[..., subprocess.CompletedProcess[str]],
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "app.json").write_text('{"APP_NAME": "from-option"}')
+    (tmp_path / "env.json").write_text('{"APP_NAME": "from-env-var"}')
+
+    result = manage_py(
+        "shell",
+        "--no-imports",
+        "-c",
+        PRINT_APP_NAME,
+        "-C",
+        "app.json",
+        PROJECT_CONF="env.json",
+    )
+
+    assert result.stderr == ""
+    assert result.returncode == 0
+    assert result.stdout == "from-option\n"
+
+
+@pytest.mark.parametrize(
+    ("argv", "expected_stdout"),
+    [
+        pytest.param(
+            ["shell", "--no-imports", "-c", PRINT_APP_NAME, "-C", "app.json"],
+            "from-option\n",
+            id="config-option",
+        ),
+        pytest.param(
+            ["shell", "--no-imports", "-c", PRINT_APP_NAME],
+            "default\n",
+            id="no-config-option",
+        ),
+    ],
+)
+def test_manage_settings_without_load(
+    argv: list[str],
+    expected_stdout: str,
+    manage_py_without_load: Callable[..., subprocess.CompletedProcess[str]],
+    tmp_path: Path,
+) -> None:
+    """settings.py that only reads ``config`` still sees what django_manage loaded."""
+    (tmp_path / "app.json").write_text('{"APP_NAME": "from-option"}')
+
+    result = manage_py_without_load(*argv)
+
+    assert result.stderr == ""
+    assert result.returncode == 0
+    assert result.stdout == expected_stdout
+
+
+def test_manage_settings_without_load_missing_file(
+    manage_py_without_load: Callable[..., subprocess.CompletedProcess[str]],
+) -> None:
+    result = manage_py_without_load("check", "-C", "missing.json")
+
+    assert result.stderr.splitlines()[-1] == (
+        "FileNotFoundError: [Errno 2] No such file or directory: 'missing.json'"
+    )
+    assert result.stdout == ""
+    assert result.returncode == 1
+
+
 def test_manage_config_file_env_var(
     manage_py: Callable[..., subprocess.CompletedProcess[str]],
     tmp_path: Path,
@@ -138,9 +203,11 @@ def test_django_manage_args(capsys: pytest.CaptureFixture[str], tmp_path: Path) 
 
     config = AppConfig()
     config.django_manage(["manage.py", "-C", str(path), "version"])
+    managed_dump = config.model_dump()
     config.load()
 
     assert capsys.readouterr().out == f"{django.get_version()}\n"
+    assert managed_dump == {"app_name": "from-option"}
     assert config.model_dump() == {"app_name": "from-option"}
 
 
