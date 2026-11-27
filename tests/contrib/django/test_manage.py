@@ -274,6 +274,12 @@ def test_django_manage_args(
             "[/etc/myapp.json, myapp.json].",
             id="default-files",
         ),
+        pytest.param(
+            GoodConfConfigDict(file_env_var="APP_CONF"),
+            "Config file. Can also be configured via the environment variable: "
+            "APP_CONF.",
+            id="file-env-var",
+        ),
         pytest.param(GoodConfConfigDict(), "Config file.", id="plain"),
     ],
 )
