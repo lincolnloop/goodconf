@@ -149,8 +149,9 @@ accept a ``--config`` argument. Replace your ``manage.py`` with the following:
     if __name__ == '__main__':
         config.django_manage()
 
-``manage.py -C myproject.json …`` works like setting your ``file_env_var`` to
-``myproject.json``.
+Then pass a config file to any command with ``-C``::
+
+    python manage.py runserver -C myproject.yaml
 
 
 Why?
