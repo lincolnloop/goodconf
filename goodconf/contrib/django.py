@@ -1,9 +1,11 @@
 import argparse
+import os
 import typing as t
 from collections.abc import Generator
 from contextlib import contextmanager
+from pathlib import Path
 
-from goodconf import GoodConf
+from goodconf import GoodConf, get_file_env_var
 from goodconf.contrib.argparse import argparser_add_argument
 
 
@@ -34,6 +36,12 @@ def load_config_from_cli(
         argparser_add_argument(parser, config)
 
         config_arg, default_args = parser.parse_known_args(argv)
+        if config_arg.config:
+            # Like Django's --settings, exported so settings.py's load() and
+            # spawned workers read the same file.
+            os.environ[get_file_env_var(type(config))] = str(
+                Path(config_arg.config).resolve()
+            )
         config.load(config_arg.config)
         yield default_args
     finally:

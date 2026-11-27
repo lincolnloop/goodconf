@@ -189,6 +189,51 @@ def test_load_file_env_var_over_default_files(
     assert config.model_dump() == {"app_name": "env-file"}
 
 
+def test_load_derived_file_env_var(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Without ``file_env_var``, the env var is named after the class's path."""
+    path = tmp_path / "app.json"
+    path.write_text('{"app_name": "env-file"}')
+    monkeypatch.setenv(
+        "GOODCONF_TESTS_TEST_LOAD_TEST_LOAD_DERIVED_FILE_ENV_VAR__LOCALS__APPCONFIG_FILE",
+        str(path),
+    )
+
+    class AppConfig(GoodConf):
+        app_name: str
+
+    config = AppConfig()
+    config.load()
+
+    assert config.model_dump() == {"app_name": "env-file"}
+
+
+def test_load_declared_file_env_var_over_derived(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    declared_path = tmp_path / "declared.json"
+    declared_path.write_text('{"app_name": "declared-env-file"}')
+    derived_path = tmp_path / "derived.json"
+    derived_path.write_text('{"app_name": "derived-env-file"}')
+    monkeypatch.setenv("APP_CONFIG", str(declared_path))
+    monkeypatch.setenv(
+        "GOODCONF_TESTS_TEST_LOAD_TEST_LOAD_DECLARED_FILE_ENV_VAR_OVER_DERIVED"
+        "__LOCALS__APPCONFIG_FILE",
+        str(derived_path),
+    )
+
+    class AppConfig(GoodConf):
+        model_config = GoodConfConfigDict(file_env_var="APP_CONFIG")
+
+        app_name: str
+
+    config = AppConfig()
+    config.load()
+
+    assert config.model_dump() == {"app_name": "declared-env-file"}
+
+
 def test_load_default_files_when_file_env_var_unset(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:

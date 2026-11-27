@@ -2,6 +2,15 @@
 Change Log
 ==========
 
+Unreleased
+==========
+
+- Fix: the file passed to ``manage.py -C`` is now used by ``config.load()``
+  in ``settings.py`` and by spawned workers (e.g. ``manage.py test
+  --parallel``). Like Django's ``--settings`` with ``DJANGO_SETTINGS_MODULE``,
+  ``-C`` now sets an environment variable that the process and its children
+  read. (`#150 <https://github.com/lincolnloop/goodconf/issues/150>`_)
+
 8.0.0 (26 November 2026)
 ========================
 

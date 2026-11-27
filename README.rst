@@ -149,6 +149,10 @@ accept a ``--config`` argument. Replace your ``manage.py`` with the following:
     if __name__ == '__main__':
         config.django_manage()
 
+Then pass a config file to any command with ``-C``::
+
+    python manage.py runserver -C myproject.yaml
+
 
 Why?
 ----

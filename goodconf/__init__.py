@@ -6,6 +6,7 @@ import errno
 import json
 import logging
 import os
+import re
 import sys
 import tomllib
 import typing as t
@@ -172,9 +173,7 @@ class FileConfigSettingsSource(PydanticBaseSettingsSource):
         selected_config_file = None
         if cfg_file := self.current_state.get("_config_file"):
             selected_config_file = cfg_file
-        elif (file_env_var := settings.model_config.get("file_env_var")) and (
-            cfg_file := os.environ.get(file_env_var)
-        ):
+        elif cfg_file := os.environ.get(get_file_env_var(self.settings_cls)):
             selected_config_file = _find_file(cfg_file)
         else:
             for filename in settings.model_config.get("default_files") or []:
@@ -193,6 +192,18 @@ class FileConfigSettingsSource(PydanticBaseSettingsSource):
 
     def __repr__(self) -> str:
         return "FileConfigSettingsSource()"
+
+
+def get_file_env_var(settings_cls: type[BaseSettings]) -> str:
+    """Name of the env var holding the config file path.
+
+    ``model_config["file_env_var"]`` when declared, else derived from the
+    class's import path, e.g. ``GOODCONF_MYPROJECT_CONF_APPCONFIG_FILE``.
+    """
+    if file_env_var := settings_cls.model_config.get("file_env_var"):
+        return t.cast("str", file_env_var)
+    path = f"{settings_cls.__module__}.{settings_cls.__qualname__}".upper()
+    return f"GOODCONF_{re.sub(r'[^A-Z0-9]', '_', path)}_FILE"
 
 
 def add_toml_nulls(
