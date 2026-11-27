@@ -15,6 +15,9 @@ Unreleased
   read. (`#150 <https://github.com/lincolnloop/goodconf/issues/150>`_)
 - Fix: ``goodconf.Field(alias=...)`` is now used when loading, as with
   ``pydantic.Field``. (`#152 <https://github.com/lincolnloop/goodconf/issues/152>`_)
+- Added ``GoodConf.is_loaded``, ``True`` once the configuration has been loaded,
+  so a caller can skip a repeat ``load()``.
+  (`#106 <https://github.com/lincolnloop/goodconf/pull/106>`_)
 
 8.0.0 (26 November 2026)
 ========================
@@ -46,7 +49,6 @@ Unreleased
   ``initial_for_field`` instead.
 - ``Field`` now mirrors pydantic's typed signature, so its keyword arguments are
   type-checked and autocompleted.
-- ``GoodConf.is_loaded`` allows to check whether the configuration got loaded.
 
 7.0.0 (3 March 2026)
 ========================

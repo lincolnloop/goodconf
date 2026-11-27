@@ -302,15 +302,36 @@ def test_fileconfigsettingssource_get_field_value() -> None:
     assert fileconfigsettingssource.get_field_value(None, "a") == (None, "", False)  # type: ignore[arg-type]
 
 
-def test_config_is_loaded() -> None:
-
-    class TestConf(GoodConf):
+def test_is_loaded_false_before_load() -> None:
+    class AppConfig(GoodConf):
         a: bool = False
 
-    cfg = TestConf()
-    assert cfg.is_loaded is False
-    cfg.load()
-    assert cfg.is_loaded is True
+    config = AppConfig()
 
-    cfg = TestConf(load=True)
-    assert cfg.is_loaded is True
+    assert config.is_loaded is False
+
+
+def test_is_loaded_true_after_load() -> None:
+    class AppConfig(GoodConf):
+        a: bool = False
+
+    config = AppConfig()
+    config.load()
+
+    assert config.is_loaded is True
+
+
+@pytest.mark.parametrize(
+    "init_kwargs",
+    [
+        pytest.param({"a": True}, id="field-value"),
+        pytest.param({"load": True}, id="load"),
+    ],
+)
+def test_is_loaded_true_after_init_load(init_kwargs: dict[str, t.Any]) -> None:
+    class AppConfig(GoodConf):
+        a: bool = False
+
+    config = AppConfig(**init_kwargs)
+
+    assert config.is_loaded is True

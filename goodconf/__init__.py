@@ -319,10 +319,8 @@ class GoodConf(BaseSettings):
 
     @property
     def is_loaded(self) -> bool:
-        try:
-            return self._is_loaded
-        except AttributeError:
-            return False
+        # Private attributes don't exist until the first load initialises them.
+        return getattr(self, "_is_loaded", False)
 
     @classmethod
     def get_initial(cls, **override: t.Any) -> dict[str, t.Any]:

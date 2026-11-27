@@ -61,7 +61,6 @@ First, create a ``conf.py`` file in your project's directory, next to
         model_config = {"default_files": ["/etc/myproject/myproject.yaml", "myproject.yaml"]}
 
     config = AppConfig()
-    config.is_loaded  # False at this point, till `config.load()` is executed (see below)
 
 Next, use the config in your ``settings.py`` file:
 
@@ -106,6 +105,12 @@ It also has one method:
 
 ``load``
   Trigger the load method during instantiation. Defaults to False.
+
+And one attribute:
+
+``is_loaded``
+  ``True`` once the configuration has been loaded, e.g. to skip a repeat
+  load: ``if not config.is_loaded: config.load()``.
 
 Use plain-text docstring for use as a header when generating a configuration
 file.
