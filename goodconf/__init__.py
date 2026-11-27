@@ -319,8 +319,6 @@ class GoodConf(BaseSettings):
 
     @property
     def is_loaded(self) -> bool:
-        # Pydantic sets up private attributes on the first load; until then the
-        # class default above isn't reachable through the instance.
         return getattr(self, "_is_loaded", False)
 
     @classmethod
