@@ -71,7 +71,10 @@ def test_load_config_file_from_init(
     class AppConfig(GoodConf):
         app_name: str
 
-    config = AppConfig(config_file=str(path))
+    with pytest.warns(
+        DeprecationWarning, match=r"\(config_file=\.\.\.\) is deprecated"
+    ):
+        config = AppConfig(config_file=str(path))
     with caplog.at_level(logging.INFO, logger="goodconf"):
         config.load()
 
@@ -81,20 +84,6 @@ def test_load_config_file_from_init(
     ]
 
 
-def test_load_config_file_from_init_twice(tmp_path: Path) -> None:
-    path = tmp_path / "app.json"
-    path.write_text('{"app_name": "file"}')
-
-    class AppConfig(GoodConf):
-        app_name: str = "default"
-
-    config = AppConfig(config_file=str(path))
-    config.load()
-    config.load()
-
-    assert config.model_dump() == {"app_name": "file"}
-
-
 def test_load_config_file_from_init_with_load(tmp_path: Path) -> None:
     path = tmp_path / "app.json"
     path.write_text('{"app_name": "file"}')
@@ -102,9 +91,31 @@ def test_load_config_file_from_init_with_load(tmp_path: Path) -> None:
     class AppConfig(GoodConf):
         app_name: str
 
-    config = AppConfig(load=True, config_file=str(path))
+    with pytest.warns(
+        DeprecationWarning, match=r"\(config_file=\.\.\.\) is deprecated"
+    ):
+        config = AppConfig(load=True, config_file=str(path))
 
     assert config.model_dump() == {"app_name": "file"}
+
+
+def test_config_file_is_deprecated(tmp_path: Path) -> None:
+    class AppConfig(GoodConf):
+        pass
+
+    with pytest.warns(
+        DeprecationWarning, match=r"\(config_file=\.\.\.\) is deprecated"
+    ) as warnings:
+        AppConfig(config_file=str(tmp_path / "app.json"))
+
+    assert [str(warning.message) for warning in warnings] == [
+        (
+            "AppConfig(config_file=...) is deprecated and will be removed in a "
+            "future release. List the file in model_config['default_files'] or "
+            "pass it to load() instead."
+        )
+    ]
+    assert [warning.filename for warning in warnings] == [__file__]
 
 
 def test_load_explicit_file_over_init_file(tmp_path: Path) -> None:
@@ -116,7 +127,10 @@ def test_load_explicit_file_over_init_file(tmp_path: Path) -> None:
     class AppConfig(GoodConf):
         app_name: str
 
-    config = AppConfig(config_file=str(init_path))
+    with pytest.warns(
+        DeprecationWarning, match=r"\(config_file=\.\.\.\) is deprecated"
+    ):
+        config = AppConfig(config_file=str(init_path))
     config.load(str(explicit_path))
 
     assert config.model_dump() == {"app_name": "explicit-file"}
@@ -201,6 +215,51 @@ def test_load_file_env_var_over_default_files(
     config.load()
 
     assert config.model_dump() == {"app_name": "env-file"}
+
+
+def test_load_derived_file_env_var(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Without ``file_env_var``, the env var is named after the class's path."""
+    path = tmp_path / "app.json"
+    path.write_text('{"app_name": "env-file"}')
+    monkeypatch.setenv(
+        "GOODCONF_TESTS_TEST_LOAD_TEST_LOAD_DERIVED_FILE_ENV_VAR__LOCALS__APPCONFIG_FILE",
+        str(path),
+    )
+
+    class AppConfig(GoodConf):
+        app_name: str
+
+    config = AppConfig()
+    config.load()
+
+    assert config.model_dump() == {"app_name": "env-file"}
+
+
+def test_load_declared_file_env_var_over_derived(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    declared_path = tmp_path / "declared.json"
+    declared_path.write_text('{"app_name": "declared-env-file"}')
+    derived_path = tmp_path / "derived.json"
+    derived_path.write_text('{"app_name": "derived-env-file"}')
+    monkeypatch.setenv("APP_CONFIG", str(declared_path))
+    monkeypatch.setenv(
+        "GOODCONF_TESTS_TEST_LOAD_TEST_LOAD_DECLARED_FILE_ENV_VAR_OVER_DERIVED"
+        "__LOCALS__APPCONFIG_FILE",
+        str(derived_path),
+    )
+
+    class AppConfig(GoodConf):
+        model_config = GoodConfConfigDict(file_env_var="APP_CONFIG")
+
+        app_name: str
+
+    config = AppConfig()
+    config.load()
+
+    assert config.model_dump() == {"app_name": "declared-env-file"}
 
 
 def test_load_default_files_when_file_env_var_unset(

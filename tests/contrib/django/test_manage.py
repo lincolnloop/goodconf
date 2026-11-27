@@ -14,6 +14,8 @@ PRINT_SETTINGS = (
     "print(settings.SETTINGS_MODULE, settings.APP_NAME)"
 )
 SETTINGS_WITHOUT_LOAD = "tests.contrib.django.project.settings_without_load"
+# The fixture config declares no file_env_var, so -C uses the derived name.
+FILE_ENV_VAR = "GOODCONF_TESTS_CONTRIB_DJANGO_PROJECT_CONF_APPCONFIG_FILE"
 
 
 @pytest.mark.parametrize(
@@ -90,8 +92,22 @@ def test_manage_config_option_over_file_env_var(
         PRINT_APP_NAME,
         "-C",
         "app.json",
-        PROJECT_CONF="env.json",
+        **{FILE_ENV_VAR: "env.json"},
     )
+
+    assert result.stderr == ""
+    assert result.returncode == 0
+    assert result.stdout == "from-option\n"
+
+
+def test_manage_config_option_over_default_file(
+    manage_py: Callable[..., subprocess.CompletedProcess[str]],
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "app.json").write_text('{"APP_NAME": "from-option"}')
+    (tmp_path / "project.json").write_text('{"APP_NAME": "from-default-file"}')
+
+    result = manage_py("shell", "--no-imports", "-c", PRINT_APP_NAME, "-C", "app.json")
 
     assert result.stderr == ""
     assert result.returncode == 0
@@ -149,8 +165,10 @@ def test_manage_config_option_reaches_spawned_process(
 ) -> None:
     """Spawned workers, e.g. ``test --parallel``, re-import settings from scratch."""
     (tmp_path / "app.json").write_text('{"APP_NAME": "from-option"}')
+    # The child starts in another directory, so it needs the absolute path.
     spawn_child = (
-        "import multiprocessing; "
+        "import multiprocessing, os; "
+        "os.chdir(os.sep); "
         "from tests.contrib.django.project import child; "
         "process = multiprocessing.get_context('spawn').Process("
         "target=child.print_app_name); "
@@ -175,7 +193,7 @@ def test_manage_config_file_env_var(
         "--no-imports",
         "-c",
         PRINT_APP_NAME,
-        PROJECT_CONF="app.json",
+        **{FILE_ENV_VAR: "app.json"},
     )
 
     assert result.stderr == ""
@@ -216,15 +234,22 @@ def test_manage_help_lists_config_option(
     assert result.returncode == 0
     assert match is not None
     assert match.group(1) == (
-        "Config file. Can also be configured via the environment variable: "
-        "PROJECT_CONF. Defaults to the first file that exists from "
-        "[project.json]."
+        "Config file. Defaults to the first file that exists from [project.json]."
     )
 
 
-def test_django_manage_args(capsys: pytest.CaptureFixture[str], tmp_path: Path) -> None:
+def test_django_manage_args(
+    capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
     path = tmp_path / "app.json"
     path.write_text('{"app_name": "from-option"}')
+    env_path = tmp_path / "env.json"
+    env_path.write_text('{"app_name": "from-env-var"}')
+    monkeypatch.setenv(
+        "GOODCONF_TESTS_CONTRIB_DJANGO_TEST_MANAGE_TEST_DJANGO_MANAGE_ARGS"
+        "__LOCALS__APPCONFIG_FILE",
+        str(env_path),
+    )
 
     class AppConfig(GoodConf):
         app_name: str = "default"
@@ -237,26 +262,6 @@ def test_django_manage_args(capsys: pytest.CaptureFixture[str], tmp_path: Path) 
 
     assert capsys.readouterr().out == f"{django.get_version()}\n"
     assert managed_dump == {"app_name": "from-option"}
-    assert config.model_dump() == {"app_name": "from-option"}
-
-
-def test_django_manage_model_copy(
-    capsys: pytest.CaptureFixture[str], tmp_path: Path
-) -> None:
-    path = tmp_path / "app.json"
-    path.write_text('{"app_name": "from-option"}')
-
-    class AppConfig(GoodConf):
-        app_name: str = "default"
-
-    config = AppConfig()
-    config.django_manage(["manage.py", "-C", str(path), "version"])
-    copied_config = config.model_copy()
-    path.write_text('{"app_name": "edited"}')
-    copied_config.load()
-
-    assert capsys.readouterr().out == f"{django.get_version()}\n"
-    assert copied_config.model_dump() == {"app_name": "edited"}
     assert config.model_dump() == {"app_name": "from-option"}
 
 

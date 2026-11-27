@@ -6,11 +6,14 @@ import errno
 import json
 import logging
 import os
+import re
 import sys
 import tomllib
 import typing as t
+import warnings
 from collections.abc import Callable
 from dataclasses import dataclass
+from functools import partial
 from io import StringIO
 from pathlib import Path
 from types import GenericAlias
@@ -171,9 +174,7 @@ class FileConfigSettingsSource(PydanticBaseSettingsSource):
         selected_config_file = None
         if cfg_file := self.current_state.get("_config_file"):
             selected_config_file = cfg_file
-        elif (file_env_var := settings.model_config.get("file_env_var")) and (
-            cfg_file := os.environ.get(file_env_var)
-        ):
+        elif cfg_file := os.environ.get(get_file_env_var(self.settings_cls)):
             selected_config_file = _find_file(cfg_file)
         else:
             for filename in settings.model_config.get("default_files") or []:
@@ -192,6 +193,18 @@ class FileConfigSettingsSource(PydanticBaseSettingsSource):
 
     def __repr__(self) -> str:
         return "FileConfigSettingsSource()"
+
+
+def get_file_env_var(settings_cls: type[BaseSettings]) -> str:
+    """Name of the env var holding the config file path.
+
+    ``model_config["file_env_var"]`` when declared, else derived from the
+    class's import path, e.g. ``GOODCONF_MYPROJECT_CONF_APPCONFIG_FILE``.
+    """
+    if file_env_var := settings_cls.model_config.get("file_env_var"):
+        return t.cast("str", file_env_var)
+    path = f"{settings_cls.__module__}.{settings_cls.__qualname__}".upper()
+    return f"GOODCONF_{re.sub(r'[^A-Z0-9]', '_', path)}_FILE"
 
 
 def add_toml_nulls(
@@ -240,13 +253,20 @@ class GoodConf(BaseSettings):
         A docstring defined on the class should be a plain-text description
         used as a header when generating a configuration file.
         """
-        # manage.py -C reaches worker processes through the environment.
-        if selected := os.environ.get(get_config_file_env_var(type(self))):
-            self._select_config_file(selected)
-        elif config_file:
-            self._select_config_file(config_file)
+        if config_file:
+            warnings.warn(
+                f"{type(self).__name__}(config_file=...) is deprecated and will be "
+                "removed in a future release. List the file in "
+                "model_config['default_files'] or pass it to load() instead.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
         if kwargs or load:  # Emulate Pydantic behavior, load immediately
-            self._load(**kwargs)
+            self._load(_init_config_file=config_file, **kwargs)
+        elif config_file:
+            _object_setattr(
+                self, "_load", partial(self._load, _init_config_file=config_file)
+            )
 
     @classmethod
     def settings_customise_sources(
@@ -281,21 +301,18 @@ class GoodConf(BaseSettings):
         state.pop("_config_file", None)
         return state
 
-    def _load(self, _config_file: str | None = None, **kwargs: t.Any) -> None:
-        selected = self.__dict__.get("_selected_config_file")
-        if config_file := _config_file or selected:
+    def _load(
+        self,
+        _config_file: str | None = None,
+        _init_config_file: str | None = None,
+        **kwargs: t.Any,
+    ) -> None:
+        if config_file := _config_file or _init_config_file:
             kwargs["_config_file"] = config_file
         super().__init__(**kwargs)
-        if selected:
-            # pydantic's __init__ rebuilds __dict__, dropping the selection.
-            self._select_config_file(selected)
 
     def load(self, filename: str | None = None) -> None:
         self._load(_config_file=filename)
-
-    def _select_config_file(self, config_file: str) -> None:
-        """Make every ``load()`` without a file read ``config_file``."""
-        _object_setattr(self, "_selected_config_file", config_file)
 
     @classmethod
     def get_initial(cls, **override: t.Any) -> dict[str, t.Any]:
@@ -397,20 +414,8 @@ class GoodConf(BaseSettings):
 
     def django_manage(self, args: list[str] | None = None) -> None:
         args = args or sys.argv
-        from goodconf.contrib import django as goodconf_django  # noqa: PLC0415
+        from goodconf.contrib.django import (  # noqa: PLC0415
+            execute_from_command_line_with_config,
+        )
 
-        with goodconf_django.parse_config_option(self, args) as (
-            config_file,
-            django_args,
-        ):
-            if config_file:
-                self._select_config_file(config_file)
-                os.environ[get_config_file_env_var(type(self))] = str(
-                    Path(config_file).resolve()
-                )
-            self.load()
-            goodconf_django.run_command(django_args)
-
-
-def get_config_file_env_var(config_cls: type[GoodConf]) -> str:
-    return f"GOODCONF_{config_cls.__name__.upper()}_FILE"
+        execute_from_command_line_with_config(self, args)

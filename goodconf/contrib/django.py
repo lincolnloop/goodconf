@@ -1,23 +1,23 @@
 import argparse
+import os
 import typing as t
 from collections.abc import Generator
 from contextlib import contextmanager
+from pathlib import Path
 
-from django.core.management import execute_from_command_line
-from django.core.management.base import BaseCommand, CommandParser
-
-from goodconf import GoodConf
+from goodconf import GoodConf, get_file_env_var
 from goodconf.contrib.argparse import argparser_add_argument
 
 
 @contextmanager
-def parse_config_option(
+def load_config_from_cli(
     config: GoodConf, argv: list[str]
-) -> Generator[tuple[str | None, list[str]], None, None]:
-    """Split ``-C/--config`` from ``argv``.
+) -> Generator[list[str], None, None]:
+    """Loads config, checking CLI arguments for a config file"""
 
-    While active, every Django command's parser also lists ``-C`` in --help.
-    """
+    # Monkey patch Django's command parser
+    from django.core.management.base import BaseCommand, CommandParser  # noqa: PLC0415
+
     original_parser = BaseCommand.create_parser
 
     def patched_parser(
@@ -35,11 +35,23 @@ def parse_config_option(
         parser = argparse.ArgumentParser(add_help=False)
         argparser_add_argument(parser, config)
 
-        config_arg, django_args = parser.parse_known_args(argv)
-        yield config_arg.config, django_args
+        config_arg, default_args = parser.parse_known_args(argv)
+        if config_arg.config:
+            # Like Django's --settings, exported so settings.py's load() and
+            # spawned workers read the same file.
+            os.environ[get_file_env_var(type(config))] = str(
+                Path(config_arg.config).resolve()
+            )
+        config.load(config_arg.config)
+        yield default_args
     finally:
+        # Put that create_parser back where it came from or so help me!
         BaseCommand.create_parser = original_parser
 
 
-def run_command(argv: list[str]) -> None:
-    execute_from_command_line(argv)
+def execute_from_command_line_with_config(config: GoodConf, argv: list[str]) -> None:
+    """Load's config then runs Django's execute_from_command_line"""
+    with load_config_from_cli(config, argv) as args:
+        from django.core.management import execute_from_command_line  # noqa: PLC0415
+
+        execute_from_command_line(args)
