@@ -13,6 +13,8 @@ Unreleased
   --parallel``). Like Django's ``--settings`` with ``DJANGO_SETTINGS_MODULE``,
   ``-C`` now sets an environment variable that the process and its children
   read. (`#150 <https://github.com/lincolnloop/goodconf/issues/150>`_)
+- Fix: ``goodconf.Field(alias=...)`` is now used when loading, as with
+  ``pydantic.Field``. (`#152 <https://github.com/lincolnloop/goodconf/issues/152>`_)
 
 8.0.0 (26 November 2026)
 ========================
