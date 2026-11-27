@@ -10,7 +10,6 @@ import re
 import sys
 import tomllib
 import typing as t
-import warnings
 from collections.abc import Callable
 from dataclasses import dataclass
 from functools import partial
@@ -253,14 +252,6 @@ class GoodConf(BaseSettings):
         A docstring defined on the class should be a plain-text description
         used as a header when generating a configuration file.
         """
-        if config_file:
-            warnings.warn(
-                f"{type(self).__name__}(config_file=...) is deprecated and will be "
-                "removed in a future release. List the file in "
-                "model_config['default_files'] or pass it to load() instead.",
-                DeprecationWarning,
-                stacklevel=2,
-            )
         if kwargs or load:  # Emulate Pydantic behavior, load immediately
             self._load(_init_config_file=config_file, **kwargs)
         elif config_file:

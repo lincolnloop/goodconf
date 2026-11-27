@@ -78,10 +78,7 @@ def test_provided_file_from_init(mocker: MockerFixture, tmp_path: Path) -> None:
     class G(GoodConf):
         pass
 
-    with pytest.warns(
-        DeprecationWarning, match=r"\(config_file=\.\.\.\) is deprecated"
-    ):
-        g = G(config_file=str(path))
+    g = G(config_file=str(path))
     g.load()
     mocked_load_config.assert_called_once_with(str(path))
 
