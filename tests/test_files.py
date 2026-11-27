@@ -43,20 +43,6 @@ def test_conflict(tmp_path: Path) -> None:
 
 
 @pytest.mark.legacy
-def test_all_env_vars(mocker: MockerFixture) -> None:
-    mocked_set_values = mocker.patch("goodconf.BaseSettings.__init__")
-    mocked_load_config = mocker.patch("goodconf._load_config")
-
-    class G(GoodConf):
-        pass
-
-    g = G()
-    g.load()
-    mocked_set_values.assert_called_once_with()
-    mocked_load_config.assert_not_called()
-
-
-@pytest.mark.legacy
 def test_provided_file(mocker: MockerFixture, tmp_path: Path) -> None:
     mocked_load_config = mocker.patch("goodconf._load_config")
     path = tmp_path / "myapp.json"

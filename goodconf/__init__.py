@@ -241,6 +241,8 @@ def get_validation_keys(name: str, field_info: FieldInfo) -> list[str]:
 
 
 class GoodConf(BaseSettings):
+    _is_loaded: bool = False
+
     def __init__(
         self,
         load: bool = False,  # noqa: FBT001, FBT002 — documented public-API positional
@@ -310,9 +312,14 @@ class GoodConf(BaseSettings):
         if config_file := _config_file or _init_config_file:
             kwargs["_config_file"] = config_file
         super().__init__(**kwargs)
+        self._is_loaded = True
 
     def load(self, filename: str | None = None) -> None:
         self._load(_config_file=filename)
+
+    @property
+    def is_loaded(self) -> bool:
+        return getattr(self, "_is_loaded", False)
 
     @classmethod
     def get_initial(cls, **override: t.Any) -> dict[str, t.Any]:

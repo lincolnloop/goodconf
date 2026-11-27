@@ -317,15 +317,24 @@ def test_load_first_existing_default_file(
     ]
 
 
+@pytest.mark.parametrize(
+    "config_dict",
+    [
+        pytest.param({"default_files": ["missing.json"]}, id="missing-default-file"),
+        pytest.param({}, id="no-file-configured"),
+    ],
+)
 def test_load_without_file_uses_env(
-    caplog: pytest.LogCaptureFixture, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+    caplog: pytest.LogCaptureFixture,
+    config_dict: GoodConfConfigDict,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
 ) -> None:
+    monkeypatch.chdir(tmp_path)
     monkeypatch.setenv("APP_NAME", "env")
 
     class AppConfig(GoodConf):
-        model_config = GoodConfConfigDict(
-            default_files=[str(tmp_path / "missing.json")]
-        )
+        model_config = config_dict
 
         app_name: str
         app_port: int = 8000

@@ -106,6 +106,12 @@ It also has one method:
 ``load``
   Trigger the load method during instantiation. Defaults to False.
 
+And one attribute:
+
+``is_loaded``
+  ``True`` once the configuration has been loaded, e.g. to skip a repeat
+  load: ``if not config.is_loaded: config.load()``.
+
 Use plain-text docstring for use as a header when generating a configuration
 file.
 
